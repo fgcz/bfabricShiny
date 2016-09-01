@@ -13,12 +13,30 @@ library(shiny)
 shinyServer(function(input, output, session) {
    
   
+  
+      #select a folder for loading data
+      output$INPUT <- renderUI({
+        files <- list.files(path = "C:/Users/christian/Documents/Learning_R_scripts/Testdata_Raw_analyzer")
+        selectInput('file', 'file', files[grepl(".csv$", files)])
+        
+        
+        # qcdata <- eventReactive(input$goButton, {
+        #     input$file
+        #  }),
+        
+        # output$nText <- renderText({
+        #   ntext()
+        })
+      })
+  
+      
+      
+      
       # Combine the selected variables into a new data frame
+     
       selectedData <- reactive({
       qcdata[, c(input$xcol, input$ycol)]
        })
-  
-  
   
   
 
