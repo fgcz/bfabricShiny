@@ -14,8 +14,10 @@ shinyUI(fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      numericInput("wuId", "workunit ID", 142914, 142913, 15000),
+      selectInput("wuId", "workunit ID", 142914:142920),
       htmlOutput("bfabric_resources"),
+      br(),
+      actionButton("loadButton", "load data"),
       sliderInput("bins",
                   "Number of bins:",
                   min = 1,
