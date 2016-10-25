@@ -13,13 +13,13 @@ shinyServer(function(input, output) {
 
   output$project <- renderUI({
     res.project <- c(1000, 1959, 2121)
-    selectInput('project', 'project', res.project, multiple = FALSE, selected = 1000)
+    selectInput('project', 'Project:', res.project, multiple = FALSE, selected = 1000)
   })
   
   
   output$sample <- renderUI({
     res <- as.data.frame(fromJSON(paste("http://localhost:5000/projectid/", input$project, sep='')))
-    selectInput('sample', 'sample', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
+    selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
   })
   
   output$extract <- renderUI({
@@ -36,20 +36,18 @@ shinyServer(function(input, output) {
       
 
         
-      selectInput('extract', 'extract', res$extract.name, multiple = TRUE)
+      selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)
+    }   else{
+     selectInput('extract', 'Extract:', "NA")
     }
-    
   })
   
-  output$distPlot <- renderPlot({
-
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-
-  })
+  
+  
+  output$table <- DT::renderDataTable(DT::datatable({
+    data <- iris
+   
+    data
+  }))
 
 })

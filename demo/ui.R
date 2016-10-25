@@ -8,7 +8,8 @@
 #
 
 library(shiny)
-qcdata <-read.csv("C:/Users/christian/Documents/Learning_R_scripts/Testdata_Raw_analyzer/Bernd/20160409_05_GM_06.csv")
+#qcdata <-read.csv("C:/Users/christian/Documents/Learning_R_scripts/Testdata_Raw_analyzer/Bernd/20160409_05_GM_06.csv")
+qcdata <-read.csv("/Users/cp/Downloads/F240476.csv")
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -25,7 +26,7 @@ shinyUI(fluidPage(
       #actionButton("goButton", "LOAD DATA!"),
       
       
-      selectInput('xcol', 'X Variable', names(qcdata)),
+      selectInput('xcol', 'X Variable', names(qcdata), selected=names(qcdata)[[1]]),
     
       selectInput('ycol', 'Y Variable', names(qcdata),
                 selected=names(qcdata)[[2]]),

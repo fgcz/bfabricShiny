@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
         # output$nText <- renderText({
         #   ntext()
         })
-      })
+    
   
       
       
