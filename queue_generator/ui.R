@@ -10,11 +10,15 @@ library(shiny)
 shinyUI(fluidPage(
 
   # Application title
-  titlePanel("Old Faithful Geyser Data"),
+  titlePanel("fgcz ms queue genertator"),
 
   # Sidebar with a slider input for number of bins
   sidebarLayout(
+    #
     sidebarPanel(
+      htmlOutput("project"),
+      htmlOutput("sample"),
+      htmlOutput("extract"),
       sliderInput("bins",
                   "Number of bins:",
                   min = 1,
