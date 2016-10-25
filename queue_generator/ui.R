@@ -12,7 +12,7 @@ shinyUI(fluidPage(
 
   fluidPage(
   # Application title
-  titlePanel("fgcz ms queue genertator"),
+  titlePanel("FGCZ MS Queue Generator"),
   fluidRow(
     column(4, htmlOutput("project")),
     column(4, htmlOutput("sample")),

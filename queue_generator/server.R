@@ -45,8 +45,10 @@ shinyServer(function(input, output) {
   
   
   output$table <- DT::renderDataTable(DT::datatable({
+    
+    # call Christian Trachsel's code here!
     data <- iris
-   
+    
     data
   }))
 
