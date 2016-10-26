@@ -89,30 +89,19 @@ generate_queue <- function(data, how.often=2, how.many=1, username='cpanse', ins
 ##
 shinyServer(function(input, output, session) {
 
+  getInstrument <- reactive({c('VELOS_1',
+                       'VELOS_2',
+                       'G2HD_1',
+                       'QTRAP_1',
+                       'TSQ_1',
+                       'TSQ_2',
+                       'QEXACTIVE_2',
+                       'QEXACTIVE_3',
+                       'FUSION_1',
+                       'FUSION_2',
+                       'QEXACTIVEHF_1',
+                       'QEXACTIVEHF_2')})
   
-  output$instrument <- renderUI({
-    res.instrument <- c('VELOS_1',
-                    'VELOS_2',
-                    'ORBI_1',
-                    'ORBI_2',
-                    'ORBI_3',
-                    'G2HD_1',
-                    'LTQ_1',
-                    'LTQFT_1',
-                    'QTRAP_1',
-                    'TSQ_1',
-                    'TSQ_2',
-                    'QEXACTIVE_1',
-                    'QEXACTIVE_2',
-                    'QEXACTIVE_3',
-                    'FUSION_1',
-                    'FUSION_2',
-                    'QEXACTIVEHF_1',
-                    'QEXACTIVEHF_2',
-                    'QEXACTIVEHF_3')
-
-    selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
-  })
   
   
   output$project <- renderUI({
@@ -130,9 +119,40 @@ shinyServer(function(input, output, session) {
     selectInput('howmany', 'How many?:', res.howmany, multiple = FALSE, selected = 1)
   })
   
+  output$instrument <- renderUI({
+    res.instrument <- c('VELOS_1',
+                        'VELOS_2',
+                        'G2HD_1',
+                        'QTRAP_1',
+                        'TSQ_1',
+                        'TSQ_2',
+                        'QEXACTIVE_2',
+                        'QEXACTIVE_3',
+                        'FUSION_1',
+                        'FUSION_2',
+                        'QEXACTIVEHF_1',
+                        'QEXACTIVEHF_2')
+    
+    selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
+  })
+  
   
   getSample <- reactive({
     res <- as.data.frame(fromJSON(paste("http://localhost:5000/projectid/", input$project, sep='')))
+  })
+  
+  getLogin <- reactive({
+    res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", input$project, sep='')))
+    res$user
+  })
+  
+  
+  output$login <- renderUI({
+    if ( input$project %in% 1000:2500){
+      selectInput('login', 'Login:', as.character(getLogin()), multiple = FALSE)
+    }else{
+      selectInput('login', 'Login:', NULL)
+    }
   })
   
   
@@ -140,12 +160,10 @@ shinyServer(function(input, output, session) {
     if ( input$project %in% 1000:2500){
       res <- getSample()
       selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
-      
     }else{
       selectInput('sample', 'Sample:', NULL)
     }
   })
-  
   
 
   getExtracts <- reactive({
@@ -159,7 +177,7 @@ shinyServer(function(input, output, session) {
                           }))
     
    res[, "project.id"]  <- input$project
-   res[, "instrument"] <- input$instrument
+   
    res[, "Condition"] <- "A"
    res
   })
@@ -177,23 +195,32 @@ shinyServer(function(input, output, session) {
   })
   
   
+  output$downloadData <- downloadHandler(
+    filename = function() { "test.csv" },
+      # paste(unlist(strsplit(input$file, split="[.]"))[1], "csv", sep=".")  },
+    content = function(file) {
+      write.csv(getContent(), file, row.names = FALSE)
+    }
+  )
+  
+  
+  getContent <- reactive({
+    res <- getExtracts()
+    res[, "instrument"] <- input$instrument
+    idx <- res$extract.name %in% input$extract
+    generate_queue(data=res[idx, ], 
+                   username = input$login,
+                   how.often = as.integer(input$howoften),
+                   how.many = as.integer(input$howmany),
+                   instrument=input$instrument)
+  })
   
   output$table <- DT::renderDataTable(DT::datatable({
   
-    
-    
     # call Christian Trachsel's code here!
- 
-   
-    
    # print (input$extract)
     if (input$extract != "" && length(input$extract)>0){
-      res <- getExtracts()
-      idx <- res$extract.name %in% input$extract
-      generate_queue(data=res[idx, ], 
-                     how.often = as.integer(input$howoften),
-                     how.many = as.integer(input$howmany),
-                     instrument=input$instrument)
+      getContent()
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))
       as.data.frame(list(output="no data - select extracts first."))

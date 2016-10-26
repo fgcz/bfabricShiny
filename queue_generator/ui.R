@@ -14,21 +14,25 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("FGCZ MS Queue Generator"),
   fluidRow(
-    column(4, htmlOutput("project")),
-    column(4, htmlOutput("sample")),
-    column(4, htmlOutput("extract"))
+    column(3, htmlOutput("project")),
+    
+    column(3, htmlOutput("sample")),
+    column(3, htmlOutput("extract"))
     ),
  fluidRow(
-    column(4, htmlOutput("instrument")),
-    column(4, htmlOutput("howoften")),
-    column(4, htmlOutput("howmany"))
+    column(3, htmlOutput("instrument")),
+    column(3, htmlOutput("login")),
+    column(3, htmlOutput("howoften")),
+    column(3, htmlOutput("howmany"))
   ),
-
+ 
     # Show a plot of the generated distribution
     
       fluidRow(
         DT::dataTableOutput("table")
-      )
-    )
+      ),
+ fluidRow(
+ downloadButton('downloadData', 'Download')
+    ))
   )
 )
