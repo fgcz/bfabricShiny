@@ -18,6 +18,9 @@ shinyUI(fluidPage(
     column(4, htmlOutput("sample")),
     column(4, htmlOutput("extract"))
     ),
+ fluidRow(
+    column(4, htmlOutput("instrument"))
+  ),
 
     # Show a plot of the generated distribution
     
