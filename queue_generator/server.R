@@ -59,13 +59,31 @@ InsertFetuin <- function(df, group, rowsneeded)
   res
 }
 
-generate_queue <- function(data, how.often=2, how.many=1, username='cpanse', instrument='NA', foldername='NA'){
-  res <- .generate_template_base(data, how.often, how.many)
-  #out <- .generate_folder(username, instrument, foldername, res=res)
-  #nam <- .generate_name(res=res)
+.generate_folder_name <- function(username = "bfabricusername", instrument, foldername, res){
+  n <- nrow(res)
+  rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
+  out <- paste(paste(username, rundate, sep = "_"), 
+               gsub('([[:punct:]])|\\s+','_',foldername), sep = "_") #concatenate user name and folder name
+  out <- paste(instrument, out, sep = "\\") #concatenate instrument path strucutre with user name and folder name
+  out <- rep(out, times = n)
+  out
+}
+
+.generate_name <- function(res){
+  n <- nrow(res)
+  rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
+  injection.index <- sprintf("%02d", c(1:n))
+  injection.name <- paste(paste(paste(rundate, injection.index, sep = "_"), res$extract.id, sep = "_"), res$extract.name, sep = "_")
+  injection.name
+}
+
+generate_queue <- function(data, how.often=2, how.many=1, username='cpanse', instrument='NA', foldername='/'){
+  res.1 <- .generate_template_base(data, how.often, how.many)
+  res.2 <- .generate_folder_name(username=username, instrument=instrument , foldername=foldername, res=res.1)
+  res.3 <- .generate_name(res=res.1)
   #queue <- data.frame(cbind(nam, out, res$Position, InjVol))
   #colnames(queue) <- c("File Name", "Path", "Position", "Inj Vol")
-  res
+  cbind(res.1, res.2, res.3)
 }
 
 ##
@@ -100,6 +118,16 @@ shinyServer(function(input, output, session) {
   output$project <- renderUI({
     res.project <- c(NA, 1000, 1959, 2121)
     selectInput('project', 'Project:', res.project, multiple = FALSE, selected = NA)
+  })
+  
+  output$howoften <- renderUI({
+    res.howoften <- 1:5
+    selectInput('howoften', 'How often?:', res.howoften, multiple = FALSE, selected = 2)
+  })
+  
+  output$howmany <- renderUI({
+    res.howmany <- 1:3
+    selectInput('howmany', 'How many?:', res.howmany, multiple = FALSE, selected = 1)
   })
   
   
@@ -162,7 +190,10 @@ shinyServer(function(input, output, session) {
     if (input$extract != "" && length(input$extract)>0){
       res <- getExtracts()
       idx <- res$extract.name %in% input$extract
-      generate_queue(data=res[idx, ])
+      generate_queue(data=res[idx, ], 
+                     how.often = as.integer(input$howoften),
+                     how.many = as.integer(input$howmany),
+                     instrument=input$instrument)
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))
       as.data.frame(list(output="no data - select extracts first."))
