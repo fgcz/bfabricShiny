@@ -35,9 +35,10 @@ InsertFetuin <- function(df, group, rowsneeded)
                     rep(1:8, times = 8)[1:n], sep = "") #for nano easy position
 
   res <- data
+ 
   res["Position"] <- nano.pos #attache rack position
   res["blocks"] <- blocks #attache the index to the data
- 
+  str(res)
   groupindex <- which(colnames(res) == "blocks")[1] #fetch the index of the column containing the block information
   
   rowsneeded <- how.often + how.many #define by how many row each block will be extended
@@ -46,15 +47,13 @@ InsertFetuin <- function(df, group, rowsneeded)
   
   res$extract.name <- as.character(res$extract.name) #change Sample.Names to character
   
-  res[is.na(res)] <- paste(rep("Fetuin_400amol", each = length(res[is.na(res)]))) #fill in sample names of new inserted columns
+  res$Position[is.na(res$Position)] <- "F8"
+  res$extract.id[is.na(res$extract.id)] <- ""
   
-  res$Condition <- as.character(res$Condition) #convert condition to factor
+  print(res)
+  res$extract.name[is.na(res$extract.name)] <- "Fetuin_400amol"
   
-  res[is.na(res)] <- rep("Fetuin", each = length(res[is.na(res)])) #fill in condition of new inserted column
-  
-  res$Position <- as.character(res$Position) #convert Position to factor
-  
-  res[is.na(res)] <- rep("F8", each = length(res[is.na(res)])) #fill in condition of new inserted column
+  res$Condition[is.na(res$Condition)] <- "Fetuin"
   
   res
 }
@@ -227,7 +226,7 @@ shinyServer(function(input, output, session) {
                    username = input$login,
                    how.often = as.integer(input$howoften),
                    how.many = as.integer(input$howmany),
-                   instrument=input$instrument)
+                   instrument = input$instrument)
   })
   
   output$table <- DT::renderDataTable(DT::datatable({
