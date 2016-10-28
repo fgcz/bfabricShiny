@@ -59,12 +59,14 @@ InsertFetuin <- function(df, group, rowsneeded)
   res
 }
 
-.generate_folder_name <- function(username = "bfabricusername", instrument, foldername, res){
+.generate_folder_name <- function(foldername, area = "Proteomics", instrument, username = "bfabricusername",   res){
   n <- nrow(res)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
-  out <- paste(paste(username, rundate, sep = "_"), 
-               gsub('([[:punct:]])|\\s+','_',foldername), sep = "_") #concatenate user name and folder name
-  out <- paste(instrument, out, sep = "\\") #concatenate instrument path strucutre with user name and folder name
+  out <- paste(username, rundate, sep = "_")
+  if (foldername != ''){
+    out <- paste(out, gsub('([[:punct:]])|\\s+', '_', foldername), sep = "_") #concatenate user name and folder name
+  }
+  out <- paste(area, instrument, out, sep = "\\") #concatenate instrument path strucutre with user name and folder name
   out <- rep(out, times = n)
   out
 }
@@ -77,36 +79,57 @@ InsertFetuin <- function(df, group, rowsneeded)
   injection.name
 }
 
-generate_queue <- function(data, how.often=2, how.many=1, username='cpanse', instrument='NA', foldername='/'){
+generate_queue <- function(data, foldername='',projectid=1000, area='Proteomics', instrument='NA', username='cpanse', how.often=2, how.many=1){
   res.1 <- .generate_template_base(data, how.often, how.many)
-  res.2 <- .generate_folder_name(username=username, instrument=instrument , foldername=foldername, res=res.1)
+  res.2 <- .generate_folder_name(foldername=foldername, area=area, instrument=instrument, username=username, res=res.1)
   res.3 <- .generate_name(res=res.1)
   #queue <- data.frame(cbind(nam, out, res$Position, InjVol))
   #colnames(queue) <- c("File Name", "Path", "Position", "Inj Vol")
-  cbind(res.1, res.2, res.3)
+  cbind('File Name' = res.3,
+        'Path' = paste("D:\\Data2San", paste('p',projectid,sep=''), res.2, sep="\\"), 
+        'Position' = res.1$Position,
+        'Inj Vol' = 2
+        )
 }
 
 ##
 shinyServer(function(input, output, session) {
 
-  getInstrument <- reactive({c('VELOS_1',
-                       'VELOS_2',
-                       'G2HD_1',
-                       'QTRAP_1',
-                       'TSQ_1',
-                       'TSQ_2',
-                       'QEXACTIVE_2',
-                       'QEXACTIVE_3',
-                       'FUSION_1',
-                       'FUSION_2',
-                       'QEXACTIVEHF_1',
-                       'QEXACTIVEHF_2')})
+  getInstrument <- reactive({list(VELOS_1='Xcalibur',
+                       VELOS_2='Xcalibur',
+                       G2HD_1='MassLynx',
+                       QTRAP_1='Xcalibur',
+                       TSQ_1='Xcalibur',
+                       TSQ_2='Xcalibur',
+                       QEXACTIVE_2='Xcalibur',
+                       QEXACTIVE_3='Xcalibur',
+                       FUSION_1='Xcalibur',
+                       FUSION_2='Xcalibur',
+                       QEXACTIVEHF_1='Xcalibur',
+                       QEXACTIVEHF_2='Xcalibur')})
   
   
+  getInstrumentSuffix <- reactive({list(VELOS_1='RAW',
+                                  VELOS_2='RAW',
+                                  G2HD_1='wiff',
+                                  QTRAP_1='wiff',
+                                  TSQ_1='RAW',
+                                  TSQ_2='RAW',
+                                  QEXACTIVE_2='raw',
+                                  QEXACTIVE_3='raw',
+                                  FUSION_1='raw',
+                                  FUSION_2='raw',
+                                  QEXACTIVEHF_1='raw',
+                                  QEXACTIVEHF_2='raw')})
+  
+  output$area <- renderUI(({
+    res.area <- c("Proteomics", "Metabolomics")
+    selectInput('area', 'Area:', res.area, multiple = FALSE, selected = res.area[1])
+  }))
   
   output$project <- renderUI({
     res.project <- c(NA, 1000, 1959, 2121)
-    selectInput('project', 'Project:', res.project, multiple = FALSE, selected = NA)
+    numericInput('project', 'Project:', value = res.project,  min = 1000, max = 2500, width=100)
   })
   
   output$howoften <- renderUI({
@@ -119,20 +142,9 @@ shinyServer(function(input, output, session) {
     selectInput('howmany', 'How many?:', res.howmany, multiple = FALSE, selected = 1)
   })
   
+  
   output$instrument <- renderUI({
-    res.instrument <- c('VELOS_1',
-                        'VELOS_2',
-                        'G2HD_1',
-                        'QTRAP_1',
-                        'TSQ_1',
-                        'TSQ_2',
-                        'QEXACTIVE_2',
-                        'QEXACTIVE_3',
-                        'FUSION_1',
-                        'FUSION_2',
-                        'QEXACTIVEHF_1',
-                        'QEXACTIVEHF_2')
-    
+    res.instrument <- names(getInstrument())
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
   })
   
@@ -196,10 +208,11 @@ shinyServer(function(input, output, session) {
   
   
   output$downloadData <- downloadHandler(
-    filename = function() { "test.csv" },
+    filename = function() { "fgcz_queue_test.csv" },
       # paste(unlist(strsplit(input$file, split="[.]"))[1], "csv", sep=".")  },
     content = function(file) {
-      write.csv(getContent(), file, row.names = FALSE)
+      write.csv(cat("Bracket Type=4\n", file = file, append = FALSE))
+      write.table(getContent(), sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE)
     }
   )
   
@@ -208,7 +221,9 @@ shinyServer(function(input, output, session) {
     res <- getExtracts()
     res[, "instrument"] <- input$instrument
     idx <- res$extract.name %in% input$extract
-    generate_queue(data=res[idx, ], 
+    generate_queue(data=res[idx, ], area = input$area,
+                   foldername = "",
+                   projectid=input$project,
                    username = input$login,
                    how.often = as.integer(input$howoften),
                    how.many = as.integer(input$howmany),
@@ -219,7 +234,7 @@ shinyServer(function(input, output, session) {
   
     # call Christian Trachsel's code here!
    # print (input$extract)
-    if (input$extract != "" && length(input$extract)>0){
+    if (input$extract != "" && length(input$extract) > 0){
       getContent()
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))

@@ -14,14 +14,17 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("FGCZ MS Queue Generator"),
   fluidRow(
-    column(3, htmlOutput("project")),
+    column(2, htmlOutput("project")),
     
     column(3, htmlOutput("sample")),
-    column(3, htmlOutput("extract"))
+    column(7, htmlOutput("extract"))
     ),
- fluidRow(
+  fluidRow(
+    column(3, htmlOutput("area")),
     column(3, htmlOutput("instrument")),
-    column(3, htmlOutput("login")),
+    column(3, htmlOutput("login"))),
+ fluidRow(
+  
     column(3, htmlOutput("howoften")),
     column(3, htmlOutput("howmany"))
   ),
