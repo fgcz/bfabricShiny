@@ -35,7 +35,8 @@ shinyUI(fluidPage(
         DT::dataTableOutput("table")
       ),
  fluidRow(
- downloadButton('downloadData', 'Download')
+ downloadButton('downloadData', 'Download'),
+    actionButton("bfabricButton", "Beam table as dataset to bfabric.")
     ))
   )
 )

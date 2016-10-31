@@ -7,6 +7,7 @@
 
 library(shiny)
 library(jsonlite)
+library(httr)
 
 ## place Christian Trachsels code here
 InsertFetuin <- function(df, group, rowsneeded)
@@ -207,14 +208,25 @@ shinyServer(function(input, output, session) {
   
   
   output$downloadData <- downloadHandler(
+  	#post.data <- toJSON(iris)
+    #if (as.number(input$project) > 1000){
+    	# rv <- POST(paste("http://localhost:5000/add_dataset", input$project, sep='/'), body = toJSON(getContent()))
+    #}
     filename = function() { "fgcz_queue_test.csv" },
       # paste(unlist(strsplit(input$file, split="[.]"))[1], "csv", sep=".")  },
     content = function(file) {
+      #rv <- POST(paste("http://localhost:5000/add_dataset", input$project, sep='/'), body = toJSON(getContent()))
       write.csv(cat("Bracket Type=4\n", file = file, append = FALSE))
       write.table(getContent(), sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE)
     }
   )
   
+  datasetID <- observeEvent(input$bfabricButton, {
+      rv <- POST(paste("http://localhost:5000/add_dataset", input$project, sep='/'), body = toJSON(getContent()))
+
+      #session$sendCustomMessage(type = 'testmessage',
+      #      message = 'try to commit as dataset to bfabric.')
+      })
   
   getContent <- reactive({
     res <- getExtracts()
