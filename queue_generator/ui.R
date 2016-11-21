@@ -34,9 +34,13 @@ shinyUI(fluidPage(
       fluidRow(
         DT::dataTableOutput("table")
       ),
- fluidRow(
- downloadButton('downloadData', 'Download'),
-    actionButton("bfabricButton", "Beam table as dataset to bfabric.")
-    ))
+ #fluidRow(
+ column(4, wellPanel(
+ 	downloadButton('downloadData', 'Download'),
+    	actionButton("bfabricButton", "Add table as dataset to bfabric."),
+    	singleton( tags$head(tags$script(src = "message-handler.js")))
+    )
   )
+) 
+)
 )
