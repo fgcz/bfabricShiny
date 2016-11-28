@@ -13,9 +13,12 @@ require(testthat)
     data.frame(extract.name, extract.id, Condition)
   }
 
-test_that("test input format 2 injections", {
-  res <- format_input_data(test_data(),2, "easylc")
-  expect_true(res[20, 4] == "B2")
-})
+
+(test0_data <- test_data())
+generate_queue(x=test0_data, instrument='TSQ_2', project=1000)
+#test_that("test input format 2 injections", {
+#  res <- format_input_data(test_data(),2, "easylc")
+#  expect_true(res[20, 4] == "B2")
+#})
 
   

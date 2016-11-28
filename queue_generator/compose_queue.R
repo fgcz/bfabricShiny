@@ -18,11 +18,11 @@ InsertFetuin <- function(df, group, rowsneeded)
 
 block_randomizer <- function(x){
   df <- NULL
-  v <- unique(res$Condition)
+  v <- unique(x$Condition)
   n <-length(v)
   for(i in 1:n){
-    sub <- res[which(res$Condition == v[i]),]
-    bind <- sub[order(rank(sample(1:nrow(res[which(res$Condition == v[i]),])))),]
+    sub <- x[which(x$Condition == v[i]),]
+    bind <- sub[order(rank(sample(1:nrow(x[which(x$Condition == v[i]),])))),]
     df <- rbind(df, bind)  
   }
   print(df)  
@@ -138,15 +138,24 @@ block_randomizer <- function(x){
   injection.name
 }
 
-generate_queue <- function(data, foldername='',projectid=1000, area='Proteomics', instrument='NA', username='cpanse', how.often=2, how.many=1, multiple = 1, hplc = "easylc"){
-  res.1 <- .format_input_data(data, multiple, hplc)
-  res.2 <- .generate_template_base(res=res.1, how.often, how.many, hplc)
+generate_queue <- function(x, foldername='', 
+	projectid=1000, 
+	area='Proteomics', 
+	instrument='NA', 
+	username='cpanse', 
+	how.often=2, how.many=1, multiple = 1, hplc = "easylc"){
+
+  if (!'Condition' %in% names(x)){
+	  x$Condition <- "A"
+  }
+	
+  res.1 <- .format_input_data(x, multiple, hplc)
+  res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
   res.3 <- .generate_folder_name(foldername=foldername, area=area, instrument=instrument, username=username, res=res.2)
   res.4 <- .generate_name(res=res.2)
-  #queue <- data.frame(cbind(nam, out, res$Position, InjVol))
-  #colnames(queue) <- c("File Name", "Path", "Position", "Inj Vol")
+
   cbind('File Name' = res.4,
-        'Path' = paste("D:\\Data2San", paste('p',projectid,sep=''), res.3, sep="\\"), 
+        'Path' = paste("D:\\Data2San", paste('p',projectid, sep=''), res.3, sep="\\"), 
         'Position' = res.2$Position,
         'Inj Vol' = 2
         )

@@ -186,7 +186,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
     	res[, "instrument"] <- input$instrument
     	idx <- res$extract.name %in% input$extract
 
-    	rv <- generate_queue(data=res[idx, ], area = input$area,
+    	rv <- generate_queue(x=res[idx, ], area = input$area,
                    foldername = "",
                    projectid=input$project,
                    username = input$login,
