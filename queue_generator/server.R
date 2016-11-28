@@ -14,6 +14,19 @@ source('compose_queue.R')
 ##
 shinyServer(function(input, output, session) {
 
+getHPLC <- reactive({list(VELOS_1='eksigent',
+                       VELOS_2='eksigent',
+                       G2HD_1='waters',
+                       QTRAP_1='eksigent',
+                       TSQ_1='eksigent',
+                       TSQ_2='eksigent',
+                       QEXACTIVE_2='easylc',
+                       QEXACTIVE_3='easylc',
+                       FUSION_1='easylc',
+                       FUSION_2='easylc',
+                       QEXACTIVEHF_1='waters',
+                       QEXACTIVEHF_2='waters')})
+	
   getInstrument <- reactive({list(VELOS_1='Xcalibur',
                        VELOS_2='Xcalibur',
                        G2HD_1='MassLynx',
