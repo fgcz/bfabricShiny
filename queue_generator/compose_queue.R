@@ -16,6 +16,18 @@ InsertFetuin <- function(df, group, rowsneeded)
   }))
 }
 
+block_randomizer <- function(x){
+  df <- NULL
+  v <- unique(res$Condition)
+  n <-length(v)
+  for(i in 1:n){
+    sub <- res[which(res$Condition == v[i]),]
+    bind <- sub[order(rank(sample(1:nrow(res[which(res$Condition == v[i]),])))),]
+    df <- rbind(df, bind)  
+  }
+  print(df)  
+}
+
 #helper function1
 .format_input_data <- function(data, multiple = 2, hplc = ""){
   n <- nrow(data)
@@ -46,7 +58,7 @@ InsertFetuin <- function(df, group, rowsneeded)
   n <- nrow(res)
   repeats <- length(unique(res$Condition))
   cond <- max(table(res$Condition))
-  res <- FUN(res)
+  res <- block_randomizer(res)
   condition.vector <- as.vector(replicate(repeats, 1:cond))
   blockgroupindex <- which(colnames(res) == "Condition")[1]
   res <- InsertFetuin(res, blockgroupindex, cond)
@@ -126,7 +138,7 @@ InsertFetuin <- function(df, group, rowsneeded)
   injection.name
 }
 
-generate_queue <- function(data, foldername='',projectid=1000, area='Proteomics', instrument='NA', username='cpanse', how.often=2, how.many=1){
+generate_queue <- function(data, foldername='',projectid=1000, area='Proteomics', instrument='NA', username='cpanse', how.often=2, how.many=1, multiple = 1, hplc = "easylc"){
   res.1 <- .format_input_data(data, multiple, hplc)
   res.2 <- .generate_template_base(res=res.1, how.often, how.many, hplc)
   res.3 <- .generate_folder_name(foldername=foldername, area=area, instrument=instrument, username=username, res=res.2)
