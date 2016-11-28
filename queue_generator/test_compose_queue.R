@@ -2,7 +2,7 @@
 
 
 source("compose_queue.R")
-
+require(testthat)
  
 
 #test data
@@ -13,5 +13,9 @@ source("compose_queue.R")
     data.frame(extract.name, extract.id, Condition)
   }
 
+test_that("test input format 2 injections", {
+  res <- format_input_data(test_data(),2, "easylc")
+  expect_true(res[20, 4] == "B2")
+})
 
   
