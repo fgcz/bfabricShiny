@@ -130,10 +130,10 @@ shinyServer(function(input, output, session) {
     filename = function() { "fgcz_queue_test.csv" },
       # paste(unlist(strsplit(input$file, split="[.]"))[1], "csv", sep=".")  },
     content = function(file) {
-      write.csv(cat("Bracket Type=4\n", file = file, append = FALSE))
+      write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
       res <- getBfabricContent()
       res <- res[,1:4]
-      write.table(res, sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE)
+      write.table(res, sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE, eol='\r\n')
 
     }
   )
