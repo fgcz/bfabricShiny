@@ -16,6 +16,29 @@ InsertFetuin <- function(df, group, rowsneeded)
   }))
 }
 
+#helper function1a
+format_input_data <- function(data, multiple = 2, hplc = ""){
+  n <- nrow(data)
+  res <- data
+  if (hplc == "eksigent") {
+    pos <- (paste(rep(2, times = n), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(sprintf("%02d", c(1:8)), times = 8)[1:n], sep = ""), sep = "")) #generates plate position in eksigent format for a 48 position plate (A1-F8)
+  } else if ( hplc == "waters") {
+    pos <- paste(rep(1, times = n), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = ","), sep = ":") #generates plate position in waters format for a 48 position plate (A1-F8)
+    pos <- paste0('"', pos, '"')
+  } else {
+    pos <- paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = "") #generates plate position in thermo easyLC format for a 48 position plate (A1-F8)
+  }
+  res["Position"] <- pos #attach corresponding plate position to queue table 
+  m <- ncol(res)
+  res <- res[rep(seq_len(nrow(res)), each = multiple),1:m] #multiplies the queue table entries in case multiple injections per samples are requested
+  if (multiple > 1) {
+    res["extract.name"] <- paste(res$extract.name, rep(LETTERS[1:multiple], times = n), sep = "_") #attaches a letter suffix to the extract name to make them unique again in case multiple injections are requested
+  } else {
+    
+  }
+  assign("res", res, .GlobalEnv) #only for development purpose! remove from active code
+  #res
+}  
 
 .generate_template_base <- function(data, how.often = 2, how.many = 1){
   n <- nrow(data)
