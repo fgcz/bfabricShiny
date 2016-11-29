@@ -103,24 +103,23 @@ block_randomizer <- function(x){
   res
 }
 
-.generate_template_random <- function(x, how.often = 2, how.many = 1, multiple = 2, hplc =""){
+.generate_template_random <- function(x, how.often = 2, how.many = 1, hplc =""){
   n <- nrow(x)
   random.index <- sample(1:n)
   res <- x[order(random.index),]
-  nano.pos <- paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = "") #for nano easy position
-  res["Position"] <- nano.pos #attache rack position 
-  res <- res[rep(seq_len(nrow(res)), each = multiple),1:4] #each or times as argument for replication?
-  m <- nrow(res)
-  blocks <- rep(1:((m/how.often)+1), each = how.often)[1:m] #generates an index among which the dataset will be extended
-  #m.pos <- paste(rep(1, times = n)), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = ","), sep = ":") #for M-Class position
+    blocks <- rep(1:((n/how.often)+1), each = how.often)[1:n] #generates an index among which the dataset will be extended
   res["blocks"] <- blocks #attache the index to the data
   groupindex <- which(colnames(res) == "blocks")[1] #fetch the index of the column containing the block information
   rowsneeded <- how.often + how.many #define by how many row each block will be extended
   res <- InsertFetuin(res, groupindex, rowsneeded) #extend the sample list by empty rows
   res[sapply(res, is.factor)] <- lapply(res[sapply(res, is.factor)], as.character) #convert all Factors to characters
-  res$Position[is.na(res$Position)] <- "F8"
-  res$extract.name[is.na(res$extract.name)] <- "Fetuin_400amol"
-  res$Condition[is.na(res$Condition)] <- "Fetuin"
+  if (hplc == "easylc"){
+    res$Position[is.na(res$Position)] <- "F8"
+  } else if ( hplc == "waters"){
+    res$Position[is.na(res$Position)] <- '"1:F,8"'
+  } else {
+    res$Position[is.na(res$Position)] <- "1F08"
+  }
   res
 }
 
