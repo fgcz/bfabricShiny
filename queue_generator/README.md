@@ -33,6 +33,17 @@ compose_queue <- function(x,
 }
 ```
 
+# use cases
 
+## use case 1 - default 
 
-## 
+## use case 2 - randomized queue
+
+## use case 3 - block randomized queue
+
+## use case 4 - multiple injection
+
+## use case 5 method testing
+
+multiple injections single sample randomized
+
