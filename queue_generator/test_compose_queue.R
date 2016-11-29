@@ -14,11 +14,21 @@ require(testthat)
   }
 
 
-(test0_data <- test_data())
-generate_queue(x=test0_data, instrument='TSQ_2', project=1000)
-#test_that("test input format 2 injections", {
-#  res <- format_input_data(test_data(),2, "easylc")
-#  expect_true(res[20, 4] == "B2")
-#})
+#generate_queue(x=test0_data, instrument='TSQ_2', project=1000)
+
+test_that("test input format 2 injections", {
+
+ test0_data <- test_data()
+  ground_trues<-c(3, 6, 9, 12, 15, 18, 21, 24, 27, 30)
+  res <- generate_queue(x=test0_data, 
+  	instrument='FUSION_1', 
+	how.often=2, 
+	how.many=1, 
+	multiple = 1, 
+	project=1000)
+
+
+  expect_true(sum(which(res[,3] == "F8") == ground_trues) == 10)
+})
 
   
