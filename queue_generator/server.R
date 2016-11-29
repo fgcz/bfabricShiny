@@ -197,7 +197,9 @@ generate_queue <- function(x, foldername='',
   if (method == 'default'){
   	res.2 <- .generate_template_base(x=res.1, how.often, how.many, hplc)
   }else if(method == 'random'){
+    res.2 <- .generate_template_random(x=res.1, how.often, how.many, hplc)
   }else if(method == 'blockrandom'){
+    res.2 <- .generate_template_random_block(x=res.1, how.often, how.many, hplc)
   }else{
 	# testing
  	res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
