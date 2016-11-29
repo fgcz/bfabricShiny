@@ -69,11 +69,11 @@ block_randomizer <- function(x){
 } 
 
 #helper function 2
-.generate_template_random_multiple <- function(res, how.often = 2, how.many = 1, hplc = ""){
-  n <- nrow(res)
-  repeats <- length(unique(res$Condition))
-  cond <- max(table(res$Condition))
-  res <- block_randomizer(res)
+.generate_template_random_block <- function(x, how.often = 2, how.many = 1, hplc = ""){
+  n <- nrow(x)
+  repeats <- length(unique(x$Condition))
+  cond <- max(table(x$Condition))
+  res <- block_randomizer(x)
   condition.vector <- as.vector(replicate(repeats, 1:cond))
   blockgroupindex <- which(colnames(res) == "Condition")[1]
   res <- InsertFetuin(res, blockgroupindex, cond)
@@ -100,6 +100,27 @@ block_randomizer <- function(x){
   res$Condition[is.na(res$Condition)] <- "Fetuin"
 # TODO(cp): find the bug
   #res <- res[-which(res$extract.name == "tobedeleted"),]  
+  res
+}
+
+.generate_template_random <- function(x, how.often = 2, how.many = 1, multiple = 2){
+  n <- nrow(x)
+  random.index <- sample(1:n)
+  res <- x[order(random.index),]
+  nano.pos <- paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = "") #for nano easy position
+  res["Position"] <- nano.pos #attache rack position 
+  res <- res[rep(seq_len(nrow(res)), each = multiple),1:4] #each or times as argument for replication?
+  m <- nrow(res)
+  blocks <- rep(1:((m/how.often)+1), each = how.often)[1:m] #generates an index among which the dataset will be extended
+  #m.pos <- paste(rep(1, times = n)), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = ","), sep = ":") #for M-Class position
+  res["blocks"] <- blocks #attache the index to the data
+  groupindex <- which(colnames(res) == "blocks")[1] #fetch the index of the column containing the block information
+  rowsneeded <- how.often + how.many #define by how many row each block will be extended
+  res <- InsertFetuin(res, groupindex, rowsneeded) #extend the sample list by empty rows
+  res[sapply(res, is.factor)] <- lapply(res[sapply(res, is.factor)], as.character) #convert all Factors to characters
+  res$Position[is.na(res$Position)] <- "F8"
+  res$extract.name[is.na(res$extract.name)] <- "Fetuin_400amol"
+  res$Condition[is.na(res$Condition)] <- "Fetuin"
   res
 }
 
@@ -133,6 +154,9 @@ block_randomizer <- function(x){
   
   res
 }
+
+
+
 
 .generate_folder_name <- function(foldername, area = "Proteomics", instrument, username = "bfabricusername",   res){
   n <- nrow(res)
