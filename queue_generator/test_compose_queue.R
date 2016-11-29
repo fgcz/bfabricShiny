@@ -27,6 +27,7 @@ test_that("test input format 2 injections", {
 	multiple = 1, 
 	project=1000)
 
+  print(res)
 
   expect_true(sum(which(res[,3] == "F8") == ground_trues) == 10)
 })

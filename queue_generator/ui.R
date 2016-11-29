@@ -12,7 +12,7 @@ shinyUI(fluidPage(
 
   fluidPage(
   # Application title
-  titlePanel("FGCZ MS Queue Generator"),
+  titlePanel("FGCZ MS Queue Generator v3"),
   fluidRow(
     column(2, htmlOutput("project")),
     
@@ -26,7 +26,8 @@ shinyUI(fluidPage(
  fluidRow(
   
     column(3, htmlOutput("howoften")),
-    column(3, htmlOutput("howmany"))
+    column(3, htmlOutput("howmany")),
+    column(3, htmlOutput("method"))
   ),
  
     # Show a plot of the generated distribution

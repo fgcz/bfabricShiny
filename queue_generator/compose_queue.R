@@ -85,8 +85,8 @@ block_randomizer <- function(x){
   }
   res$extract.name[is.na(res$extract.name)] <- "Fetuin_400amol"
   res$Condition[is.na(res$Condition)] <- "Fetuin"
-#  res <- res[-which(res$extract.name == "tobedeleted"),]  
-    res
+  #res <- res[-which(res$extract.name == "tobedeleted"),]  
+  res
 }
 
 .generate_template_base <- function(data, how.often = 2, how.many = 1){
@@ -146,17 +146,23 @@ generate_queue <- function(x, foldername='',
 	area='Proteomics', 
 	instrument='FUSION_1', 
 	username='cpanse', 
-	how.often=2, how.many=1, multiple = 1, hplc = "easylc"){
+	how.often=2, how.many=1, multiple = 1, hplc = "easylc",
+	method='default'){
 
-#  if (!'Condition' %in% names(x)){
+  if (!'Condition' %in% names(x)){
 	  x$Condition <- "C"
-#  }
+  }
 	
   res.1 <- .format_input_data(x, multiple, hplc)
+	
 
+  #if (input$method == 'default'){
+  	#res.2 <- .generate_template_base(res=res.1, how.often, how.many, hplc)
+  	res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
+  #}else{
+  #	res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
+  #}
 
-  #save(res.1, file='/tmp/R.RData')
-  res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
   res.3 <- .generate_folder_name(foldername=foldername, area=area, instrument=instrument, username=username, res=res.2)
   res.4 <- .generate_name(res=res.2)
 
