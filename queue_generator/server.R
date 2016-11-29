@@ -98,6 +98,7 @@ block_randomizer <- function(x){
   }
   res$extract.name[is.na(res$extract.name)] <- "Fetuin_400amol"
   res$Condition[is.na(res$Condition)] <- "Fetuin"
+# TODO(cp): find the bug
   #res <- res[-which(res$extract.name == "tobedeleted"),]  
   res
 }
@@ -171,7 +172,10 @@ generate_queue <- function(x, foldername='',
 
   if (method == 'default'){
   	res.2 <- .generate_template_base(x=res.1, how.often, how.many, hplc)
+  }else if(method == 'random'){
+  }else if(method == 'blockrandom'){
   }else{
+	# testing
  	res.2 <- .generate_template_random_multiple(res=res.1, how.often, how.many, hplc)
   }
 
@@ -351,14 +355,6 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   #  res <- getExtracts()
   #  res[, "instrument"] <- input$instrument
   #  idx <- res$extract.name %in% input$extract
-  #  generate_queue(data=res[idx, ], area = input$area,
-  #                 foldername = "",
-  #                 projectid=input$project,
-  #                 username = input$login,
-  #                 how.often = as.integer(input$howoften),
-  #                 how.many = as.integer(input$howmany),
-  #                 instrument = input$instrument)
-  #})
 
   getBfabricContent <- reactive({
 
