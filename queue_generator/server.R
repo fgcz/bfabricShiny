@@ -103,7 +103,7 @@ block_randomizer <- function(x){
   res
 }
 
-.generate_template_random <- function(x, how.often = 2, how.many = 1, multiple = 2){
+.generate_template_random <- function(x, how.often = 2, how.many = 1, multiple = 2, hplc =""){
   n <- nrow(x)
   random.index <- sample(1:n)
   res <- x[order(random.index),]
