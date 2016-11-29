@@ -11,6 +11,7 @@ library(httr)
 
 source('compose_queue.R')
 
+
 ##
 shinyServer(function(input, output, session) {
 
@@ -183,10 +184,13 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
 
     res <- getExtracts()
    # if (nrow(res)>0){
+
     	res[, "instrument"] <- input$instrument
+
     	idx <- res$extract.name %in% input$extract
 
-    	rv <- generate_queue(x=res[idx, ], area = input$area,
+    	rv <- generate_queue(x = res[idx, ],
+		   area = input$area,
                    foldername = "",
                    projectid=input$project,
                    username = input$login,
@@ -194,7 +198,9 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                    how.many = as.integer(input$howmany),
                    instrument = input$instrument)
 
-    	cbind(rv, extract.id=res[idx,'extract.id'])
+    	cbind(rv, extract.id = res[idx, 'extract.id'])
+
+
     #}else{
     #        return NULL
     #}
