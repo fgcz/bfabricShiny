@@ -1,45 +1,40 @@
-#pseudo code
+#On generating MS instrument queue @ FGCZ
+```{r}
+library(bfabricShiny)
+
+easylc <- list(name='easylc', clean='F6', standard='F8')
+waters <- list(name='waters', clean='1:F,6', standard='1:F,8')
+eksigent <- list(name='eksigent', clean='1F06', standard='1F08')
+
+test_data()
+```
+
 
 ```{r}
-#R
-
-
-#test data
-  test_data <- function(){
-    extract.name <- c("Sample_1", "Sample_2", "Sample_3", "Sample_4", "Sample_5", "Sample_6", "Sample_7", "Sample_8", "Sample_9", "Sample_10", "Sample_11", "Sample_12", "Sample_13", "Sample_14", "Sample_15", "Sample_16", "Sample_17", "Sample_18", "Sample_19", "Sample_20" )
-    extract.id <- c(1:20)
-    Condition <- c("Control", "Control", "Control", "Control", "Ampicillin", "Ampicillin", "Ampicillin", "Ampicillin", "Kanamycin", "Kanamycin", "Kanamycin", "Kanamycin", "Less", "Less", "Less", "More", "More", "More", "More", "More")
-    data.frame(extract.name, extract.id, Condition)
-  }
-
-
-push_back <- function(T, r){rbind(T,r)}
-
-compose_queue <- function(x, 
-	nfetuin=0, mfetuin=0, 
-	nclean=0, mclean=0, 
-	multiple=1, 
-	hplc_type='default'){
-
-
-	S <- x[rep(nrow(x), multiple), ]
-
-	
-	# iterate over the sample list
-	for(i in nrow(S){
-		res <- push_back(res,SS[i,])
-	}
-
-}
+res <- bfabricShiny:::.format_input_data(x=test_data(), multiple = 1, hplc = easylc)
 ```
 
 # use cases
 
 ## use case 1 - default 
 
+```{r}
+res.default <- bfabricShiny:::.generate_template_base(res)
+
+bfabricShiny:::.insert_qc_samples(res.default, how.often = 5, how.many = 1, hplc = easylc)
+```
+
 ## use case 2 - randomized queue
+```{r}
+res.random <- bfabricShiny:::.generate_template_random(res)
+bfabricShiny:::.insert_qc_samples(res.random, how.often = 5, how.many = 1, hplc = easylc)
+```
 
 ## use case 3 - block randomized queue
+```{r}
+res.random.block <- bfabricShiny:::.generate_template_random_block(res)
+bfabricShiny:::.insert_qc_samples(res.random.block, how.often = 5, how.many = 1, hplc = easylc)
+```
 
 ## use case 4 - multiple injection
 

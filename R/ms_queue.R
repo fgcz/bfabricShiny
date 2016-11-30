@@ -8,15 +8,16 @@ test_data <- function(){
 
 
 #Format data for multiple injections and HPLC type
-.format_input_data <- function(x, multiple = 2, hplc = ""){
+.format_input_data <- function(x, multiple = 2, hplc){
   n <- nrow(x)
   res <- x
-  if (hplc == "eksigent") {
+  
+  if (hplc$name == "eksigent") {
     pos <- (paste(rep(2, times = n), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(sprintf("%02d", c(1:8)), times = 8)[1:n], sep = ""), sep = "")) #generates plate position in eksigent format for a 48 position plate (A1-F8)
-  } else if (hplc == "waters") {
+  } else if (hplc$name == "waters") {
     pos <- paste(rep(1, times = n), paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = ","), sep = ":") #generates plate position in waters format for a 48 position plate (A1-F8)
     pos <- paste0('"', pos, '"')
-  } else if (hplc == "easylc"){
+  } else if (hplc$name == "easylc"){
     pos <- paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = "") #generates plate position in thermo easyLC format for a 48 position plate (A1-F8)
   } else {
     pos <- paste(rep(LETTERS[1:6], each = 8)[1:n], rep(1:8, times = 8)[1:n], sep = "") #generates plate position in thermo easyLC format for a 48 position plate (A1-F8)
@@ -104,20 +105,23 @@ block_randomizer <- function(x){
 #insert Fetuins and cleans into the generated queue
 #TODO: remove Fetuins and cleans after the last sample and add a "startup and a finish sequence"
 
-.insert_qc_samples <- function(x, how.often, how.many, hplc = "", equal= "yes"){
+.insert_qc_samples <- function(x, how.often, how.many, hplc, equal= "yes"){
   n <- nrow(x)
   j <- floor(n/how.often)
   v <- how.often*(1:j)
-  if (hplc == "easylc"){
-    initialf <- as.character("F8")
-    initialc <- as.character("F6")
-  } else if ( hplc == "waters"){
-    initialf <- '"1:F,8"'
-    initialc <- '"1:F,6"'
-  } else {
-    initialf <- "1F08"
-    initialc <- "1F06"
-  }
+#  if (hplc$name == "easylc"){
+#    initialf <- as.character("F8")
+#    initialc <- as.character("F6")
+#  } else if ( hplc == "waters"){
+#    initialf <- '"1:F,8"'
+#    initialc <- '"1:F,6"'
+#  } else {
+#    initialf <- "1F08"
+#    initialc <- "1F06"
+#  }
+  initialf <- hplc$standard
+  initialc <- hplc$clean
+  
   a <- j*how.many
   if(equal == "yes"){
     b <- j* how.many
@@ -142,3 +146,8 @@ block_randomizer <- function(x){
   res$idx <-NULL
   res
 }  
+
+
+generate_queue <- function(){
+  
+}
