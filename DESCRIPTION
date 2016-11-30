@@ -1,0 +1,16 @@
+Package: bfabricShiny
+Type: Package
+Title: Performs shiny application on bfabric data
+Version: 0.0.1
+Author: Christian Trachsel
+Maintainer:  Christian Trachsel<cp@fgcz.ethz.ch>
+Description: Analysing and LFQ and SRM experiments in service mode.
+  Data preprocessing and visualization.
+Imports:
+  methods,
+  rmarkdown
+License: GPL
+LazyData: TRUE
+URL: https://github.com/cpanse/bfabric_shiny
+BugReports: https://github.com/cpanse/bfabric_shiny/issues
+RoxygenNote: 5.0.1
