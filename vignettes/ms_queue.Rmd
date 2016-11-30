@@ -1,6 +1,8 @@
-#On generating MS instrument queue @ FGCZ
+#On generating MS instrument queue @ 
+
 ```{r}
 library(bfabricShiny)
+library(knitr)
 
 easylc <- list(name='easylc', clean='F6', standard='F8')
 waters <- list(name='waters', clean='1:F,6', standard='1:F,8')
@@ -9,31 +11,28 @@ eksigent <- list(name='eksigent', clean='1F06', standard='1F08')
 test_data()
 ```
 
-
-```{r}
-res <- bfabricShiny:::.format_input_data(x=test_data(), multiple = 1, hplc = easylc)
-```
-
 # use cases
 
 ## use case 1 - default 
 
 ```{r}
-res.default <- bfabricShiny:::.generate_template_base(res)
+#res.default <- bfabricShiny:::.generate_template_base(res)
 
-bfabricShiny:::.insert_qc_samples(res.default, how.often = 5, how.many = 1, hplc = easylc)
+#bfabricShiny:::.insert_qc_samples(res.default, how.often = 5, how.many = 1, hplc = easylc)
+msq <- generate_queue(x=test_data(), hplc = easylc, pathprefix="D:/Data2San", pathprefixsep="/")
+kable(msq, escape = TRUE)
 ```
 
 ## use case 2 - randomized queue
 ```{r}
-res.random <- bfabricShiny:::.generate_template_random(res)
-bfabricShiny:::.insert_qc_samples(res.random, how.often = 5, how.many = 1, hplc = easylc)
+msq <- generate_queue(x=test_data(), hplc = easylc, method='random', pathprefix="D:/Data2San", pathprefixsep="/")
+kable(msq, escape = TRUE)
 ```
 
 ## use case 3 - block randomized queue
 ```{r}
-res.random.block <- bfabricShiny:::.generate_template_random_block(res)
-bfabricShiny:::.insert_qc_samples(res.random.block, how.often = 5, how.many = 1, hplc = easylc)
+msq<-generate_queue(x=test_data(), hplc = easylc, method='blockrandom', pathprefix="D:/Data2San", pathprefixsep="/")
+kable(msq, escape = TRUE)
 ```
 
 ## use case 4 - multiple injection

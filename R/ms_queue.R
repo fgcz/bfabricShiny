@@ -147,7 +147,78 @@ block_randomizer <- function(x){
   res
 }  
 
-
-generate_queue <- function(){
-  
+.generate_folder_name <- function(n, foldername, area = "Proteomics", instrument = "FUSION_1", username = "bfabricusername", pathprefixsep='/'){
+  rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
+  out <- paste(username, rundate, sep = "_")
+  if (foldername != ''){
+    out <- paste(out, gsub('([[:punct:]])|\\s+', '_', foldername), sep = "_") #concatenate user name and folder name
+  }
+  out <- paste(area, instrument, out, sep = pathprefixsep) #concatenate instrument path strucutre with user name and folder name
+  out <- rep(out, times = n)
+  out
 }
+
+.generate_name <- function(x){
+  n <- nrow(x)
+  rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
+  injection.index <- sprintf("%02d", c(1:n))
+  injection.name <- paste(paste(paste(rundate, injection.index, sep = "_"), x$extract.id, sep = "_"), x$extract.name, sep = "_")
+  injection.name
+}
+
+# main method for queue generation
+generate_queue <- function(x, 
+                           foldername='', 
+                           projectid=1000, 
+                           area='Proteomics', 
+                           instrument='FUSION_1', 
+                           username='cpanse', 
+                           how.often=2, 
+                           how.many=1, 
+                           multiple = 1, 
+                           hplc = list(name='easylc', clean='F6', standard='F8'),
+                           method='default',
+                           pathprefix="D:\\Data2San", 
+                           pathprefixsep="\\"){
+  
+  if (!'Condition' %in% names(x)){
+    x$Condition <- "A"
+  }
+  
+  
+  res <- .format_input_data(x, multiple = 1, hplc = hplc)
+  
+  
+  if (method == 'random'){
+    
+    res <- .generate_template_random(res)
+  
+  }else if (method == 'blockrandom'){
+  
+    res <- .generate_template_random_block(res)
+  
+  }else{
+    
+    res <- .generate_template_base(res)
+  
+  }
+  
+  res <- .insert_qc_samples(res,  how.often = how.often, how.many = how.many, hplc = hplc)
+  
+  # generate folder name acc. FGCZ naming convention
+  res.folder <- .generate_folder_name(n=nrow(res),
+                                      foldername = foldername, 
+                                      area = area, 
+                                      instrument = instrument, 
+                                      username = username,
+                                      pathprefixsep = pathprefixsep)
+  
+  res.filename <- .generate_name(x=res)
+  
+  cbind('File Name' = res.filename,
+        'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
+        'Position' = res$Position,
+        'Inj Vol' = 2
+  )
+}
+
