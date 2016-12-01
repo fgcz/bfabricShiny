@@ -12,7 +12,7 @@ shinyUI(fluidPage(
 
   fluidPage(
   # Application title
-  titlePanel("FGCZ MS Queue Generator v3"),
+  titlePanel(paste("FGCZ MS Queue Generator", packageVersion('bfabricShiny'), sep = '--')),
   fluidRow(
     column(2, htmlOutput("project")),
     
