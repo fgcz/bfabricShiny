@@ -22,7 +22,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                        FUSION_1='easylc',
                        FUSION_2='easylc',
                        QEXACTIVEHF_1='waters',
-                       QEXACTIVEHF_2='waters')})
+                       QEXACTIVEHF_2='waters',
+                       IMSTOF_1='TOFWERK')})
 	
   getInstrument <- reactive({list(VELOS_1='Xcalibur',
                        VELOS_2='Xcalibur',
@@ -35,7 +36,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                        FUSION_1='Xcalibur',
                        FUSION_2='Xcalibur',
                        QEXACTIVEHF_1='Xcalibur',
-                       QEXACTIVEHF_2='Xcalibur')})
+                       QEXACTIVEHF_2='Xcalibur',
+                       IMSTOF_1='TOFWERK')})
   
   
   getInstrumentSuffix <- reactive({list(VELOS_1='RAW',
@@ -49,7 +51,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                                   FUSION_1='raw',
                                   FUSION_2='raw',
                                   QEXACTIVEHF_1='raw',
-                                  QEXACTIVEHF_2='raw')})
+                                  QEXACTIVEHF_2='raw',
+                                  IMSTOF_1='h5')})
   
   output$area <- renderUI(({
     res.area <- c("Proteomics", "Metabolomics")
@@ -146,7 +149,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
     content = function(file) {
       write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
       res <- getBfabricContent()
-      res <- res[,1:4]
+      res <- res[,c(1,3:5)]
       write.table(res, sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE, eol='\r\n')
 
     }
@@ -156,7 +159,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
 
 	S <- getBfabricContent()
 	if (nrow(S) > 0){
-      		rv <- POST(paste("http://localhost:5000/add_dataset", input$project, sep='/'), body = toJSON(getBfabricContent()))
+      		rv <- POST(paste("http://localhost:5000/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
 
 		 observe({
        		session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 

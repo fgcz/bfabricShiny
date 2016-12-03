@@ -216,6 +216,7 @@ generate_queue <- function(x,
   res.filename <- .generate_name(x=res)
   
   cbind('File Name' = res.filename,
+        'Condition' = res$Condition,
         'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
         'Position' = res$Position,
         'Inj Vol' = 2
