@@ -2,8 +2,8 @@
 test_data <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
   extract.id <- c(1:20)
-  Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
-  data.frame(extract.name, extract.id, Condition)
+  extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
+  data.frame(extract.name, extract.id, extract.Condition)
 }
 
 
@@ -57,11 +57,11 @@ equilize_groups <- function(df, group, rowsneeded)
 
 block_randomizer <- function(x){
   df <- NULL
-  v <- unique(x$Condition)
+  v <- unique(x$extract.Condition)
   n <-length(v)
   for(i in 1:n){
-    sub <- x[which(x$Condition == v[i]),]
-    bind <- sub[order(rank(sample(1:nrow(x[which(x$Condition == v[i]),])))),]
+    sub <- x[which(x$extract.Condition == v[i]),]
+    bind <- sub[order(rank(sample(1:nrow(x[which(x$extract.Condition == v[i]),])))),]
     df <- rbind(df, bind)  
   }
   df  
@@ -69,11 +69,11 @@ block_randomizer <- function(x){
 
 .generate_template_random_block <- function(x){
   n <- nrow(x)
-  repeats <- length(unique(x$Condition))
-  cond <- max(table(x$Condition))
+  repeats <- length(unique(x$extract.Condition))
+  cond <- max(table(x$extract.Condition))
   res <- block_randomizer(x)
   condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
-  blockgroupindex <- which(colnames(res) == "Condition")[1]
+  blockgroupindex <- which(colnames(res) == "extract.Condition")[1]
   res <- equilize_groups(res, blockgroupindex, cond)
   res["blockrandom"] <- condition.vector
   res <- res[order(rank(res$blockrandom)),]
@@ -130,8 +130,8 @@ block_randomizer <- function(x){
     b <- ceiling((j*how.many)/2)  
     c <- 1
   }
-  fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), Condition = rep("Fetuin",a), Position = rep(initialf,a))
-  clean <- data.frame(extract.name = rep("Clean",b), extract.id = rep(as.integer(NA),b), Condition = rep("Clean",b), Position = rep(initialc,b))
+  fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), extract.Condition = rep("Fetuin",a), Position = rep(initialf,a))
+  clean <- data.frame(extract.name = rep("Clean",b), extract.id = rep(as.integer(NA),b), extract.Condition = rep("Clean",b), Position = rep(initialc,b))
   res <- rbind(x, fet, clean)
   indf <- v
   odd <- c(FALSE, TRUE)
@@ -181,8 +181,8 @@ generate_queue <- function(x,
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
   
-  if (!'Condition' %in% names(x)){
-    x$Condition <- "A"
+  if (!'extract.Condition' %in% names(x)){
+    x$extract.Condition <- "A"
   }
   
   
@@ -216,7 +216,7 @@ generate_queue <- function(x,
   res.filename <- .generate_name(x=res)
   
   cbind('File Name' = res.filename,
-        'Condition' = res$Condition,
+        'Condition' = res$extract.Condition,
         'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
         'Position' = res$Position,
         'Inj Vol' = 2

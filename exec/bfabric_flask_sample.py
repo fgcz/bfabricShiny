@@ -60,9 +60,11 @@ def wsdl_extract(sampleid):
     try:
         for x in extracts:
 
-
-
-            res.append({'sampleid': sampleid, 'name': slugify(x.name), 'id': x._id})
+            try:
+                res.append({'sampleid': sampleid, 'name': slugify(x.name), 'id': x._id, 'Condition': x.condition})
+                print "condition"
+            except:
+                res.append({'sampleid': sampleid, 'name': slugify(x.name), 'id': x._id})
 
             if inlcude_child_extracts:
                 for (k, v) in dfs__(x._id).items():

@@ -125,8 +125,9 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                           }))
     
    res[, "project.id"]  <- input$project
-   
-   res[, "Condition"] <- "A"
+   if (!"extract.Condition" %in% names(res)){
+    res[, "extract.Condition"] <- "A"
+   }
    res
   })
   
@@ -179,7 +180,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
 
     	idx <- res$extract.name %in% input$extract
 
-    	rv <- generate_queue(x = res[idx, c("extract.name", "extract.id", "Condition")],
+    	rv <- generate_queue(x = res[idx, c("extract.name", "extract.id", "extract.Condition")],
 		   method=input$method,
 		   area = input$area,
                    foldername = "",
