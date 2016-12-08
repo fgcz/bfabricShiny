@@ -189,7 +189,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                    how.many = as.integer(input$howmany),
                    instrument = input$instrument)
 
-    	cbind(rv, extract.id = res[idx, 'extract.id'])
+    	#cbind(rv, extract.id = res[idx, 'extract.id'])
   })
   
   

@@ -219,7 +219,9 @@ generate_queue <- function(x,
         'Condition' = res$extract.Condition,
         'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
         'Position' = res$Position,
-        'Inj Vol' = 2
+        'Inj Vol' = 2,
+        'extract.id' = res$extract.id
+        #'sample.id' = res$extract.sampleid
   )
 }
 
