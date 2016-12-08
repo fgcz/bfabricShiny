@@ -1,7 +1,7 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.10
+Version: 0.0.11
 Author: Christian Trachsel
 Maintainer:  Christian Trachsel<cp@fgcz.ethz.ch>
 Description: Analysing and LFQ and SRM experiments in service mode.
