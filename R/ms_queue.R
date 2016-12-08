@@ -163,7 +163,29 @@ block_randomizer <- function(x){
   injection.name
 }
 
-# main method for queue generation
+
+
+#' Title
+#'
+#' @param x 
+#' @param foldername 
+#' @param projectid 
+#' @param area 
+#' @param instrument 
+#' @param username 
+#' @param how.often 
+#' @param how.many 
+#' @param multiple 
+#' @param hplc 
+#' @param method 
+#' @param pathprefix 
+#' @param pathprefixsep 
+#'
+#' @return a ms instrument queue configuration table
+#' @export
+#'
+#' @examples
+#' S <- as.data.frame(fromJSON("http://localhost:5000/extract/1000"))
 generate_queue <- function(x, 
                            foldername='', 
                            projectid=1000, 
