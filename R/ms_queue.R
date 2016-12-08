@@ -105,29 +105,26 @@ block_randomizer <- function(x){
 #insert Fetuins and cleans into the generated queue
 #TODO: remove Fetuins and cleans after the last sample and add a "startup and a finish sequence"
 
-.insert_qc_samples <- function(x, how.often, how.many, hplc, equal= "yes"){
+.insert_qc_samples <- function(x, how.often=1, how.many=1, hplc=NULL, equal= TRUE){
+
+  if (is.null(hplc)){
+     hplc <- list(name='easylc', clean='F6', standard='F8')
+  }
+
   n <- nrow(x)
-  j <- floor(n/how.often)
-  v <- how.often*(1:j)
-#  if (hplc$name == "easylc"){
-#    initialf <- as.character("F8")
-#    initialc <- as.character("F6")
-#  } else if ( hplc == "waters"){
-#    initialf <- '"1:F,8"'
-#    initialc <- '"1:F,6"'
-#  } else {
-#    initialf <- "1F08"
-#    initialc <- "1F06"
-#  }
+  j <- floor(n / how.often)
+  v <- how.often * (1:j)
+
   initialf <- hplc$standard
   initialc <- hplc$clean
   
-  a <- j*how.many
-  if(equal == "yes"){
-    b <- j* how.many
+  a <- j * how.many
+
+  if(equal){
+    b <- j * how.many
     c <- how.many
   } else {
-    b <- ceiling((j*how.many)/2)  
+    b <- ceiling((j * how.many) / 2)  
     c <- 1
   }
   fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), extract.Condition = rep("Fetuin",a), Position = rep(initialf,a))
@@ -135,7 +132,7 @@ block_randomizer <- function(x){
   res <- rbind(x, fet, clean)
   indf <- v
   odd <- c(FALSE, TRUE)
-  if (equal =="yes"){
+  if (equal){
     indc <-v
   } else{
     indc <- v[!odd]
@@ -143,7 +140,7 @@ block_randomizer <- function(x){
   id  <- c(seq_along(x$extract.name), rep(indf+0.75, each = how.many) , rep(indc+0.25, each = c))
   res["idx"] <- id
   res <- res[order(res$idx),]
-  res$idx <-NULL
+  res$idx <- NULL
   res
 }  
 
