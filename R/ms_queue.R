@@ -128,7 +128,11 @@ block_randomizer <- function(x){
     c <- 1
   }
   fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), extract.Condition = rep("Fetuin",a), Position = rep(initialf,a))
+  fet[, names(res)[!names(res) %in% names(fet)]] <- NA
+  
   clean <- data.frame(extract.name = rep("Clean",b), extract.id = rep(as.integer(NA),b), extract.Condition = rep("Clean",b), Position = rep(initialc,b))
+  clean[, names(res)[!names(res) %in% names(clean)]] <- NA
+  
   res <- rbind(x, fet, clean)
   indf <- v
   odd <- c(FALSE, TRUE)
@@ -165,7 +169,7 @@ block_randomizer <- function(x){
 
 
 
-#' Title
+#' MS instrument queue generation
 #'
 #' @param x 
 #' @param foldername 
@@ -181,11 +185,14 @@ block_randomizer <- function(x){
 #' @param pathprefix 
 #' @param pathprefixsep 
 #'
-#' @return a ms instrument queue configuration table
-#' @export
-#'
 #' @examples
+#' 
+#' generate_queue(bfabricShiny:::test_data())
+#' 
 #' S <- as.data.frame(fromJSON("http://localhost:5000/extract/1000"))
+#' generate_queue(S)
+#'
+#' @return a table which contains a MS instrument queue configuration.
 generate_queue <- function(x, 
                            foldername='', 
                            projectid=1000, 
@@ -195,10 +202,14 @@ generate_queue <- function(x,
                            how.often=2, 
                            how.many=1, 
                            multiple = 1, 
-                           hplc = list(name='easylc', clean='F6', standard='F8'),
+                           hplc = NULL, 
                            method='default',
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
+  
+  if (is.null(hplc)){
+    hplc <- list(name='easylc', clean='F6', standard='F8')
+  }
   
   if (!'extract.Condition' %in% names(x)){
     x$extract.Condition <- "A"
