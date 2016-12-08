@@ -106,7 +106,7 @@ block_randomizer <- function(x){
 #TODO: remove Fetuins and cleans after the last sample and add a "startup and a finish sequence"
 
 .insert_qc_samples <- function(x, how.often=1, how.many=1, hplc=NULL, equal= TRUE){
-  res <- x
+
   if (is.null(hplc)){
      hplc <- list(name='easylc', clean='F6', standard='F8')
   }
@@ -128,11 +128,19 @@ block_randomizer <- function(x){
     c <- 1
   }
   
-  fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), extract.Condition = rep("Fetuin",a), Position = rep(initialf,a))
-  fet[, names(res)[!names(res) %in% names(fet)]] <- NA
+  fet <- data.frame(extract.name = rep("Fetuin_400amol" ,a), 
+                    extract.id = rep(as.integer(NA),a), 
+                    extract.Condition = rep("Fetuin",a), 
+                    Position = rep(initialf,a))
   
-  clean <- data.frame(extract.name = rep("Clean",b), extract.id = rep(as.integer(NA),b), extract.Condition = rep("Clean",b), Position = rep(initialc,b))
-  clean[, names(res)[!names(res) %in% names(clean)]] <- NA
+  fet[, names(x)[!names(x) %in% names(fet)]] <- NA
+  
+  clean <- data.frame(extract.name = rep("Clean",b), 
+                      extract.id = rep(as.integer(NA),b), 
+                      extract.Condition = rep("Clean",b), 
+                      Position = rep(initialc,b))
+  
+  clean[, names(x)[!names(x) %in% names(clean)]] <- NA
   
   res <- rbind(x, fet, clean)
   indf <- v
@@ -142,7 +150,7 @@ block_randomizer <- function(x){
   } else{
     indc <- v[!odd]
   }
-  id  <- c(seq_along(x$extract.name), rep(indf+0.75, each = how.many) , rep(indc+0.25, each = c))
+  id  <- c(seq_along(x$extract.name), rep(indf + 0.75, each = how.many) , rep(indc + 0.25, each = c))
   res["idx"] <- id
   res <- res[order(res$idx),]
   res$idx <- NULL
