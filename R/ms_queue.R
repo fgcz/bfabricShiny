@@ -106,7 +106,7 @@ block_randomizer <- function(x){
 #TODO: remove Fetuins and cleans after the last sample and add a "startup and a finish sequence"
 
 .insert_qc_samples <- function(x, how.often=1, how.many=1, hplc=NULL, equal= TRUE){
-
+  res <- x
   if (is.null(hplc)){
      hplc <- list(name='easylc', clean='F6', standard='F8')
   }
@@ -127,6 +127,7 @@ block_randomizer <- function(x){
     b <- ceiling((j * how.many) / 2)  
     c <- 1
   }
+  
   fet <- data.frame(extract.name = rep("Fetuin_400amol",a), extract.id = rep(as.integer(NA),a), extract.Condition = rep("Fetuin",a), Position = rep(initialf,a))
   fet[, names(res)[!names(res) %in% names(fet)]] <- NA
   
