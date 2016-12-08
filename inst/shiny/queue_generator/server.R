@@ -96,7 +96,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   
   output$login <- renderUI({
-    if ( input$project %in% 1000:2500){
+    print (input$project)
+    if (!is.na(input$project)){
       selectInput('login', 'Login:', as.character(getLogin()), multiple = FALSE)
     }else{
       selectInput('login', 'Login:', NULL)
@@ -105,7 +106,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   
   output$sample <- renderUI({
-    if ( input$project %in% 1000:2500){
+    print (input$project)
+    if (!is.na(input$project)){
       res <- getSample()
       selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
     }else{
@@ -116,7 +118,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
 
   getExtracts <- reactive({
     res <- NULL
-    if ( input$project %in% 1000:2500){
+    if (!is.null(input$project) && !is.na(input$project)){
       extractURL <- paste("http://localhost:5000/extract/", input$project, sep='')
       message (extractURL)
       res <- as.data.frame(fromJSON(extractURL ))
@@ -124,30 +126,15 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
       if (!"extract.Condition" %in% names(res)){
         res[, "extract.Condition"] <- "A"
       }
+      res <- res[order(res$extract.id, decreasing = TRUE),]
     }
-     #sample.id <- sapply(strsplit(input$sample, split='-'), function(x){x[1]})
-    #res <- do.call('rbind', 
-    #               lapply(sample.id, 
-    #                      function(sampleid){
-    #                        as.data.frame(fromJSON(paste("http://localhost:5000/sampleid/", sampleid, sep='')))
-    #                        #rv$project.id <- input$project
-    #                        #rv
-    #                      }))
-    
-  # res[, "project.id"]  <- input$project
-   #if (!"extract.Condition" %in% names(res)){
-  #  res[, "extract.Condition"] <- "A"
-  # }
-    res[order(res$extract.id, decreasing = TRUE),]
+    res
   })
   
   output$extract <- renderUI({
-
-    if ( input$project %in% 1000:2500){
+    if (!is.na(input$project)){
       res <- getExtracts()
       selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
-      
-      
     }   else{
       selectInput('extract', 'Extract:', NULL)
      
