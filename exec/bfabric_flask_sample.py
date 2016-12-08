@@ -215,6 +215,37 @@ def get_extract(sampleid):
 
     return jsonify({'extract': res})
 
+@app.route('/extract/<int:projectid>', methods=['GET'])
+def get_all_extracts(projectid):
+    res = list()
+    extracts = bfapp.read_object(endpoint='extract', obj={'projectid': projectid})
+
+    for x in extracts:
+        obj = {'id': x._id, 'name': slugify(x.name)}
+
+        try:
+            obj['sampleid'] = x.sample['_id']
+        except:
+            obj['sampleid'] = None
+
+        try:
+            obj['Condition'] = x.condition
+        except:
+            obj['Condition'] = None
+
+        try:
+            obj['parentextract'] = map(lambda x: x._id, x.parentextract)
+        except:
+            obj['parentextract'] = None
+            
+        res.append(obj)
+
+    if len(res) == 0:
+        return jsonify({'error': 'no extract found.'})
+        # abort(404)
+
+    return jsonify({'extract': res})
+
 
 """
 # running in R

@@ -115,31 +115,42 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
 
   getExtracts <- reactive({
-    sample.id <- sapply(strsplit(input$sample, split='-'), function(x){x[1]})
-    res <- do.call('rbind', 
-                   lapply(sample.id, 
-                          function(sampleid){
-                            as.data.frame(fromJSON(paste("http://localhost:5000/sampleid/", sampleid, sep='')))
-                            #rv$project.id <- input$project
-                            #rv
-                          }))
+    res <- NULL
+    if ( input$project %in% 1000:2500){
+      extractURL <- paste("http://localhost:5000/extract/", input$project, sep='')
+      message (extractURL)
+      res <- as.data.frame(fromJSON(extractURL ))
+      res[, "project.id"] <- input$project
+      if (!"extract.Condition" %in% names(res)){
+        res[, "extract.Condition"] <- "A"
+      }
+    }
+     #sample.id <- sapply(strsplit(input$sample, split='-'), function(x){x[1]})
+    #res <- do.call('rbind', 
+    #               lapply(sample.id, 
+    #                      function(sampleid){
+    #                        as.data.frame(fromJSON(paste("http://localhost:5000/sampleid/", sampleid, sep='')))
+    #                        #rv$project.id <- input$project
+    #                        #rv
+    #                      }))
     
-   res[, "project.id"]  <- input$project
-   if (!"extract.Condition" %in% names(res)){
-    res[, "extract.Condition"] <- "A"
-   }
-   res
+  # res[, "project.id"]  <- input$project
+   #if (!"extract.Condition" %in% names(res)){
+  #  res[, "extract.Condition"] <- "A"
+  # }
+    res[order(res$extract.id, decreasing = TRUE),]
   })
   
   output$extract <- renderUI({
 
-    if (input$sample == "" || length(input$sample) == 0 || is.null(input$sample)){
-      selectInput('extract', 'Extract:', NULL)
-    }   else{
-      
+    if ( input$project %in% 1000:2500){
       res <- getExtracts()
       selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
-       
+      
+      
+    }   else{
+      selectInput('extract', 'Extract:', NULL)
+     
     }
   })
   
@@ -178,6 +189,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
 
     	res[, "instrument"] <- input$instrument
 
+    	# TODO(cp): check of extract names are unique
     	idx <- res$extract.name %in% input$extract
 
     	rv <- generate_queue(x = res[idx, c("extract.name", "extract.id", "extract.Condition")],
