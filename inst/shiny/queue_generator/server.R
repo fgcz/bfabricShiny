@@ -194,9 +194,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   
   output$table <- DT::renderDataTable(DT::datatable({
-  
-    # call Christian Trachsel's code here!
-   # print (input$extract)
+    print (input$extract)
     if (input$extract != "" && length(input$extract) > 0){
       getBfabricContent()
     }else{
