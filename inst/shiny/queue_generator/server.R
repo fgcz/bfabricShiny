@@ -61,7 +61,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   output$project <- renderUI({
     res.project <- c(NA, 1000, 1959, 2121)
-    numericInput('project', 'Project:', value = res.project,  min = 1000, max = 2500, width=100)
+    numericInput('project', 'Project:', value = 1000,  min = 1000, max = 2500, width=100)
   })
   
   output$howoften <- renderUI({
@@ -74,7 +74,6 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
     selectInput('howmany', 'How many?:', res.howmany, multiple = FALSE, selected = 1)
   })
   
-  
   output$instrument <- renderUI({
     res.instrument <- names(getInstrument())
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
@@ -86,54 +85,65 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   }))
   
   getSample <- reactive({
-    res <- as.data.frame(fromJSON(paste("http://localhost:5000/projectid/", input$project, sep='')))
-  })
-  
+    if (is.null(input$project)){
+      return (NULL)
+    }else{
+      sampleURL <- paste("http://localhost:5000/projectid/", 
+                         input$project, sep='')
+
+     
+      res <- as.data.frame(fromJSON(sampleURL))
+      message(paste('got', nrow(res), 'samples.'))
+      return (res)
+    }
+    })
   getLogin <- reactive({
-    res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", input$project, sep='')))
-    res$user
+    if (is.null(input$project)){
+      return (NULL)
+    }else{
+    res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", 
+                                        input$project, sep='')))
+    message(paste('got', nrow(res), 'users.'))
+    return (res$user)
+    }
   })
   
+  getExtracts <- reactive({
+    if (is.null(input$project)){
+      return (NULL)
+    }else{
+      extractURL <- paste("http://localhost:5000/extract/", input$project, sep='')
+      res <- as.data.frame(fromJSON(extractURL ))
+      message (paste('got', nrow(res), 'extracts from url', extractURL))
+      res[, "project.id"] <- input$project
+      if (!"extract.Condition" %in% names(res)){
+        res[, "extract.Condition"] <- "A" #res$sampleid
+      }
+      res <- res[order(res$extract.id, decreasing = TRUE),]
+    }
+    return (res)
+  })
   
+  output$sample <- renderUI({
+    res <- getSample()
+    if (is.null(res)){
+      selectInput('sample', 'Sample:', NULL)
+    }else{
+      res <- getSample()
+      selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
+    }
+  })
   output$login <- renderUI({
-    print (input$project)
-    if (!is.na(input$project)){
-      selectInput('login', 'Login:', as.character(getLogin()), multiple = FALSE)
+    res <- getLogin()
+    if (!is.null(res)){
+      selectInput('login', 'Login:', as.character(res), multiple = FALSE)
     }else{
       selectInput('login', 'Login:', NULL)
     }
   })
-  
-  
-  output$sample <- renderUI({
-    print (input$project)
-    if (!is.na(input$project)){
-      res <- getSample()
-      selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
-    }else{
-      selectInput('sample', 'Sample:', NULL)
-    }
-  })
-  
-
-  getExtracts <- reactive({
-    res <- NULL
-    if (!is.null(input$project) && !is.na(input$project)){
-      extractURL <- paste("http://localhost:5000/extract/", input$project, sep='')
-      message (extractURL)
-      res <- as.data.frame(fromJSON(extractURL ))
-      res[, "project.id"] <- input$project
-      if (!"extract.Condition" %in% names(res)){
-        res[, "extract.Condition"] <- "A"
-      }
-      res <- res[order(res$extract.id, decreasing = TRUE),]
-    }
-    res
-  })
-  
   output$extract <- renderUI({
-    if (!is.na(input$project)){
-      res <- getExtracts()
+    res <- getExtracts()
+    if (!is.null(res)){
       selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
     }   else{
       selectInput('extract', 'Extract:', NULL)
@@ -194,8 +204,9 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   
   output$table <- DT::renderDataTable(DT::datatable({
-    print (input$extract)
-    if (input$extract != "" && length(input$extract) > 0){
+    #print(paste("extract", input$extract, sep='='))
+
+      if (input$extract != "" && length(input$extract) > 1){
       getBfabricContent()
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))
