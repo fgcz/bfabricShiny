@@ -12,7 +12,7 @@ shinyUI(fluidPage(
 
   fluidPage(
   # Application title
-  titlePanel(paste("FGCZ MS Queue Generator", packageVersion('bfabricShiny'), sep = ' - version')),
+  titlePanel(paste("FGCZ MS Queue Generator", packageVersion('bfabricShiny'), sep = ' - version ')),
   fluidRow(
     column(2, htmlOutput("project")),
     
@@ -22,14 +22,29 @@ shinyUI(fluidPage(
   fluidRow(
     column(3, htmlOutput("area")),
     column(3, htmlOutput("instrument")),
-    column(3, htmlOutput("login"))),
- fluidRow(
-  
-    column(3, htmlOutput("howoften")),
-    column(3, htmlOutput("howmany")),
-    column(3, htmlOutput("method"))
-  ),
+    column(3, htmlOutput("folder")),
+    column(3, htmlOutput("login"))
+    ),
  
+  fluidRow(
+    column(3, htmlOutput("method")),
+    column(3, htmlOutput("qctype")),
+    column(3, htmlOutput("howoften")),
+    column(3, htmlOutput("howmany"))
+  ),
+
+  fluidRow(
+    column(3, htmlOutput("condition"))
+      ),
+  
+  fluidRow(
+    column(12, h3("The selections below are only used in combination with method. Ignore them if you use another queue generation method")) #code("the below selections are only used in combination with method "testing""))
+  ),
+  
+  fluidRow(
+    column(3, htmlOutput("testmethods")),
+    column(3, htmlOutput("replicates"))
+  ),
     # Show a plot of the generated distribution
     
       fluidRow(

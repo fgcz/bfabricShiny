@@ -23,7 +23,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                        FUSION_2='easylc',
                        QEXACTIVEHF_1='waters',
                        QEXACTIVEHF_2='waters',
-                       IMSTOF_1='TOFWERK')})
+                       IMSTOF_1='eksigent')})
 	
   getInstrument <- reactive({list(VELOS_1='Xcalibur',
                        VELOS_2='Xcalibur',
@@ -59,6 +59,25 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
     selectInput('area', 'Area:', res.area, multiple = FALSE, selected = res.area[1])
   }))
   
+  output$folder <- renderUI(({
+      textInput('folder', 'Data Folder Name:', "enter your folder name here ", width = NULL, placeholder = NULL)
+  }))
+  
+  output$qctype <- renderUI(({
+    res.qctype <- c("Fetuin only", "Fetuin and clean", "Fetuin and clean every second ")
+    selectInput('qctype', 'Type of sample QC:', res.qctype, multiple = FALSE, selected = res.qctype[1])
+  }))
+  
+  output$testmethods <- renderUI(({
+    res.testmethods <- 1:5
+    selectInput('testmethods', 'Number of methods to test:', res.testmethods, multiple = FALSE, selected = res.testmethods[1])
+  }))
+  
+  output$replicates <- renderUI(({
+    res.replicates <- 1:5
+    selectInput('replicates', 'Number of injections for each method:', res.replicates, multiple = FALSE, selected = res.replicates[1])
+  }))
+  
   output$project <- renderUI({
     res.project <- c(NA, 1000, 1959, 2121)
     numericInput('project', 'Project:', value = 1000,  min = 1000, max = 2500, width=100)
@@ -66,12 +85,12 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
   output$howoften <- renderUI({
     res.howoften <- 1:5
-    selectInput('howoften', 'How often?:', res.howoften, multiple = FALSE, selected = 2)
+    selectInput('howoften', 'Insert QC sample every:', res.howoften, multiple = FALSE, selected = res.howoften[2])
   })
   
   output$howmany <- renderUI({
     res.howmany <- 1:3
-    selectInput('howmany', 'How many?:', res.howmany, multiple = FALSE, selected = 1)
+    selectInput('howmany', 'Number of QC samples inserted:', res.howmany, multiple = FALSE, selected = 1)
   })
   
   output$instrument <- renderUI({
@@ -81,7 +100,12 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   
 
   output$method <- renderUI(({
-    selectInput('method', 'Method:', c('default', 'random', 'blockrandom', 'testing'), multiple = FALSE, selected = 'default')
+    selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'testing'), multiple = FALSE, selected = 'default')
+  }))
+  
+  output$condition <- renderUI(({
+    res.condition <- c("TRUE", "FALSE")
+    selectInput('condition', 'Insert condition into sample name:', res.condition, multiple = FALSE, selected = res.condition[1])
   }))
   
   getSample <- reactive({
