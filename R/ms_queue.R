@@ -6,7 +6,7 @@
 #TODOS:
 # think of good generic layout for shiny user interface for selecting the appropriate QC standard(s)
 # select from:
-#P roteomics -> Fetuin, clean, HeLc?, BSA?,
+#Proteomics -> Fetuin, clean, HeLc?, BSA?,
 # -> select QC sample -> drop down with selections
 # insert Cleans -> with every standard/ every second standard/none
 # refactor code to match UI
@@ -17,22 +17,22 @@
 test_data_single <- function(){
   extract.name <- "Sample_1"
   extract.id <- 1
-  Condition <- "Control"
-  data.frame(extract.name, extract.id, Condition)
+  extract.Condition <- "Control"
+  data.frame(extract.name, extract.id, extract.Condition)
 }
 
 test_data_medium <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
   extract.id <- c(1:20)
-  Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
-  data.frame(extract.name, extract.id, Condition)
+  extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
+  data.frame(extract.name, extract.id, extract.Condition)
 }
 
 test_data_large <- function(){
   extract.name <- c(paste("Sample", 1:80, sep = "_"))
   extract.id <- c(1:80)
-  Condition <- c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20))
-  data.frame(extract.name, extract.id, Condition)
+  extract.Condition <- c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20))
+  data.frame(extract.name, extract.id, extract.Condition)
 }
 
 #' .equilize_groups
@@ -47,8 +47,8 @@ test_data_large <- function(){
 #'
 #' @examples
 #' 
-#' data <- data.frame(extract.name = paste("Sample", 1:4, sep = "_"), extract.id = 1:4, Condition = c(rep("A",2), rep("B",2)))
-#' grouping <- which(colnames(data) == "Condition")
+#' data <- data.frame(extract.name = paste("Sample", 1:4, sep = "_"), extract.id = 1:4, extract.Condition = c(rep("A",2), rep("B",2)))
+#' grouping <- which(colnames(data) == "extract.Condition")
 #' 
 #' equilize_groups(data, grouping, 4)
 #' 
@@ -62,29 +62,29 @@ test_data_large <- function(){
   }))
 }
 
-#' .order_condition_blocks
+#' .order_extract.Condition_blocks
 #'
 #' a function for randomization of a queue of samples in a block randomized manner.
 #'
-#' @param x: the sample information containing the condition information in one column (data.frame)
+#' @param x: the sample information containing the extract.Condition information in one column (data.frame)
 #'
-#' @return returns the initial dataframe but sample order within the conditions is randomly shuffled (data.frame)
+#' @return returns the initial dataframe but sample order within the extract.Conditions is randomly shuffled (data.frame)
 #' @export
 #'
 #' @examples
 #' 
-#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, Condition = c(rep("A",5), rep("B",5)))
+#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, extract.Condition = c(rep("A",5), rep("B",5)))
 #' 
 #' block_randomizer(data)
 #' 
 #' block_randomizer(test_data_medium())
 #' 
 .order_condition_blocks <- function(x){
-  unique.conditions <- unique(x$Condition) 
-  number.of.conditions <-length(unique.conditions) 
-  df <- vector(number.of.conditions, mode = "list")
-  for(i in 1:number.of.conditions){ 
-    sub <- x[x$Condition == unique.conditions[i], ] 
+  unique.extract.Conditions <- unique(x$extract.Condition) 
+  number.of.extract.Conditions <-length(unique.extract.Conditions) 
+  df <- vector(number.of.extract.Conditions, mode = "list")
+  for(i in 1:number.of.extract.Conditions){ 
+    sub <- x[x$extract.Condition == unique.extract.Conditions[i], ] 
     sub <- sub[sample(1:nrow(sub)), ] 
     df[[i]] <-  sub 
   }
@@ -103,6 +103,9 @@ test_data_large <- function(){
 #' 
 .generate_template_base <- function(x){
   res <- x
+#  res$extract.name = as.factor(res$extract.name)
+#  res$extract.id = as.integer(res$extract.id)
+#  res$extract.Condition = as.factor(res$extract.Condition)
   return(res)
 }
 
@@ -115,7 +118,7 @@ test_data_large <- function(){
 #'
 #' @examples
 #' 
-#' data <- data.frame(extract.name = LETTERS[1:10], extract.id = 1:10, Condition = letters[1:10])
+#' data <- data.frame(extract.name = LETTERS[1:10], extract.id = 1:10, extract.Condition = letters[1:10])
 #' 
 #' .generate_template_random(data)
 #' 
@@ -127,17 +130,17 @@ test_data_large <- function(){
 
 #'.generate_template_random_block
 #'
-#'this function is composing blocks of samples (each block contains one randomly picked sample from each condition). The functions
-#'does not required all conditions to have the same lenght (which is not strictly correct with the "random block" design).
+#'this function is composing blocks of samples (each block contains one randomly picked sample from each extract.Condition). The functions
+#'does not required all extract.Conditions to have the same lenght (which is not strictly correct with the "random block" design).
 #'
-#' @param x: the sample information. A column with the information of the samples conditions is madatory (data.frame)
+#' @param x: the sample information. A column with the information of the samples extract.Conditions is madatory (data.frame)
 #'
-#' @return the initial data ordered in random blocks (each block contains one random sample from each condition) (data.frame)
+#' @return the initial data ordered in random blocks (each block contains one random sample from each extract.Condition) (data.frame)
 #' @export
 #'
 #' @examples
 #' 
-#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, Condition = c(rep("A",5), rep("B",5)))
+#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, extract.Condition = c(rep("A",5), rep("B",5)))
 #' 
 #' .generate_template_random_block(data)
 #' 
@@ -145,21 +148,21 @@ test_data_large <- function(){
 #' 
 .generate_template_random_block <- function(x){
   #TODO:
-  #catch error if no Condition column is present and return meaningfull error message
-  #check if all conditions are equal sized if not display a warning
-  # tab <- as.vector(table(data.2$Condition))
+  #check if more than one condition is present. If not display a warning
+  #check if all extract.Conditions are equal sized if not display a warning
+  # tab <- as.vector(table(x$extract.Condition))
   #length(unique(tab)) == 1
   #TODO END
-  repeats <- length(unique(x$Condition))
-  cond <- max(table(x$Condition))
+  repeats <- length(unique(x$extract.Condition))
+  cond <- max(table(x$extract.Condition))
   res <- .order_condition_blocks(x)
-  condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
-  blockgroupindex <- which(colnames(res) == "Condition")
+  extract.Condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
+  blockgroupindex <- which(colnames(res) == "extract.Condition")
   res <- .equilize_groups(res, blockgroupindex, cond)
-  res$blockrandom <- condition.vector
+  res$blockrandom <- extract.Condition.vector
   res <- res[order(res$blockrandom),]
-  condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
-  resort <- paste(res$blockrandom, condition.vector.2, sep =".")
+  extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
+  resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
   res$blockrandom2 <- resort
   res <- res[order(res$blockrandom2), ]
   res$blockrandom <- NULL
@@ -179,20 +182,41 @@ test_data_large <- function(){
 #'
 #' @examples
 #' 
-#' data <- data.frame(extract.name = paste("Sample", 1:2, sep = "_"), extract.id = 1:2, Condition = c("A","B"))
+#' data <- data.frame(extract.name = paste("Sample", 1:2, sep = "_"), extract.id = 1:2, extract.Condition = c("A","B"))
 #' 
 #' .method_testing(data, 1, 4)
 #' 
-#' data <- data.frame(extract.name = "Sample_1", extract.id = 1, Condition = "A")
+#' data <- data.frame(extract.name = "Sample_1", extract.id = 1, extract.Condition = "A")
 #' 
 #' .method_testing(data, 3, 2)
 #' 
 .generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3){
   x <- x[rep(seq_len(nrow(x)), each = nr.methods), ]
-  x$Condition <- paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_")
+  x$extract.Condition <- paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_")
   res <- x[rep(seq_len(nrow(x)), each = nr.replicates ), ]
+  res$dev <- 
+  res <- .order_condition_blocks(res)
   return(res)
 }
+
+repeats <- length(unique(x$extract.Condition))
+cond <- max(table(x$extract.Condition))
+res <- .order_condition_blocks(x)
+extract.Condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
+blockgroupindex <- which(colnames(res) == "extract.Condition")
+res <- .equilize_groups(res, blockgroupindex, cond)
+res$blockrandom <- extract.Condition.vector
+res <- res[order(res$blockrandom),]
+extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
+resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
+res$blockrandom2 <- resort
+res <- res[order(res$blockrandom2), ]
+res$blockrandom <- NULL
+res$blockrandom2 <- NULL
+res <- res[!is.na(res$extract.name), ]  
+return(res)
+
+
 
 
 #' .hplc_position
@@ -244,7 +268,8 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
+  fet$position <- as.character(fet$position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   res <- rbind(x, fet)
   res$idx  <- c(seq_along(x$extract.name), rep(qc.idx+0.75, each = how.many))
@@ -259,9 +284,9 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
-  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), Condition = "Clean", position = clean.position)
+  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), repetitions), ]
   res <- rbind(x, fet, clean)
   res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx + 0.25, each = how.many))
@@ -275,9 +300,9 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
-  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), Condition = "Clean", position = clean.position)
+  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), ceiling(repetitions/2)), ]
   res <- rbind(x, fet, clean)
   odd <- c(TRUE, FALSE)
@@ -290,8 +315,8 @@ test_data_large <- function(){
 #current version
 .insert_qc_samples <- function(x, how.often, how.many, hplc = "", qc.type = 1){
   #TODO: assign these variables generic via the instrument hash table -> value predefined
-  #how.many <- how.many
-  #how.often <- how.often
+  how.many <- how.many
+  how.often <- how.often
   if (hplc == "easylc"){
     qc.position <- as.character("F8")
     clean.position <- as.character("F6")
@@ -303,11 +328,11 @@ test_data_large <- function(){
     clean.position <- "1F06"
   }
   if (qc.type == 1){
-    res <- .qc.type.one(x, qc.position, how.often, how.many = how.many)
+    res <- .qc.type.one(x = x, qc.position = qc.position, how.often = how.often, how.many = how.many)
   } else if (qc.type == 2){
-    res <- .qc.type.two(x, qc.position, clean.position, how.often, how.many)
+    res <- .qc.type.two(x, qc.position = qc.position, clean.position = clean.position, how.often = how.often, how.many = how.many)
   } else{
-    res <- .qc.type.three(x, qc.position, clean.position, how.often, how.many)
+    res <- .qc.type.three(x, qc.position = qc.position, clean.position = clean.position, how.often = how.often, how.many = how.many)
   }
   return(res)
 }
@@ -331,8 +356,8 @@ test_data_large <- function(){
   } else {
     qc.position <- "1F08"
   }
-  start <- data.frame(extract.name = rep("Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), Condition = rep("Fetuin",2), position = rep(qc.position,2))
-  end <- data.frame(extract.name = rep("Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), Condition = rep("Fetuin",1), position = rep(qc.position,1))
+  start <- data.frame(extract.name = rep("Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("Fetuin",2), position = rep(qc.position,2))
+  end <- data.frame(extract.name = rep("Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("Fetuin",1), position = rep(qc.position,1))
   res <- rbind(start, x, end)
   return(res)
 }
@@ -374,18 +399,18 @@ test_data_large <- function(){
 #' @export
 #'
 #' @examples
-.generate_name <- function(x){#, showcondition = TRUE){
+.generate_name <- function(x, showcondition = TRUE){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%02d", c(1:n))
   injection.name <- paste(rundate, injection.index, sep = "_")
   injection.name <- paste(injection.name, x$extract.id, sep = "_")
   injection.name <- paste(injection.name, x$extract.name, sep = "_")
-  #if (showcondition == TRUE){
-  #  injection.name <- paste(injection.name, x$Condition, sep = "_")
-  #} else {
+  if (showcondition == TRUE){
+    injection.name <- paste(injection.name, x$extract.Condition, sep = "_")
+  } else {
     
-  #}
+  }
   return(injection.name)
 }
 
@@ -406,8 +431,8 @@ generate_queue <- function(x,
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
   
-  if (!'Condition' %in% names(x)){
-    x$Condition <- "A"
+  if (!'extract.Condition' %in% names(x)){
+    x$extract.Condition <- "A"
   }
   
   # generate the queue template
@@ -422,6 +447,7 @@ generate_queue <- function(x,
   }  
   # attache HPLC plate position
   res.position <- .hplc_position(x = res.template, hplc = hplc$name) 
+
   # insert qc samples
   res.qc <- .insert_qc_samples(x = res.position,
                                how.often = how.often,
@@ -443,7 +469,7 @@ generate_queue <- function(x,
   
   cbind('File Name' = res.filename,
         'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
-        'Position' = res.queue$Position,
+        'Position' = res.queue$position,
         'Inj Vol' = 2
   )
 }
