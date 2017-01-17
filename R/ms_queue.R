@@ -171,11 +171,24 @@ test_data_large <- function(){
   return(res)
 }
 
+
+
+
+.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3){
+  x <- x[rep(seq_len(nrow(x)), each = nr.methods), ]
+  x$extract.Condition <- paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_")
+  res <- x[rep(seq_len(nrow(x)), each = nr.replicates ), ]
+  res$dev <- 
+  #res <- .order_condition_blocks(res)
+  return(res)
+}
+
 #' .generate_template_method_testing
 #'
 #' @param x: the sample information, optimally only one single sample (data.frame)
 #' @param nr.methods: the number of methods which will be tested (numeric)
 #' @param nr.replicates: how many injections for each method should be performed (numeric) 
+#' @param hplc 
 #'
 #' @return a dataframe which can be used as input for the queue formating functions
 #' @export
@@ -190,73 +203,89 @@ test_data_large <- function(){
 #' 
 #' .method_testing(data, 3, 2)
 #' 
-.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3){
-  x <- x[rep(seq_len(nrow(x)), each = nr.methods), ]
-  x$extract.Condition <- paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_")
-  res <- x[rep(seq_len(nrow(x)), each = nr.replicates ), ]
-  res$dev <- 
-  res <- .order_condition_blocks(res)
+.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3, hplc = "easylc"){
+  res <- .hplc_position_test(x = x, hplc = hplc)
+  res <- res[rep(seq_len(nrow(res)), each = nr.methods), ]
+  res$extract.Condition <- paste(res$extract.Condition, paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_"), sep = "_")
+  res <- res[rep(seq_len(nrow(res)), each = nr.replicates ), ]
+  res <- res[order(sample(nrow(res))), ]
+  res <- res[order(sample(nrow(res))), ]
   return(res)
 }
 
-repeats <- length(unique(x$extract.Condition))
-cond <- max(table(x$extract.Condition))
-res <- .order_condition_blocks(x)
-extract.Condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
-blockgroupindex <- which(colnames(res) == "extract.Condition")
-res <- .equilize_groups(res, blockgroupindex, cond)
-res$blockrandom <- extract.Condition.vector
-res <- res[order(res$blockrandom),]
-extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
-resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
-res$blockrandom2 <- resort
-res <- res[order(res$blockrandom2), ]
-res$blockrandom <- NULL
-res$blockrandom2 <- NULL
-res <- res[!is.na(res$extract.name), ]  
-return(res)
 
+.eksigent <- function(){
+  pos <- (paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(sprintf("%02d", c(1:8)), times = 6), sep = ""), sep = "")) 
+  pos[1:45]
+  return(pos)
+}
 
+.waters <- function(){
+  pos.p1 <- paste(rep(1, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
+  pos.p1 <- paste0('"', pos.p1, '"')
+  pos.p1 <- pos.p1[1:45]
+  pos.p2 <- paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
+  pos.p2 <- paste0('"', pos.p2, '"')
+  pos.p2 <- pos.p2[1:45]
+  pos <- c(pos.p1, pos.p2)
+  return(pos)
+}
 
+.easylc <- function(){
+  pos <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
+  pos[1:45]
+  return(pos)
+}
 
-#' .hplc_position
-#'
-#' @param x:  the sample information. The samples need to be in the desired format already (data.frame)
-#' @param hplc: information about the used HPLC (string) 
-#'
-#' @return the queue list with a HPLC position column attached (data.frame)
-#' @export
-#'
-#' @examples
-#' 
-#' 
-#' 
-#' 
-.hplc_position <- function(x, hplc = ""){
+.hplc_position_test <- function(x, hplc = ""){
   n <- nrow(x)
   if (hplc == "eksigent") {
-    pos <- (paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(sprintf("%02d", c(1:8)), times = 6), sep = ""), sep = "")) 
-    pos[1:45]
+    pos <- .eksigent()
   } else if (hplc == "waters") {
-    pos.p1 <- paste(rep(1, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
-    pos.p1 <- paste0('"', pos.p1, '"')
-    pos.p1 <- pos.p1[1:45]
-    pos.p2 <- paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
-    pos.p2 <- paste0('"', pos.p2, '"')
-    pos.p2 <- pos.p2[1:45]
-    pos <- c(pos.p1, pos.p2)
+    pos <- .waters()
   } else if (hplc == "easylc"){
-    pos <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
-    pos[1:45]
+    pos <- .easylc()
   } else {
-    pos <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "") 
-    pos <- pos[1:45]
+    pos <- .easylc()
   }
   positions.needed <- ceiling(n/46)
   pos <- rep(pos, times = positions.needed)
   pos <- pos[1:n]
   x$position <- pos
   res <- x
+  return(res)
+}
+
+#' Title
+#'
+#' @param x 
+#' @param hplc 
+#' @param method 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+.hplc_position <- function(x, hplc = "", method = ""){
+#  if (method == 'testing'){
+#    res <- x
+#  } else{
+   n <- nrow(x)
+  if (hplc == "eksigent") {
+    pos <- .eksigent()
+  } else if (hplc == "waters") {
+    pos <- .waters()
+  } else if (hplc == "easylc"){
+    pos <- .easylc()
+  } else {
+    pos <- .easylc()
+  }
+  positions.needed <- ceiling(n/46)
+  pos <- rep(pos, times = positions.needed)
+  pos <- pos[1:n]
+  x$position <- pos
+  res <- x
+#  }
   return(res)
 }
 
@@ -426,7 +455,7 @@ generate_queue <- function(x,
                            nr.replicates = 3,
                            showcondition = FALSE,
                            qc.type = 1,
-                           hplc = list(name='easylc', clean='F6', standard='F8'),
+                           hplc = '', #list(name='easylc', clean='F6', standard='F8'),
                            method='default',
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
@@ -446,16 +475,16 @@ generate_queue <- function(x,
     res.template <- .generate_template_base(x)
   }  
   # attache HPLC plate position
-  res.position <- .hplc_position(x = res.template, hplc = hplc$name) 
+  res.position <- .hplc_position(x = res.template, method = method, hplc = hplc)#$name) 
 
   # insert qc samples
   res.qc <- .insert_qc_samples(x = res.position,
                                how.often = how.often,
                                how.many = how.many,
-                               hplc = hplc$name,
+                               hplc = hplc,#$name,
                                qc.type = qc.type)
   # clean up the sample queue
-  res.queue <- .clean_up_queue(x = res.qc)
+  res.queue <- .clean_up_queue(x = res.qc, hplc = hplc)
   # generate folder name acc. FGCZ naming convention
   res.folder <- .generate_folder_name(x = res.queue,
                                       foldername = foldername, 
