@@ -450,9 +450,7 @@ generate_queue <- function(x,
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
   
-  if (!'extract.Condition' %in% names(x)){
-    x$extract.Condition <- "A"
-  }
+  x$extract.Condition[is.na(x$extract.Condition)] <- "A"
   
   # generate the queue template
   if(method == 'random'){
