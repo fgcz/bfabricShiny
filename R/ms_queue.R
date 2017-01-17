@@ -173,16 +173,6 @@ test_data_large <- function(){
 
 
 
-
-.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3){
-  x <- x[rep(seq_len(nrow(x)), each = nr.methods), ]
-  x$extract.Condition <- paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_")
-  res <- x[rep(seq_len(nrow(x)), each = nr.replicates ), ]
-  res$dev <- 
-  #res <- .order_condition_blocks(res)
-  return(res)
-}
-
 #' .generate_template_method_testing
 #'
 #' @param x: the sample information, optimally only one single sample (data.frame)
@@ -267,9 +257,9 @@ test_data_large <- function(){
 #'
 #' @examples
 .hplc_position <- function(x, hplc = "", method = ""){
-#  if (method == 'testing'){
-#    res <- x
-#  } else{
+  if (method == 'testing'){
+   res <- x
+  } else{
    n <- nrow(x)
   if (hplc == "eksigent") {
     pos <- .eksigent()
@@ -285,7 +275,7 @@ test_data_large <- function(){
   pos <- pos[1:n]
   x$position <- pos
   res <- x
-#  }
+  }
   return(res)
 }
 
@@ -470,7 +460,10 @@ generate_queue <- function(x,
   }else if (method == 'blockrandom'){
     res.template <- .generate_template_random_block(x)
   }else if (method == 'testing'){
-    res.template <- .generate_template_method_testing(x)
+    res.template <- .generate_template_method_testing(x,
+                                                      nr.methods = nr.methods,
+                                                      nr.replicates = nr.replicates,
+                                                      hplc = hplc)
   }else {
     res.template <- .generate_template_base(x)
   }  
