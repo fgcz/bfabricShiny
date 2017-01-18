@@ -5,13 +5,14 @@
 # http://shiny.rstudio.com
 #
 
-library(bfabricShiny)
-
+#library(bfabricShiny)
+library(jsonlite)
+source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
 ##
 shinyServer(function(input, output, session) {
 
  # TODOO(cp):
-getHPLC <- reactive({list(VELOS_1='eksigent',
+getHPLC <- function(){list(VELOS_1='eksigent',
                        VELOS_2='eksigent',
                        G2HD_1='waters',
                        QTRAP_1='eksigent',
@@ -23,8 +24,10 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                        FUSION_2='easylc',
                        QEXACTIVEHF_1='waters',
                        QEXACTIVEHF_2='waters',
-                       IMSTOF_1='eksigent')})
-	
+                       QEXACTIVEHF_3='waters',
+                       IMSTOF_1='eksigent')}
+
+
   getInstrument <- reactive({list(VELOS_1='Xcalibur',
                        VELOS_2='Xcalibur',
                        G2HD_1='MassLynx',
@@ -37,6 +40,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                        FUSION_2='Xcalibur',
                        QEXACTIVEHF_1='Xcalibur',
                        QEXACTIVEHF_2='Xcalibur',
+                       QEXACTIVEHF_3='Xcalibur',
                        IMSTOF_1='TOFWERK')})
   
   
@@ -52,6 +56,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
                                   FUSION_2='raw',
                                   QEXACTIVEHF_1='raw',
                                   QEXACTIVEHF_2='raw',
+                                  QEXACTIVEHF_3='raw',
                                   IMSTOF_1='h5')})
   
   output$area <- renderUI(({
@@ -60,11 +65,11 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   }))
   
   output$folder <- renderUI(({
-      textInput('folder', 'Data Folder Name:', "enter your folder name here ", width = NULL, placeholder = NULL)
+      textInput('folder', 'Data Folder Name:', "enter your folder name here", width = NULL, placeholder = NULL)
   }))
   
   output$qctype <- renderUI(({
-    res.qctype <- c("Fetuin only", "Fetuin and clean", "Fetuin and clean every second ")
+    res.qctype <- c("1", "2", "3")#c("Fetuin only", "Fetuin and clean", "Fetuin and clean every second ")
     selectInput('qctype', 'Type of sample QC:', res.qctype, multiple = FALSE, selected = res.qctype[1])
   }))
   
@@ -74,7 +79,7 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   }))
   
   output$replicates <- renderUI(({
-    res.replicates <- 1:5
+    res.replicates <- 1:9
     selectInput('replicates', 'Number of injections for each method:', res.replicates, multiple = FALSE, selected = res.replicates[1])
   }))
   
@@ -84,12 +89,12 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   })
   
   output$howoften <- renderUI({
-    res.howoften <- 1:5
-    selectInput('howoften', 'Insert QC sample every:', res.howoften, multiple = FALSE, selected = res.howoften[2])
+    res.howoften <- 1:8
+    selectInput('howoften', 'Insert QC sample every:', res.howoften, multiple = FALSE, selected = res.howoften[1])
   })
   
   output$howmany <- renderUI({
-    res.howmany <- 1:3
+    res.howmany <- 1:5
     selectInput('howmany', 'Number of QC samples inserted:', res.howmany, multiple = FALSE, selected = 1)
   })
   
@@ -103,9 +108,8 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
     selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'testing'), multiple = FALSE, selected = 'default')
   }))
   
-  output$condition <- renderUI(({
-    res.condition <- c("TRUE", "FALSE")
-    selectInput('condition', 'Insert condition into sample name:', res.condition, multiple = FALSE, selected = res.condition[1])
+  output$showcondition <- renderUI(({
+        checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
   }))
   
   getSample <- reactive({
@@ -207,30 +211,53 @@ getHPLC <- reactive({list(VELOS_1='eksigent',
   getBfabricContent <- reactive({
 
     res <- getExtracts()
-
+#    save(res, file='tmpResults.RData', compression_level = )
     	res[, "instrument"] <- input$instrument
-
-    	# TODO(cp): check of extract names are unique
+#      save(res, file='tmpResults2.RData', compression_level = ) for troubleshooting only
+    	
+      # TODO(cp): check of extract names are unique
     	idx <- res$extract.name %in% input$extract
+#    	write(idx, file = 'idx.txt') for troubleshooting only
+#    	selected.order <- input$extract for troubleshooting only
+#    	write(selected.order, file = 'iorder.txt') for troubleshooting only
 
-    	rv <- generate_queue(x = res[idx, c("extract.name", "extract.id", "extract.Condition")],
-		   method=input$method,
-		   area = input$area,
-                   foldername = "",
-                   projectid=input$project,
-                   username = input$login,
-                   how.often = as.integer(input$howoften),
-                   how.many = as.integer(input$howmany),
-                   instrument = input$instrument)
-
+    	    	res <- res[idx, c("extract.name", "extract.id", "extract.Condition")]
+    	res <- res[match(input$extract, res$extract.name),]
+    	
+    	if(any(is.na(res$extract.Condition))){
+    	res$extract.Condition[is.na(res$extract.Condition)] <- "A"
+    	} else{
+    	  
+    	}
+    	
+    	idx.hplc <- getHPLC()[[input$instrument]]
+    
+    	rv <- generate_queue(x = res, #[idx, c("extract.name", "extract.id", "extract.Condition")], uncomment to get original prior 17.01.2017
+                           foldername = input$folder,
+                           projectid=input$project,
+                           area = input$area,
+                           instrument = input$instrument,
+                           username = input$login,
+                           hplc = idx.hplc,
+                           how.often = as.integer(input$howoften),
+                           how.many = as.integer(input$howmany),
+                           nr.methods = as.integer(input$testmethods),
+                           nr.replicates = as.integer(input$replicates),
+                           showcondition = input$showcondition,
+                           qc.type = as.integer(input$qctype),
+                           method = as.character(input$method))
+    	
+#    	save(rv, file='queue.RData', compression_level = ) for trouble shooting only
+#    	rv
     	#cbind(rv, extract.id = res[idx, 'extract.id'])
   })
+  
   
   
   output$table <- DT::renderDataTable(DT::datatable({
     #print(paste("extract", input$extract, sep='='))
 
-      if (input$extract != "" && length(input$extract) > 1){
+      if (input$extract != "" && length(input$extract) >= 1){
       getBfabricContent()
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))

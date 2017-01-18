@@ -34,11 +34,11 @@ shinyUI(fluidPage(
   ),
 
   fluidRow(
-    column(3, htmlOutput("condition"))
+    column(3, htmlOutput("showcondition"))
       ),
   
   fluidRow(
-    column(12, h3("The selections below are only used in combination with method. Ignore them if you use another queue generation method")) #code("the below selections are only used in combination with method "testing""))
+    column(12, h3("The selections below are only used in combination with the queue method testing. Ignore them if you use another queue generation method")) #code("the below selections are only used in combination with method "testing""))
   ),
   
   fluidRow(
