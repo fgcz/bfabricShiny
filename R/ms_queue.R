@@ -445,12 +445,12 @@ generate_queue <- function(x,
                            nr.replicates = 3,
                            showcondition = FALSE,
                            qc.type = 1,
-                           hplc = '', #list(name='easylc', clean='F6', standard='F8'),
+                           hplc = '', 
                            method='default',
                            pathprefix="D:\\Data2San", 
                            pathprefixsep="\\"){
   
-  x$extract.Condition[is.na(x$extract.Condition)] <- "A"
+#  x$extract.Condition[is.na(x$extract.Condition)] <- "A"
   
   # generate the queue template
   if(method == 'random'){
@@ -466,13 +466,13 @@ generate_queue <- function(x,
     res.template <- .generate_template_base(x)
   }  
   # attache HPLC plate position
-  res.position <- .hplc_position(x = res.template, method = method, hplc = hplc)#$name) 
+  res.position <- .hplc_position(x = res.template, method = method, hplc = hplc)
 
   # insert qc samples
   res.qc <- .insert_qc_samples(x = res.position,
                                how.often = how.often,
                                how.many = how.many,
-                               hplc = hplc,#$name,
+                               hplc = hplc,
                                qc.type = qc.type)
   # clean up the sample queue
   res.queue <- .clean_up_queue(x = res.qc, hplc = hplc)
