@@ -69,8 +69,9 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   }))
   
   output$qctype <- renderUI(({
-    res.qctype <- c("1", "2", "3")#c("Fetuin only", "Fetuin and clean", "Fetuin and clean every second ")
-    selectInput('qctype', 'Type of sample QC:', res.qctype, multiple = FALSE, selected = res.qctype[1])
+    selectInput('qctype', 'Type of sample QC:', 
+                choices = list("Fetuin only" = 1, "Fetuin and clean" = 2, "Fetuin and clean every second " = 3), 
+                selected = 1)
   }))
   
   output$testmethods <- renderUI(({
