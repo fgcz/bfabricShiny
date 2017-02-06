@@ -287,7 +287,7 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
   fet$position <- as.character(fet$position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   res <- rbind(x, fet)
@@ -303,7 +303,7 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), repetitions), ]
@@ -319,7 +319,7 @@ test_data_large <- function(){
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "Fetuin", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), ceiling(repetitions/2)), ]
@@ -375,8 +375,8 @@ test_data_large <- function(){
   } else {
     qc.position <- "1F08"
   }
-  start <- data.frame(extract.name = rep("Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("Fetuin",2), position = rep(qc.position,2))
-  end <- data.frame(extract.name = rep("Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("Fetuin",1), position = rep(qc.position,1))
+  start <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("QC",2), position = rep(qc.position,2))
+  end <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("QC",1), position = rep(qc.position,1))
   res <- rbind(start, x, end)
   return(res)
 }
