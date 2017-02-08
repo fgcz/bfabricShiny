@@ -5,9 +5,9 @@
 # http://shiny.rstudio.com
 #
 
-#library(bfabricShiny)
+library(bfabricShiny)
 library(jsonlite)
-source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
+# source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
 ##
 shinyServer(function(input, output, session) {
 
