@@ -188,7 +188,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     content = function(file) {
       write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
       res <- getBfabricContent()
-      #res <- res[,c(1,3:5)]
       write.table(res, file = file, 
                   sep=',', row.names = FALSE, 
                   append = TRUE, quote = FALSE, eol='\r\n')
