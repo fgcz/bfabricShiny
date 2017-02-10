@@ -343,8 +343,8 @@ test_data_large <- function(){
     qc.position <- '"1:F,8"'
     clean.position <- '"1:F,6"'
   } else {
-    qc.position <- "1F08"
-    clean.position <- "1F06"
+    qc.position <- "2F08"
+    clean.position <- "2F06"
   }
   if (qc.type == 1){
     res <- .qc.type.one(x = x, qc.position = qc.position, how.often = how.often, how.many = how.many)
@@ -373,7 +373,7 @@ test_data_large <- function(){
   } else if ( hplc == "waters"){
     qc.position <- '"1:F,8"'
   } else {
-    qc.position <- "1F08"
+    qc.position <- "2F08"
   }
   start <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("QC",2), position = rep(qc.position,2))
   end <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("QC",1), position = rep(qc.position,1))
