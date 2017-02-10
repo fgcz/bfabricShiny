@@ -182,33 +182,35 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   
   
   output$downloadData <- downloadHandler(
-    filename = function() { "fgcz_queue_test.csv" },
-      # paste(unlist(strsplit(input$file, split="[.]"))[1], "csv", sep=".")  },
+    filename = function() {
+      paste("fgcz-queue-generator_", Sys.Date(), ".csv", sep="")
+    },
     content = function(file) {
       write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
       res <- getBfabricContent()
-      res <- res[,c(1,3:5)]
-      write.table(res, sep=',', file = file, row.names = FALSE, append = TRUE, quote = FALSE, eol='\r\n')
-
+      #res <- res[,c(1,3:5)]
+      write.table(res, file = file, 
+                  sep=',', row.names = FALSE, 
+                  append = TRUE, quote = FALSE, eol='\r\n')
     }
   )
   
   datasetID <- observeEvent(input$bfabricButton, {
-
-	S <- getBfabricContent()
-	if (nrow(S) > 0){
-      		rv <- POST(paste("http://localhost:5000/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
-
-		 observe({
-       		session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 
-		 })
-	}else{
-       		#session$sendCustomMessage(type = 'testmessage', message = 'not enough lines.') 
-	}
+    
+    S <- getBfabricContent()
+    if (nrow(S) > 0){
+      rv <- POST(paste("http://localhost:5000/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
       
+      observe({
+        session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 
       })
+    }else{
+      #session$sendCustomMessage(type = 'testmessage', message = 'not enough lines.') 
+    }
+    
+  })
   
-
+  
   getBfabricContent <- reactive({
 
     res <- getExtracts()
