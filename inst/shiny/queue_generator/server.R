@@ -24,7 +24,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
                        FUSION_2='easylc',
                        QEXACTIVEHF_1='waters',
                        QEXACTIVEHF_2='waters',
-                       QEXACTIVEHF_3='waters',
                        IMSTOF_1='eksigent')}
 
 
@@ -40,7 +39,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
                        FUSION_2='Xcalibur',
                        QEXACTIVEHF_1='Xcalibur',
                        QEXACTIVEHF_2='Xcalibur',
-                       QEXACTIVEHF_3='Xcalibur',
                        IMSTOF_1='TOFWERK')})
   
   
@@ -56,7 +54,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
                                   FUSION_2='raw',
                                   QEXACTIVEHF_1='raw',
                                   QEXACTIVEHF_2='raw',
-                                  QEXACTIVEHF_3='raw',
                                   IMSTOF_1='h5')})
   
   output$area <- renderUI(({
