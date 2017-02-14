@@ -325,7 +325,7 @@ test_data_large <- function(){
   clean <- clean[rep(row.names(clean), ceiling(repetitions/2)), ]
   res <- rbind(x, fet, clean)
   odd <- c(TRUE, FALSE)
-  res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx[odd] + 0.25, each = 1))
+  res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx[odd] + 0.25, each = how.many))
   res <- res[order(res$idx),]
   res$idx <-NULL
   return(res)
