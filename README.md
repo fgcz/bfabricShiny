@@ -7,13 +7,8 @@ allows the user to automatically generate a certain set of queues for thermo ins
 
 ## Requirements
 
-- install libcurl
-
-
-## 
-
 ```{bash}
-apt-get install r-base 
+apt-get install r-base libcurl4-openssl-dev 
 git clone git@github.com:cpanse/bfabric_shiny.git
 R CMD build bfabric_shiny
 sudo R CMD INSTALL bfabric_shiny*.tgz
