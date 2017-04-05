@@ -27,6 +27,6 @@ R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 - run shiny application
 
 ```{r}
-qgs <- system.file("shiny", "bfabricShiny", package = "bfabricShiny")
+qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
 shiny::runApp(qgs, display.mode = "normal")
 ```
