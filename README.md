@@ -28,7 +28,9 @@ bfabric_flask_sample.py
 
 - test 
 
-http://127.0.0.1:5000/extract/1000
+```{bash}
+ curl http://127.0.0.1:5000/extract/2450
+```
 
 
 ## shiny application
