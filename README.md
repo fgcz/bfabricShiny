@@ -12,6 +12,6 @@ sudo R CMD INSTALL bfabric_shiny*.tgz
 ```
 
 
-```{r}
-install.packages(c('shiny', 'jsonlite', 'httr','testthat'))
+```{bash}
+R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 ```
