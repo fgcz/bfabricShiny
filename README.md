@@ -5,8 +5,6 @@ allows the user to automatically generate a certain set of queues for thermo ins
 
 # INSTALL
 
-## Requirements
-
 ```{bash}
 apt-get install r-base libcurl4-openssl-dev 
 git clone git@github.com:cpanse/bfabric_shiny.git
