@@ -4,8 +4,9 @@ Title: Performs shiny application on bfabric data
 Version: 0.0.21
 Author: Christian Trachsel [ctr, aut], Christian Panse [cre, aut]
 Maintainer:  Christian Trachsel<cp@fgcz.ethz.ch>
-Description: Analysing and LFQ and SRM experiments in service mode.
-  Data preprocessing and visualization.
+Description: allows the user to automatically generate a certain
+  set of queues for thermo instruments. Queues can be exported as 
+  .csv and directly loaded into Xcalibur for running the sequence. 
 Depends:
   httr,
   jsonlite,
