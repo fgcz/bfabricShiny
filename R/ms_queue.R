@@ -433,6 +433,31 @@ test_data_large <- function(){
   return(injection.name)
 }
 
+
+
+#' Title
+#'
+#' @param x 
+#' @param foldername 
+#' @param projectid 
+#' @param area 
+#' @param instrument 
+#' @param username 
+#' @param how.often 
+#' @param how.many 
+#' @param nr.methods 
+#' @param nr.replicates 
+#' @param showcondition 
+#' @param qc.type 
+#' @param hplc 
+#' @param method 
+#' @param pathprefix 
+#' @param pathprefixsep 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 generate_queue <- function(x, 
                            foldername='', 
                            projectid=1000, 
@@ -492,4 +517,15 @@ generate_queue <- function(x,
         'Position' = res.queue$position,
         'Inj Vol' = 2
   )
+}
+
+
+#' Run shiny queue generator application
+#'
+#' @return
+#'
+#' @export True
+runQueue <- function(){
+  qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
+  shiny::runApp(qgs, display.mode = "normal")
 }

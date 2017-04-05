@@ -103,7 +103,6 @@ def wsdl_sample_extract(projectid):
         return None
 
 
-
 def compose_ms_queue_dataset(jsoncontent, workunitid, projectid):
     obj = {}
     try:
@@ -211,8 +210,6 @@ def get_extract(sampleid):
     if res is None:
         return jsonify({'error': 'no resources found.'})
         # abort(404)
-
-
     return jsonify({'extract': res})
 
 @app.route('/extract/<int:projectid>', methods=['GET'])
@@ -245,7 +242,6 @@ def get_all_extracts(projectid):
         # abort(404)
 
     return jsonify({'extract': res})
-
 
 """
 # running in R

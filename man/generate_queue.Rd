@@ -2,13 +2,13 @@
 % Please edit documentation in R/ms_queue.R
 \name{generate_queue}
 \alias{generate_queue}
-\title{MS instrument queue generation}
+\title{Title}
 \usage{
 generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
   instrument = "FUSION_1", username = "cpanse", how.often = 2,
-  how.many = 1, multiple = 1, hplc = list(name = "easylc", clean = "F6",
-  standard = "F8"), method = "default", pathprefix = "D:\\\\Data2San",
-  pathprefixsep = "\\\\")
+  how.many = 1, nr.methods = 2, nr.replicates = 3,
+  showcondition = FALSE, qc.type = 1, hplc = "", method = "default",
+  pathprefix = "D:\\\\Data2San", pathprefixsep = "\\\\")
 }
 \arguments{
 \item{x}{}
@@ -27,7 +27,13 @@ generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
 
 \item{how.many}{}
 
-\item{multiple}{}
+\item{nr.methods}{}
+
+\item{nr.replicates}{}
+
+\item{showcondition}{}
+
+\item{qc.type}{}
 
 \item{hplc}{}
 
@@ -37,19 +43,6 @@ generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
 
 \item{pathprefixsep}{}
 }
-\value{
-a table which contains a MS instrument queue configuration.
-sample.id' = res$extract.sampleid
-}
 \description{
-MS instrument queue generation
+Title
 }
-\examples{
-
-generate_queue(bfabricShiny:::test_data())
-
-S <- as.data.frame(fromJSON("http://localhost:5000/extract/1000"))
-generate_queue(S)
-
-}
-

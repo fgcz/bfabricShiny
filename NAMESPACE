@@ -1,2 +1,2 @@
 export(generate_queue)
-
+importFrom("utils", "packageVersion")

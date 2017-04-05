@@ -3,7 +3,7 @@ Type: Package
 Title: Performs shiny application on bfabric data
 Version: 0.0.21
 Author: Christian Trachsel [ctr, aut], Christian Panse [cre, aut]
-Maintainer:  Christian Trachsel<cp@fgcz.ethz.ch>
+Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: allows the user to automatically generate a certain
   set of queues for thermo instruments. Queues can be exported as 
   .csv and directly loaded into Xcalibur for running the sequence. 
@@ -11,14 +11,14 @@ Depends:
   DT,
   httr,
   jsonlite,
+  shiny
+Suggest:
   rmarkdown,
-  shiny,
+  roxygen2,
   testthat
-Imports:
-  methods
 License: GPL
 LazyData: TRUE
 Collate: ms_queue.R zzz.R
 URL: https://github.com/cpanse/bfabricShiny
 BugReports: https://github.com/cpanse/bfabricShiny/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

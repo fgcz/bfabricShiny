@@ -2,11 +2,14 @@
 # This is the server logic for a Shiny web application.
 # You can find out more about building applications with Shiny here:
 #
-# http://shiny.rstudio.com
+# https://github.com/cpanse/bfabricShiny
 #
 
 library(bfabricShiny)
 library(jsonlite)
+library(httr)
+library(DT)
+
 # source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
 ##
 shinyServer(function(input, output, session) {
