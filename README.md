@@ -19,17 +19,19 @@ R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 
 # RUN
 
-## run flask
+## flask
 
+- run
 ```{bash}
 bfabric_flask_sample.py 
 ```
 
-## test flask
+- test 
 
 http://127.0.0.1:5000/extract/1000
 
-- run shiny application
+
+## shiny application
 
 ```{r}
 qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
