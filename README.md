@@ -15,3 +15,18 @@ sudo R CMD INSTALL bfabric_shiny*.tgz
 ```{bash}
 R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 ```
+
+
+# RUN
+
+- run soap rest proxy
+
+```{bash}
+```
+
+- run shiny application
+
+```{r}
+qgs <- system.file("shiny", "bfabricShiny", package = "bfabricShiny")
+shiny::runApp(qgs, display.mode = "normal")
+```
