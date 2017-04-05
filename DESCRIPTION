@@ -1,22 +1,22 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.20
+Version: 0.0.21
 Author: Christian Trachsel [ctr, aut], Christian Panse [cre, aut]
 Maintainer:  Christian Trachsel<cp@fgcz.ethz.ch>
 Description: Analysing and LFQ and SRM experiments in service mode.
   Data preprocessing and visualization.
 Depends:
-  shiny,
-  jsonlite,
   httr,
+  jsonlite,
+  rmarkdown,
+  shiny,
   testthat
 Imports:
-  methods,
-  rmarkdown
+  methods
 License: GPL
 LazyData: TRUE
 Collate: ms_queue.R zzz.R
-URL: https://github.com/cpanse/bfabric_shiny
-BugReports: https://github.com/cpanse/bfabric_shiny/issues
+URL: https://github.com/cpanse/bfabricShiny
+BugReports: https://github.com/cpanse/bfabricShiny/issues
 RoxygenNote: 5.0.1
