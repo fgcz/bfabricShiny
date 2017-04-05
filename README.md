@@ -3,5 +3,8 @@
 
 
 ```{bash}
-apt-get install r-base
+apt-get install r-base 
+git clone git@github.com:cpanse/bfabric_shiny.git
+R CMD build bfabric_shiny
+R CMD INSTALL bfabric_shiny*.tgz
 ```
