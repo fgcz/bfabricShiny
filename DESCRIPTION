@@ -2,7 +2,7 @@ Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
 Version: 0.0.21
-Author: Christian Trachsel [ctb, aut], Christian Panse [cre, aut]
+Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: allows the user to automatically generate a certain
   set of queues for thermo instruments. Queues can be exported as 
