@@ -19,11 +19,15 @@ R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 
 # RUN
 
-- run soap rest proxy
+## run flask
 
 ```{bash}
 bfabric_flask_sample.py 
 ```
+
+## test flask
+
+http://127.0.0.1:5000/extract/1000
 
 - run shiny application
 
