@@ -30,4 +30,7 @@ bfabric_flask_sample.py
 ```{r}
 qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
 shiny::runApp(qgs, display.mode = "normal")
+
+# 
+# shiny::runApp(qgs, display.mode = "normal", host='myhost', port='7934')
 ```
