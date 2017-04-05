@@ -11,7 +11,6 @@ R CMD build bfabric_shiny
 sudo R CMD INSTALL bfabric_shiny*.tgz
 ```
 
-
 ```{bash}
 R -e "install.packages(c('shiny', 'jsonlite', 'httr','testthat'))"
 ```
