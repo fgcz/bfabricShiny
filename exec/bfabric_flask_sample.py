@@ -260,6 +260,31 @@ def get_sample(projectid):
 
     return jsonify({'sample': res})
 
+@app.route('/addworkunit', methods=['GET', 'POST'])
+def add_workunit():
+    appid = request.args.get('appid', None)
+    pid = request.args.get('pid', None)
+    rname = request.args.get('rname', None)
+
+    try:
+        content = json.loads(request.data)
+        # print content
+    except:
+        return jsonify({'error': 'could not get POST content.', 'appid': appid})
+
+    resource_base64 = content['base64']
+    #base64.b64encode(content)
+    print resource_base64 
+
+    #wu = bfapp.save_object(endpoint='workunit', obj={'name': rname, 'applicationid': appid, 'projectid': pid})[0]
+    #res = bfapp.save_object('resource', {'base64': resource_base64,
+    #                                     'name': 'rname',
+    #                                     'workunitid':wu._id})
+
+    #res = bfapp.save_object('workunit', {'id': wu._id, 'status': 'available'})
+
+    return jsonify({'rv': 'ok'})
+
 if __name__ == '__main__':
     #wsdl_user(1000)
     app.run(debug=True, host="0.0.0.0")
