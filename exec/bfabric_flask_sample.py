@@ -32,7 +32,7 @@ def dfs__(extract_id):
     extract_dict = dict()
 
     while len(stack) > 0:
-        u = stack.pop()
+        o = stack.pop()
         visited[u] = True
 
 
@@ -259,6 +259,22 @@ def get_sample(projectid):
         # abort(404)
 
     return jsonify({'sample': res})
+
+@app.route('/query', methods=['GET', 'POST'])
+def query():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.', 'appid': appid})
+
+
+    bf = bfabric.Bfabric(login=content['login'], password=content['webservicepassword'])
+
+    user = bf.read_object(endpoint='user', obj={'login': content['login']})[0]
+
+    projects = map(lambda x: x._id, user.project)
+
+    return jsonify({'projects': projects})
 
 @app.route('/addworkunit', methods=['GET', 'POST'])
 def add_workunit():
