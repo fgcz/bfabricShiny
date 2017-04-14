@@ -1,0 +1,181 @@
+---
+title: specL report
+author:
+  - name: Christian Panse
+    email: cp@fgcz.ethz.ch
+  - name: Witold E. Wolski
+    email: wew@fgcz.ethz.ch
+    affiliation: Functional Genomics Center Zurich
+date: "`r doc_date()`"
+package: "`r pkg_ver('specL')`"
+abstract: >
+  This files contains alle the commands performing a default SWATH ion library
+  generation at the FGCZ. 
+  This document is usually triggered by the bfabric system and is meant for 
+  reproducability.
+vignette: >
+  %\VignetteIndexEntry{Bioconductor specL demonstration workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::html_document2
+---
+
+
+# Requirements
+The following R packages has to be installed on the compute box.
+
+```{r}
+library(specL)
+library(prozor)
+library(Matrix)
+library(yaml)
+```
+
+# Input
+
+## Parameter
+If no `INPUT` is defined the report uses the `r Biocpkg("specL")` package's data
+and the following default parameters. 
+```{r}
+if(!exists("INPUT")){
+  INPUT <- list(FASTA_FILE = "",
+    BLIB_FILTERED_FILE 
+      = system.file("extdata", "peptideStd.sqlite",
+                    package = "specL"),
+    BLIB_REDUNDANT_FILE 
+      = system.file("extdata", "peptideStd_redundant.sqlite",
+                    package = "specL"),
+    MIN_IONS = 5,
+    MAX_IONS = 6,
+    MZ_ERROR = 0.05,
+    MASCOTSCORECUTOFF = 17,
+    FRAGMENTIONMZRANGE = c(300, 1250),
+    FRAGMENTIONRANGE = c(5, 200),
+    OUTPUT_LIBRARY_FILE = "assay_library.tsv"
+    )
+} 
+```
+
+The library generation workflow was performed using the following parameters:
+```{r echo=FALSE}
+  cat(
+  " FASTA_FILE = ", INPUT$FASTA_FILE, "\n",
+  " BLIB_FILTERED_FILE = ", INPUT$BLIB_FILTERED_FILE, "\n",
+  " BLIB_REDUNDANT_FILE = ", INPUT$BLIB_REDUNDANT_FILE, "\n",
+  " MZ_ERROR = ", INPUT$MZ_ERROR, "\n",
+  " FRAGMENTIONMZRANGE = ", INPUT$FRAGMENTIONMZRANGE, "\n",
+  " FRAGMENTIONRANGE = ", INPUT$FRAGMENTIONRANGE, "\n",
+  " FASTA_FILE = ", INPUT$FASTA_FILE, "\n",
+  " MAX_IONS = ", INPUT$MAX_IONS, "\n",
+  " MIN_IONS = ", INPUT$MIN_IONS, "\n"
+  )
+
+```
+
+## Define the fragment ions of interest
+
+The following R helper function is used for composing the in-silico 
+fragment ion using `r CRANpkg("protViz")`.
+```{r}
+fragmentIonFunctionUpTo2 <- function (b, y) {
+  Hydrogen <- 1.007825
+  Oxygen <- 15.994915
+  Nitrogen <- 14.003074
+  b1_ <- (b )
+  y1_ <- (y )
+  b2_ <- (b + Hydrogen) / 2
+  y2_ <- (y + Hydrogen) / 2 
+  return( cbind(b1_, y1_, b2_, y2_) )
+}
+```
+
+
+## Read the sqlite files
+
+```{r warning=FALSE}
+BLIB_FILTERED <- read.bibliospec(INPUT$BLIB_FILTERED_FILE) 
+
+summary(BLIB_FILTERED)
+```
+
+
+```{r warning=FALSE}
+BLIB_REDUNDANT <- read.bibliospec(INPUT$BLIB_REDUNDANT_FILE) 
+summary(BLIB_REDUNDANT)
+```
+
+
+# Generate the ion library
+
+
+```{r message=FALSE}
+specLibrary <- specL::genSwathIonLib(
+  data = BLIB_FILTERED,
+  data.fit = BLIB_REDUNDANT,
+  max.mZ.Da.error = INPUT$MZ_ERROR,
+  topN = INPUT$MAX_IONS,
+  fragmentIonMzRange = INPUT$FRAGMENTIONMZRANGE,
+  fragmentIonRange = INPUT$FRAGMENTIONRANGE,
+  fragmentIonFUN = fragmentIonFunctionUpTo2,
+  mascotIonScoreCutOFF = INPUT$MASCOTSCORECUTOFF
+  )
+```
+
+## Library Generation Summary
+
+Total Number of PSM's with Mascot e score < 0.05, in your search is __`r length(BLIB_REDUNDANT)`__. The number of unique precurosors is __`r length(BLIB_FILTERED)`__.
+The size of the generated ion library is __`r length(specLibrary@ionlibrary)`__.
+That means that __`r round(length(specLibrary@ionlibrary)/length(BLIB_FILTERED) * 100, 2)`__ % of the unique precursors fullfilled the filtering criteria.
+
+
+```{r}
+summary(specLibrary)
+```
+
+```{r}
+length(specLibrary)
+slotNames(specLibrary)
+
+length(specLibrary@rt.input)
+length(specLibrary@rt.normalized)
+specLibrary@ionlibrary[[1]]
+
+slotNames(specLibrary@ionlibrary[[1]])
+```
+
+```{r}
+plot(specLibrary)
+```
+
+# Remarks
+
+This report was generated using the packages:
+
+- [http://bioconductor.org/packages/specL](http://bioconductor.org/packages/specL/) version `r packageVersion('specL')`
+
+- [https://github.com/protViz/prozor](https://github.com/protViz/prozor) version `r packageVersion('prozor')`
+
+
+
+We have invested a lot of time and effort in creating and maintaining this software.
+Please cite our publication:
+
+- Panse C, Trachsel C, Grossmann J and Schlapbach R (2015). 
+``specL - An R/Bioconductor package to prepare peptide spectrum matches for use in targeted proteomics.'' 
+Bioinformatics, pp. 2228-2231. 
+[DOI:10.1093/bioinformatics/btv105](http://dx.doi.org/10.1093/bioinformatics/btv105), 
+[PMID: 25712692](https://www.ncbi.nlm.nih.gov/pubmed/25712692).
+
+For questions and improvements please do contact the authors of the application [_generateSpecLibrary_](https://github.com/fgcz/generateSpecLibrary/graphs/contributors).
+
+
+
+# Session info
+
+Here is the output of `sessionInfo()` on the system on which this
+document was compiled:
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
