@@ -170,6 +170,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
       selectInput('login', 'Login:', NULL)
     }
   })
+  
   output$extract <- renderUI({
     res <- getExtracts()
     if (!is.null(res)){
@@ -179,7 +180,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
      
     }
   })
-  
   
   output$downloadData <- downloadHandler(
     filename = function() {
@@ -223,12 +223,16 @@ getHPLC <- function(){list(VELOS_1='eksigent',
 #    	selected.order <- input$extract for troubleshooting only
 #    	write(selected.order, file = 'iorder.txt') for troubleshooting only
 
-    	    	res <- res[idx, c("extract.name", "extract.id", "extract.Condition")]
-    	res <- res[match(input$extract, res$extract.name),]
+    	
+    	# TODO(cp): replace with sample information
+    	res <- res[idx, c("extract.name", "extract.id", "extract.Condition")]
+    	res <- res[match(input$extract, res$extract.name), ]
     	
     	if(any(is.na(res$extract.Condition))){
-    	res$extract.Condition[is.na(res$extract.Condition)] <- "A"
-    	} else{
+    	  
+    	  res$extract.Condition[is.na(res$extract.Condition)] <- "A"
+
+      } else{
     	  
     	}
     	

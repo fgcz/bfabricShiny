@@ -244,6 +244,16 @@ def get_all_extracts(projectid):
     return jsonify({'extract': res})
 
 """
+example
+curl http://localhost:5000/zip_resource_of_workunitid/154547
+"""
+@app.route('/zip_resource_of_workunitid/<int:workunitid>', methods=['GET'])
+def get_zip_resources_of_workunit(workunitid):
+    res = map(lambda x: x.relativepath, bfapp.read_object(endpoint='resource', obj={'workunitid': workunitid}))
+    res = filter(lambda x: x.endswith(".zip"), res)
+    return jsonify(res)
+
+"""
 # running in R
 res.sample <- as.data.frame(fromJSON("http://localhost:5000/projectid/1000"))
 View(res.sample)
