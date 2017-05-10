@@ -39,7 +39,9 @@ If no `INPUT` is defined the report uses the `r Biocpkg("specL")` package's data
 and the following default parameters. 
 ```{r}
 if(!exists("INPUT")){
-  INPUT <- list(FASTA_FILE = "",
+  INPUT <- list(FASTA_FILE 
+      = system.file("extdata", "SP201602-specL.fasta.gz",
+                    package = "specL"),
     BLIB_FILTERED_FILE 
       = system.file("extdata", "peptideStd.sqlite",
                     package = "specL"),
@@ -106,6 +108,21 @@ summary(BLIB_REDUNDANT)
 ```
 
 
+## Protein (re)-annotation
+After processing the psm using bibliospec the protein information is gone.
+
+The `read.fasta` function is provided by the CRAN package `r CRANpkg("seqinr")`.
+
+```{r}
+FASTA <- read.fasta(INPUT$FASTA_FILE, 
+                    seqtype = "AA", 
+                    as.string=TRUE)
+
+
+
+BLIB_FILTERED <- annotate.protein_id(BLIB_FILTERED, fasta=FASTA)
+```
+
 # Generate the ion library
 
 
@@ -129,8 +146,8 @@ The size of the generated ion library is __`r length(specLibrary@ionlibrary)`__.
 That means that __`r round(length(specLibrary@ionlibrary)/length(BLIB_FILTERED) * 100, 2)`__ % of the unique precursors fullfilled the filtering criteria.
 
 
-```{r}
-summary(specLibrary)
+```{r }
+summary(specLibrary )
 ```
 
 ```{r}
@@ -147,6 +164,16 @@ slotNames(specLibrary@ionlibrary[[1]])
 ```{r}
 plot(specLibrary)
 ```
+
+
+
+
+# Output
+
+```{r}
+write.spectronaut(specLibrary, file =  INPUT$OUTPUT_LIBRARY_FILE)
+```
+
 
 # Remarks
 

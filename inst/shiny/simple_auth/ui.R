@@ -18,9 +18,10 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-       textInput('login', 'bfabric Login', ""),
-       passwordInput('webservicepassword', 'Web Service Password', ""),
+       textInput('login', 'bfabric Login', "cpanse"),
+       passwordInput('webservicepassword', 'Web Service Password', "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
        htmlOutput("project"),
+       htmlOutput("resources"),
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,

@@ -267,15 +267,30 @@ def query():
     except:
         return jsonify({'error': 'could not get POST content.', 'appid': appid})
 
+    print "PASSWORD CLEARTEXT", content['webservicepassword']
+    
+    bf = bfabric.Bfabric(login=content['login'], 
+      password=content['webservicepassword'], 
+      webbase='http://fgcz-bfabric.uzh.ch/bfabric')
 
-    bf = bfabric.Bfabric(login=content['login'], password=content['webservicepassword'])
+    for i in content.keys():
+      print "{}\t{}".format(i, content[i])
 
-    user = bf.read_object(endpoint='user', obj={'login': content['login']})[0]
+    if 'projectid' in content:
+      workunits = bf.read_object(endpoint='workunit', 
+        obj={'applicationid': content['applicationid'],
+          'projectid': content['projectid']})
+      #workunits = bf.read_object(endpoint='workunit', obj={'applicationid': 205, 'projectid': 1352})
+      print workunits
+      return jsonify({'workunits': map(lambda x: x._id, workunits)})
+    #elif 'query' in content and "{}".format(content['query']) is 'project':
+    else:
+      user = bf.read_object(endpoint='user', obj={'login': content['login']})[0]
+      projects = map(lambda x: x._id, user.project)
+      return jsonify({'projects': projects})
 
-    projects = map(lambda x: x._id, user.project)
-
-    return jsonify({'projects': projects})
-
+    return jsonify({'error': 'could not process query'})
+  
 @app.route('/addworkunit', methods=['GET', 'POST'])
 def add_workunit():
     appid = request.args.get('appid', None)

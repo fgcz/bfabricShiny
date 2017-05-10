@@ -13,6 +13,21 @@ library(bfabricShiny)
 shinyServer(function(input, output, session) {
    
   
+  getApplicationID <- 205;
+  
+  getResources <- reactive({
+    rv <- POST('http://localhost:5000/query', 
+               body = toJSON(list(login = input$login, 
+                                  webservicepassword = input$webservicepassword,
+                                  query = 'resource',
+                                  projectid = input$project,
+                                  applicationid = 205)), 
+               encode = 'json')
+    rv <- content(rv)
+    sort(unlist(rv$workunits), decreasing = TRUE)
+  })
+  
+  
   getProjects <- reactive({
     rv <- POST('http://localhost:5000/query', 
                body=toJSON(list(login=input$login, 
@@ -25,16 +40,28 @@ shinyServer(function(input, output, session) {
   })
   # 
   
-  output$project <- renderUI({
-    res <- getProjects()
+  output$resources <- renderUI({
+    res <- getResources()
     if (is.null(res)){
       # selectInput('project', 'project:', NULL)
       # textInput('not authorized yet', 'not authorized yet')
     }else{
-    
+      
+      selectInput('resource', 'resource:', res, multiple = FALSE)
+    }
+  })
+  
+  
+  output$project <- renderUI({
+    res <- getProjects()
+    if (is.null(res)){
+    }else{
       selectInput('project', 'project:', res, multiple = FALSE)
     }
   })
+  
+    
+
   output$distPlot <- renderPlot({
     
     # generate bins based on input$bins from ui.R
