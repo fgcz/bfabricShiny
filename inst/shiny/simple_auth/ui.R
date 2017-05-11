@@ -1,50 +1,24 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
+#R
 
 library(bfabricShiny)
 
-# Module UI function
-bfabricLogin <- function(id) {
-  # Create a namespace function using the provided id
-  ns <- NS(id)
-  
-  tagList(
-    textInput('login', 'bfabric Login', "cpanse"),
-    passwordInput('webservicepassword', 
-                  'Web Service Password', 
-                  "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
-    htmlOutput(ns("pprojectl")),
-    htmlOutput("project"),
-    htmlOutput("resources")
-   
-  )
-}
 
-
-# Define UI for application that draws a histogram
 shinyUI(fluidPage(
-  
+
   # Application title
   titlePanel("FGCZ bfabric Web Service Password Test"),
-  
+
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-       bfabricLogin("bfabric8"),
-       
+      shinyUIModule("bfabric8", login='cpanse', 
+                    password = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,
                    max = 50,
                    value = 30)
     ),
-    
     # Show a plot of the generated distribution
     mainPanel(
        plotOutput("distPlot")

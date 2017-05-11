@@ -87,3 +87,66 @@ getResources <- function(login, webservicepassword, project) {
   return(resources)
 }
 
+
+#' Module UI function
+#'
+#' @param id 
+#' @param login 
+#' @param password 
+#'
+#' @return
+#' @export shinyUIModule
+shinyUIModule <- function(id, login, password) {
+  # Create a namespace function using the provided id
+  ns <- NS(id)
+  
+  tagList(
+    textInput(ns('login'), 'bfabric Login', login),
+    passwordInput(ns('webservicepassword'), 
+                  'Web Service Password', 
+                  password),
+    htmlOutput(ns("projects")),
+    htmlOutput(ns("resources"))
+  )
+}
+
+
+#' shinyServerModule
+#'
+#' @param input 
+#' @param output 
+#' @param session 
+#'
+#' @return
+#' @export shinyServerModule
+shinyServerModule <- function(input, output, session) {
+  
+  ns <- session$ns
+  
+  output$projects <- renderUI({
+    #ns <- session$ns
+    
+    projects <- getProjects(input$login, input$webservicepassword)
+    
+    if (is.null(projects)){
+    }else{
+      selectInput(ns("project"), "xxxProjetcs", projects, multiple = FALSE)
+    }
+  })
+  
+  
+  output$resources <- renderUI({
+    
+    res <- getResources(input$login, input$webservicepassword, input$project)
+    if (is.null(res)){
+    }else{
+      selectInput(ns('resource'), 'resource:', res, multiple = FALSE)
+    }
+  })
+  
+  
+  return(reactive({
+    validate(need(input$pprojectl, FALSE))
+    1
+  }))
+}
