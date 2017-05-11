@@ -9,6 +9,24 @@
 
 library(bfabricShiny)
 
+# Module UI function
+bfabricLogin <- function(id) {
+  # Create a namespace function using the provided id
+  ns <- NS(id)
+  
+  tagList(
+    textInput('login', 'bfabric Login', "cpanse"),
+    passwordInput('webservicepassword', 
+                  'Web Service Password', 
+                  "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
+    htmlOutput(ns("pprojectl")),
+    htmlOutput("project"),
+    htmlOutput("resources")
+   
+  )
+}
+
+
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
@@ -18,10 +36,8 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-       textInput('login', 'bfabric Login', "cpanse"),
-       passwordInput('webservicepassword', 'Web Service Password', "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
-       htmlOutput("project"),
-       htmlOutput("resources"),
+       bfabricLogin("bfabric8"),
+       
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,

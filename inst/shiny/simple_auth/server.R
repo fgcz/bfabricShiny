@@ -9,39 +9,47 @@
 
 library(bfabricShiny)
 
+
+
+columnChooser <- function(input, output, session, login, webservicepassword) {
+  output$pprojectl <- renderUI({
+    ns <- session$ns
+    
+    print (paste("DEBUG", login, webservicepassword))
+    print (paste("DEBUG", input$login, input$webservicepassword))
+    print (paste("DEBUG", ns("login"), ns("webservicepassword")))
+
+    #projects <- getProjects(input$login, input$webservicepassword)
+    
+    # (projects)
+    projects <- c(1000, 2000)
+    
+    selectInput(ns("pprojectl"), "xxxProjetcs", projects, multiple = FALSE)
+  })
+  
+  return(reactive({
+    validate(need(input$pprojectl, FALSE))
+    projects
+  }))
+}
+
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-   
   
+  dd <- callModule(columnChooser, "bfabric8") 
+ #                  login=reactive({input$login}), 
+  #                 webservicepassword=reactive({input$webservicepassword}))
+  
+  print (dd)
   getApplicationID <- 205;
+
+  #getResources <- callModule(getResources, id="bfabric8")
+  #etProjects <- callModule(getProjects,  id="bfabric8")
   
-  getResources <- reactive({
-    rv <- POST('http://localhost:5000/query', 
-               body = toJSON(list(login = input$login, 
-                                  webservicepassword = input$webservicepassword,
-                                  query = 'resource',
-                                  projectid = input$project,
-                                  applicationid = 205)), 
-               encode = 'json')
-    rv <- content(rv)
-    sort(unlist(rv$workunits), decreasing = TRUE)
-  })
-  
-  
-  getProjects <- reactive({
-    rv <- POST('http://localhost:5000/query', 
-               body=toJSON(list(login=input$login, 
-                                webservicepassword=input$webservicepassword,
-                                query='project')), 
-               encode = 'json')
-    
-    rv <- content(rv)
-    sort(unlist(rv$project), decreasing = TRUE)
-  })
-  # 
   
   output$resources <- renderUI({
-    res <- getResources()
+    res <- getResources(input$login, input$webservicepassword, input$project)
     if (is.null(res)){
       # selectInput('project', 'project:', NULL)
       # textInput('not authorized yet', 'not authorized yet')
@@ -53,15 +61,16 @@ shinyServer(function(input, output, session) {
   
   
   output$project <- renderUI({
-    res <- getProjects()
+    res <- getProjects(input$login, input$webservicepassword)
+    
     if (is.null(res)){
     }else{
       selectInput('project', 'project:', res, multiple = FALSE)
     }
+    
   })
   
-    
-
+  
   output$distPlot <- renderPlot({
     
     # generate bins based on input$bins from ui.R
@@ -72,5 +81,6 @@ shinyServer(function(input, output, session) {
     hist(x, breaks = bins, col = 'darkgray', border = 'white')
     
   })
+  
   
 })

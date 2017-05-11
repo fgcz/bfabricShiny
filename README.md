@@ -31,7 +31,7 @@ bfabric_flask_sample.py
 - test 
 
 ```{bash}
- curl http://127.0.0.1:5000/extract/2450
+curl http://127.0.0.1:5000/extract/2450
 ```
 
 

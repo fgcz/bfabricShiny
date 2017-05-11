@@ -1,7 +1,7 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.24
+Version: 0.0.25
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: allows the user to automatically generate a certain
@@ -18,9 +18,7 @@ Suggest:
   testthat
 License: GPL
 LazyData: TRUE
-Collate: ms_queue.R
-   fgcz.R
-   zzz.R
+Collate: ms_queue.R fgcz.R zzz.R
 URL: https://github.com/cpanse/bfabricShiny
 BugReports: https://github.com/cpanse/bfabricShiny/issues
 RoxygenNote: 6.0.1

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ms_queue.R
 \name{generate_queue}
 \alias{generate_queue}
-\title{Title}
+\title{FGCZ mass spec queue generator}
 \usage{
 generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
   instrument = "FUSION_1", username = "cpanse", how.often = 2,
@@ -43,6 +43,9 @@ generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
 
 \item{pathprefixsep}{}
 }
+\value{
+a instrument configuration as \code{data.frame}.
+}
 \description{
-Title
+FGCZ mass spec queue generator
 }

@@ -435,7 +435,7 @@ test_data_large <- function(){
 
 
 
-#' Title
+#' FGCZ mass spec queue generator 
 #'
 #' @param x 
 #' @param foldername 
@@ -454,10 +454,8 @@ test_data_large <- function(){
 #' @param pathprefix 
 #' @param pathprefixsep 
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return a instrument configuration as \code{data.frame}.
+#' @export generate_queue
 generate_queue <- function(x, 
                            foldername='', 
                            projectid=1000, 
@@ -524,7 +522,7 @@ generate_queue <- function(x,
 #'
 #' @return
 #'
-#' @export True
+#' @export runQueue
 runQueue <- function(){
   qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
   shiny::runApp(qgs, display.mode = "normal")
