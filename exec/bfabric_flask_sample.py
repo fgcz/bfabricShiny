@@ -4,7 +4,6 @@
 this script can be used as a bfabric <-> shiny wrapper
 
 Christian Panse <cp@fgcz.ethz.ch
-Witold E. Wolski <wew@fgcz.ethz.ch>
 Christian Trachsel
 2016-07-05 1700
 
@@ -15,9 +14,22 @@ from slugify import slugify
 import base64
 import json
 from flask import Flask, jsonify, request
+from flask.json import JSONEncoder
 from bfabric import bfabric
 
+class BfabricJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        try:
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return(dict(iterable))
+
+        return JSONEncoder.default(self, obj)
+
 app = Flask(__name__)
+app.json_encoder = BfabricJSONEncoder 
 bfapp = bfabric.Bfabric(login='pfeeder')
 
 inlcude_child_extracts = True
@@ -269,6 +281,34 @@ def get_sample(projectid):
         # abort(404)
 
     return jsonify({'sample': res})
+
+
+"""
+generic query interface
+
+example:
+
+R> 
+"""
+@app.route('/q', methods=['GET', 'POST'])
+def q():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.'})
+
+    
+    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+
+    for i in content.keys():
+        print "{}\t{}".format(i, content[i])
+
+    res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
+
+    try:
+        return jsonify({'res': res})
+    except:
+        return jsonify({'status': 'failed'})
 
 @app.route('/query', methods=['GET', 'POST'])
 def query():

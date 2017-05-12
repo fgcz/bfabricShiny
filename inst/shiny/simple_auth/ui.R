@@ -11,8 +11,10 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      shinyUIModule("bfabric8", login='cpanse', 
+      shinyUIModule("bfabric8", 
+                    login='cpanse', 
                     password = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"),
+      
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,

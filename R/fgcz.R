@@ -61,6 +61,22 @@ getProjects <- function(login, webservicepassword) {
 }
 
 
+.ttt <- function(){
+  login = 'cpanse'
+  webservicepassword = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"
+  url0 <- 'http://localhost:5000/q'
+  url <-  "localhost:5000/custom"
+  rv <- POST(url, 
+             body=toJSON(list(login = login, 
+                              webservicepassword = webservicepassword,
+                              endpoint = 'workunit', 
+                              query=list('applicationid' = 168, "projectid"=1000))), 
+             encode = 'json')
+  
+  rv <- content(rv)
+}
+  
+
 #' get all resources of a (login, project) 
 #'
 #' @param login 
@@ -124,26 +140,23 @@ shinyServerModule <- function(input, output, session) {
   ns <- session$ns
   
   output$projects <- renderUI({
-    #ns <- session$ns
-    
     projects <- getProjects(input$login, input$webservicepassword)
     
     if (is.null(projects)){
+      # textOutput('no project yet')
     }else{
       selectInput(ns("project"), "xxxProjetcs", projects, multiple = FALSE)
     }
   })
   
-  
   output$resources <- renderUI({
-    
     res <- getResources(input$login, input$webservicepassword, input$project)
     if (is.null(res)){
+      # 
     }else{
       selectInput(ns('resource'), 'resource:', res, multiple = FALSE)
     }
   })
-  
   
   return(reactive({
     validate(need(input$pprojectl, FALSE))
