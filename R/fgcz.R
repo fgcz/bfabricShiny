@@ -65,17 +65,30 @@ getProjects <- function(login, webservicepassword) {
   login = 'cpanse'
   webservicepassword = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"
   url0 <- 'http://localhost:5000/q'
-  url <-  "localhost:5000/custom"
-  rv <- POST(url, 
+  url <-  'http://localhost:5000/custom'
+  rv <- POST(url0, 
              body=toJSON(list(login = login, 
                               webservicepassword = webservicepassword,
                               endpoint = 'workunit', 
-                              query=list('applicationid' = 168, "projectid"=1000))), 
+                              query=list('applicationid' = 168, 
+                                         "projectid" = 1000))), 
              encode = 'json')
   
   rv <- content(rv)
 }
   
+
+.tttt <- function(){
+  login = 'cpanse'
+  webservicepassword = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"
+  url0 <- 'http://localhost:5000/q'
+  url <-  'http://localhost:5000/custom'
+  rv <- GET('http://localhost:5000/custom')
+  
+  rv <- content(rv)
+  
+}
+
 
 #' get all resources of a (login, project) 
 #'

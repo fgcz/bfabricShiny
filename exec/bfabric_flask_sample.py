@@ -262,6 +262,7 @@ curl http://localhost:5000/zip_resource_of_workunitid/154547
 @app.route('/zip_resource_of_workunitid/<int:workunitid>', methods=['GET'])
 def get_zip_resources_of_workunit(workunitid):
     res = map(lambda x: x.relativepath, bfapp.read_object(endpoint='resource', obj={'workunitid': workunitid}))
+    print res
     res = filter(lambda x: x.endswith(".zip"), res)
     return jsonify(res)
 
