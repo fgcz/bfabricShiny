@@ -1,7 +1,7 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.25
+Version: 0.0.26
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: allows the user to automatically generate a certain
@@ -9,9 +9,12 @@ Description: allows the user to automatically generate a certain
   .csv and directly loaded into Xcalibur for running the sequence. 
 Depends:
   DT,
+  PKI,
   httr,
-  jsonlite,
-  shiny
+  jsonlite (>= 1.4.0),
+  shiny (>= 1.0.3),
+  shinyStore (>= 0.1.0),
+  xml2 (>= 1.1.1)
 Suggest:
   rmarkdown,
   roxygen2,

@@ -9,7 +9,7 @@ Christian Trachsel
 
 """
 
-from slugify import slugify
+# from slugify import slugify
 
 import base64
 import json

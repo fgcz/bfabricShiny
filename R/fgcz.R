@@ -120,20 +120,21 @@ getResources <- function(login, webservicepassword, project) {
 #' Module UI function
 #'
 #' @param id 
-#' @param login 
-#' @param password 
 #'
 #' @return
 #' @export shinyUIModule
-shinyUIModule <- function(id, login, password) {
+shinyUIModule <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
+  system.file("keys", package = "bfabricShiny")
+  privKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "test.key"))
   
+ 
   tagList(
-    textInput(ns('login'), 'bfabric Login', login),
-    passwordInput(ns('webservicepassword'), 
-                  'Web Service Password', 
-                  password),
+    initStore(ns("store"), "shinyStore-ex2", privKey), 
+    textInput(ns('login'), 'bfabric Login'),
+    textInput(ns('webservicepassword'), 'Web Service Password'),
+    actionButton(ns("save"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("resources"))
   )
@@ -151,28 +152,45 @@ shinyUIModule <- function(id, login, password) {
 shinyServerModule <- function(input, output, session) {
   
   ns <- session$ns
-  
+  pubKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "test.key.pub"))
+  print("shinyServer")
+  print(pubKey)
   output$projects <- renderUI({
     projects <- getProjects(input$login, input$webservicepassword)
     
     if (is.null(projects)){
       # textOutput('no project yet')
     }else{
-      selectInput(ns("project"), "xxxProjetcs", projects, multiple = FALSE)
+      selectInput(ns("project"), "Projetcs", projects, multiple = FALSE)
     }
   })
   
   output$resources <- renderUI({
     res <- getResources(input$login, input$webservicepassword, input$project)
     if (is.null(res)){
-      # 
+      
     }else{
       selectInput(ns('resource'), 'resource:', res, multiple = FALSE)
     }
   })
   
+  observe({
+    if (input$save <= 0){
+      # On initialization, set the value of the text editor to the current val.
+      
+      updateTextInput(session, "login", value=isolate(input$store)$login)
+      updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
+
+      return()
+    }
+    updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+    updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+  })
+  
   return(reactive({
-    validate(need(input$pprojectl, FALSE))
+    validate(need(input$projects, FALSE))
     1
   }))
+  
+  
 }
