@@ -37,7 +37,7 @@ bfapp = bfabric.Bfabric(login='pfeeder')
 inlcude_child_extracts = True
 
 """
-generic query interface for read
+generic query interface for read interface
 
 example (assumes the proxy runs on localhost):
 
@@ -50,6 +50,8 @@ R>     rv <- POST('http://localhost:5000/query',
                encode = 'json')
     
 R>    rv <- content(rv)
+
+TODO(cp@fgcz.ethz.ch): also provide an argument for the webbase
 """
 @app.route('/q', methods=['GET', 'POST'])
 def q():
@@ -58,15 +60,16 @@ def q():
     except:
         return jsonify({'error': 'could not get POST content.'})
 
-    
     bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
     res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
 
     try:
         return jsonify({'res': res})
     except:
-        return jsonify({'status': 'failed'})
+        return jsonify({'status': 'jsonify failed'})
 
+    
+    
 
 def dfs__(extract_id):
     stack = list()
