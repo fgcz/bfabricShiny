@@ -2,14 +2,13 @@
 
 """
 this script can be used as a bfabric <-> shiny wrapper
+it can also be seen a proxy REST to SOAP proxy.
 
 Christian Panse <cp@fgcz.ethz.ch
 Christian Trachsel
 2016-07-05 1700
-
+2017-05-11
 """
-
-# from slugify import slugify
 
 import base64
 import json
@@ -17,6 +16,9 @@ from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from bfabric import bfabric
 
+"""
+enables to serialize (jsonify) bfabric wsdl objects
+"""
 class BfabricJSONEncoder(JSONEncoder):
     def default(self, obj):
         try:
@@ -34,6 +36,40 @@ bfapp = bfabric.Bfabric(login='pfeeder')
 
 inlcude_child_extracts = True
 
+"""
+generic query interface for read
+
+example (assumes the proxy runs on localhost):
+
+R>     rv <- POST('http://localhost:5000/query', 
+               body = toJSON(list(login = login, 
+                                  webservicepassword = webservicepassword,
+                                  query = 'resource',
+                                  projectid = project,
+                                  applicationid = 205)), 
+               encode = 'json')
+    
+R>    rv <- content(rv)
+"""
+@app.route('/q', methods=['GET', 'POST'])
+def q():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.'})
+
+    
+    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+
+    for i in content.keys():
+        print "{}\t{}".format(i, content[i])
+
+    res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
+
+    try:
+        return jsonify({'res': res})
+    except:
+        return jsonify({'status': 'failed'})
 
 
 def dfs__(extract_id):
@@ -284,32 +320,6 @@ def get_sample(projectid):
     return jsonify({'sample': res})
 
 
-"""
-generic query interface
-
-example:
-
-R> 
-"""
-@app.route('/q', methods=['GET', 'POST'])
-def q():
-    try:
-        content = json.loads(request.data)
-    except:
-        return jsonify({'error': 'could not get POST content.'})
-
-    
-    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
-
-    for i in content.keys():
-        print "{}\t{}".format(i, content[i])
-
-    res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
-
-    try:
-        return jsonify({'res': res})
-    except:
-        return jsonify({'status': 'failed'})
 
 @app.route('/query', methods=['GET', 'POST'])
 def query():
