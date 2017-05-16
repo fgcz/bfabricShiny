@@ -60,10 +60,6 @@ def q():
 
     
     bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
-
-    for i in content.keys():
-        print "{}\t{}".format(i, content[i])
-
     res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
 
     try:
