@@ -161,7 +161,7 @@ test_data_large <- function(){
   res <- .equilize_groups(res, blockgroupindex, cond)
   res$blockrandom <- extract.Condition.vector
   res <- res[order(res$blockrandom),]
-  extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
+  extract.Condition.vector.2 <- as.vector(replicate(cond, sample(1:repeats)))
   resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
   res$blockrandom2 <- resort
   res <- res[order(res$blockrandom2), ]
