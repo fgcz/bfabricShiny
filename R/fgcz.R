@@ -61,9 +61,9 @@ getProjects <- function(login, webservicepassword) {
 }
 
 
-.ttt <- function(){
-  login = 'cpanse'
-  webservicepassword = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"
+.query_example0 <- function(){
+  login = ''
+  webservicepassword = ""
   url0 <- 'http://localhost:5000/q'
   url <-  'http://localhost:5000/custom'
   rv <- POST(url0, 
@@ -78,9 +78,9 @@ getProjects <- function(login, webservicepassword) {
 }
   
 
-.tttt <- function(){
-  login = 'cpanse'
-  webservicepassword = "$2a$10$We8McOYkCp7iCFzaTCgDoepBe2KkrzkiLKvh0o.v9u8tIQCYmD.D6"
+.query_example1 <- function(){
+  login = ''
+  webservicepassword = ""
   url0 <- 'http://localhost:5000/q'
   url <-  'http://localhost:5000/custom'
   rv <- GET('http://localhost:5000/custom')
