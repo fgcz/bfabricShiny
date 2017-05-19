@@ -161,7 +161,7 @@ test_data_large <- function(){
   res <- .equilize_groups(res, blockgroupindex, cond)
   res$blockrandom <- extract.Condition.vector
   res <- res[order(res$blockrandom),]
-  extract.Condition.vector.2 <- as.vector(replicate(cond, sample(1:repeats)))
+  extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
   resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
   res$blockrandom2 <- resort
   res <- res[order(res$blockrandom2), ]
@@ -322,7 +322,7 @@ test_data_large <- function(){
   fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
-  clean <- clean[rep(row.names(clean), ceiling(repetitions/2)), ]
+  clean <- clean[rep(row.names(clean), ceiling(qc.inserts/2)*how.many), ]
   res <- rbind(x, fet, clean)
   odd <- c(TRUE, FALSE)
   res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx[odd] + 0.25, each = how.many))
