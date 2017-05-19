@@ -14,6 +14,7 @@ import base64
 import json
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
+from slugify import slugify
 from bfabric import bfabric
 
 """
