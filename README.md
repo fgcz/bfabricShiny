@@ -28,16 +28,22 @@ install_git('https://github.com/cpanse/bfabricShiny', build_vignettes = TRUE, qu
 bfabric_flask_sample.py 
 ```
 
-- test 
+- simple json test 
 
 ```{bash}
 curl http://127.0.0.1:5000/extract/2450
 ```
-
 
 ## shiny queue generator application
 
 ```{r}
 qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
 shiny::runApp(qgs, display.mode = "normal")
+```
+
+## test bfabric auth module
+
+```{r}
+bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
+shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
 ```
