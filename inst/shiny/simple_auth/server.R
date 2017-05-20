@@ -6,10 +6,10 @@ library(bfabricShiny)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  dd <- callModule(shinyServerModule, "bfabric8")
+  dd <- callModule(shinyServerModule, "bfabric8", applicationid=168)
   
-  print (dd)
-  getApplicationID <- 205;
+  #print (dd)
+  #getApplicationID <- 205;
 
   output$distPlot <- renderPlot({
     

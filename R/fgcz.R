@@ -33,6 +33,7 @@
 }
 
 
+
 #' queries projects of a login
 #'
 #' @param login 
@@ -89,6 +90,24 @@ getProjects <- function(login, webservicepassword) {
   
 }
 
+getWorkunits <- function(login, webservicepassword, projectid = 1000, applicationid = 168){
+  
+  workunits <- ({
+    rv <- POST('http://localhost:5000/q', 
+               body = toJSON(list(login = login, 
+                                  webservicepassword = webservicepassword,
+                                  endpoint = 'workunit', 
+                                  query=list('applicationid' = applicationid, 
+                                             'projectid' = projectid)
+               ), 
+               encode = 'json'))
+    
+    rv <- content(rv)
+    (sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}))
+  })
+  
+  return(workunits)
+}
 
 #' get all resources of a (login, project) 
 #'
@@ -98,19 +117,19 @@ getProjects <- function(login, webservicepassword) {
 #'
 #' @return a vector of resource ids
 #' @export getResources 
-getResources <- function(login, webservicepassword, project) {
+getResources <- function(login, webservicepassword, workunitid){
   
   resources <- ({
-    rv <- POST('http://localhost:5000/query', 
+    rv <- POST('http://localhost:5000/q', 
                body = toJSON(list(login = login, 
                                   webservicepassword = webservicepassword,
-                                  query = 'resource',
-                                  projectid = project,
-                                  applicationid = 205)), 
-               encode = 'json')
+                                  endpoint = 'resource', 
+                                  query=list('workunitid' = workunitid)
+                                 ), 
+               encode = 'json'))
     
     rv <- content(rv)
-    sort(unlist(rv$workunits), decreasing = TRUE)
+    sort(sapply(rv$res, function(y){y$`_id`}), decreasing = TRUE)
   })
   
   return(resources)
@@ -133,9 +152,10 @@ shinyUIModule <- function(id) {
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey), 
     textInput(ns('login'), 'bfabric Login'),
-    textInput(ns('webservicepassword'), 'Web Service Password'),
+    passwordInput(ns('webservicepassword'), 'Web Service Password'),
     actionButton(ns("save"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
+    htmlOutput(ns("workunits")),
     htmlOutput(ns("resources"))
   )
 }
@@ -149,28 +169,46 @@ shinyUIModule <- function(id) {
 #'
 #' @return
 #' @export shinyServerModule
-shinyServerModule <- function(input, output, session) {
+shinyServerModule <- function(input, output, session, applicationid) {
   
   ns <- session$ns
   pubKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "test.key.pub"))
   print("shinyServer")
   print(pubKey)
+  
   output$projects <- renderUI({
     projects <- getProjects(input$login, input$webservicepassword)
     
     if (is.null(projects)){
-      # textOutput('no project yet')
     }else{
+      
       selectInput(ns("project"), "Projetcs", projects, multiple = FALSE)
     }
   })
   
-  output$resources <- renderUI({
-    res <- getResources(input$login, input$webservicepassword, input$project)
+  
+  output$workunits <- renderUI({
+    res <- getWorkunits(input$login, input$webservicepassword, input$projectid, applicationid)
     if (is.null(res)){
-      
+      return (NULL)
     }else{
-      selectInput(ns('resource'), 'resource:', res, multiple = FALSE)
+      tagList(
+        selectInput("applicationid", "applicationid:", applicationid, multiple = FALSE),
+        selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
+      )
+    }
+  })
+  
+  
+  output$resources <- renderUI({
+    if (is.null(input$workunit)){
+      return (NULL)
+    }
+    workunitid = strsplit(input$workunit, " - ")[[1]][1]
+    res <- getResources(input$login, input$webservicepassword, workunitid)
+    if (is.null(res)){
+    }else{
+      selectInput(ns("resourceid"), "resourceid:", res, multiple = FALSE)
     }
   })
   
