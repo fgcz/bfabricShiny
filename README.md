@@ -41,9 +41,19 @@ qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
 shiny::runApp(qgs, display.mode = "normal")
 ```
 
-## test bfabric auth module
+## Test bfabric auth module
 
+### generate keys
+
+```{sh}
+cd bfabricShiny/inst/keys &&  ssh-keygen -f $PWD/bfabricShiny.key -t rsa
+```
+
+### Launch the shiny application
 ```{r}
 bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
 shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
 ```
+
+
+

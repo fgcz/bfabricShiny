@@ -33,35 +33,6 @@
 }
 
 
-
-#' queries projects of a login
-#'
-#' @param login 
-#' @param webservicepassword 
-#'
-#' @return a vector of project ids
-#' @export getProjects
-#'
-#' 
-getProjects <- function(login, webservicepassword) {
-  
-  print (paste("login:", login))
-  projetcs <- ({
-    rv <- POST('http://localhost:5000/query', 
-               body=toJSON(list(login=login, 
-                                webservicepassword=webservicepassword,
-                                query='project')), 
-               encode = 'json')
-    
-    rv <- content(rv)
-    sort(unlist(rv$project), decreasing = TRUE)
-  })
-  
-  
-  return(projetcs)
-}
-
-
 .query_example0 <- function(){
   login = ''
   webservicepassword = ""
@@ -90,7 +61,37 @@ getProjects <- function(login, webservicepassword) {
   
 }
 
-getWorkunits <- function(login, webservicepassword, projectid = 1000, applicationid = 168){
+
+
+#' queries projects of a login
+#'
+#' @param login 
+#' @param webservicepassword 
+#'
+#' @return a vector of project ids
+#' @export getProjects
+#'
+#' 
+getProjects <- function(login, webservicepassword) {
+
+  projetcs <- ({
+    rv <- POST('http://localhost:5000/q', 
+               body=toJSON(list(login=login, 
+                                webservicepassword=webservicepassword,
+                                endpoint = 'user',
+                                query=list('login'= login))), 
+               encode = 'json')
+    
+    rv <- content(rv)
+    rv <- sapply(rv$res[[1]]$project, function(y){y$`_id`})
+    sort(unlist(rv), decreasing = TRUE)
+  })
+  
+  
+  projetcs
+}
+
+getWorkunits <- function(login, webservicepassword, projectid = NULL, applicationid = 168){
   
   workunits <- ({
     rv <- POST('http://localhost:5000/q', 
@@ -103,7 +104,13 @@ getWorkunits <- function(login, webservicepassword, projectid = 1000, applicatio
                encode = 'json'))
     
     rv <- content(rv)
-    (sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}))
+    rv <- sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")})
+    
+    if (length(rv) > 0){
+      rv <- sort(rv, decreasing = TRUE)
+    }
+    
+    rv
   })
   
   return(workunits)
@@ -118,7 +125,9 @@ getWorkunits <- function(login, webservicepassword, projectid = 1000, applicatio
 #' @return a vector of resource ids
 #' @export getResources 
 getResources <- function(login, webservicepassword, workunitid){
-  
+  if (is.null(workunitid)){
+    return(NULL)
+  }
   resources <- ({
     rv <- POST('http://localhost:5000/q', 
                body = toJSON(list(login = login, 
@@ -129,7 +138,7 @@ getResources <- function(login, webservicepassword, workunitid){
                encode = 'json'))
     
     rv <- content(rv)
-    sort(sapply(rv$res, function(y){y$`_id`}), decreasing = TRUE)
+    sort(sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}), decreasing = TRUE)
   })
   
   return(resources)
@@ -146,8 +155,7 @@ shinyUIModule <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   system.file("keys", package = "bfabricShiny")
-  privKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "test.key"))
-  
+  privKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key"))
  
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey), 
@@ -166,51 +174,87 @@ shinyUIModule <- function(id) {
 #' @param input 
 #' @param output 
 #' @param session 
+#' @description \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
+#' the key files
 #'
 #' @return
 #' @export shinyServerModule
 shinyServerModule <- function(input, output, session, applicationid) {
   
   ns <- session$ns
-  pubKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "test.key.pub"))
+  
+  #values <- reactiveValues(login = input$login, webservicepassword = input$webservicepassword)
+  
+  pubKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key.pub"))
   print("shinyServer")
   print(pubKey)
   
   output$projects <- renderUI({
+    
     projects <- getProjects(input$login, input$webservicepassword)
     
     if (is.null(projects)){
     }else{
       
-      selectInput(ns("project"), "Projetcs", projects, multiple = FALSE)
+      selectInput(ns("projectid"), "projectid", projects, multiple = FALSE)
     }
   })
   
-  
   output$workunits <- renderUI({
-    res <- getWorkunits(input$login, input$webservicepassword, input$projectid, applicationid)
+  
+    print("BEGIN DEBUG WORKUNIT")
+    print(input$projectid)
+    print("END DEBUG")
+    
+    if (is.null(input$projectid)){
+      return(NULL)
+    }
+      
+    res <- getWorkunits(input$login, input$webservicepassword, 
+                        projectid = input$projectid, 
+                        applicationid = applicationid)
+    print (res)
     if (is.null(res)){
+      return (NULL)
+    }else if (length(res) == 0){
       return (NULL)
     }else{
       tagList(
-        selectInput("applicationid", "applicationid:", applicationid, multiple = FALSE),
+        selectInput(ns("applicationid"), "applicationid:", applicationid, multiple = FALSE),
         selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
       )
     }
   })
   
+  login <- reactive({input$login})
+  webservicepassword <- reactive({input$webservicepassword})
   
+  resources <- reactive({
+    getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
+  })
+ 
   output$resources <- renderUI({
-    if (is.null(input$workunit)){
-      return (NULL)
-    }
-    workunitid = strsplit(input$workunit, " - ")[[1]][1]
-    res <- getResources(input$login, input$webservicepassword, workunitid)
-    if (is.null(res)){
+    
+    if (length(input$workunit) == 0){
+      
+      print ("no resources")
     }else{
-      selectInput(ns("resourceid"), "resourceid:", res, multiple = FALSE)
+      
+      print(input$workunit)
+      workunitid = strsplit(input$workunit, " - ")[[1]][1]
+      print(workunitid)
+      
+      res <- resources()
+     
+      if (is.null(res)){
+      }else{
+       selectInput(ns("resourceid"), "resourceid:", res, multiple = FALSE)
+      }
+      
     }
   })
+  
+ 
   
   observe({
     if (input$save <= 0){
@@ -225,10 +269,19 @@ shinyServerModule <- function(input, output, session, applicationid) {
     updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
   })
   
-  return(reactive({
-    validate(need(input$projects, FALSE))
-    1
-  }))
+  
+  
+
+
+  return(list(login = reactive({'test'}), resources = reactive({resources()} )))
+ #            ç, 
+ #             webservicepassword() = reactive({webservicepassword()})
+  #            ))
+  #return(reactive({
+  #  validate(need(input, FALSE))
+  #  1
+  #}))
   
   
 }
+

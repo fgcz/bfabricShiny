@@ -62,6 +62,7 @@ def q():
         return jsonify({'error': 'could not get POST content.'})
 
     bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+    print content
     res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
 
     try:
