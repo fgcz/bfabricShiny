@@ -8,8 +8,8 @@
   res <- as.data.frame(fromJSON(query_url))
 
   return(res)
-
 }
+
 
 .unzip <- function(zipfile=NULL, file=NULL){
   cmd <- paste('unzip -p ', zipfile, file)
@@ -60,7 +60,6 @@
   rv <- content(rv)
   
 }
-
 
 
 #' queries projects of a login
@@ -128,6 +127,7 @@ getResources <- function(login, webservicepassword, workunitid){
   if (is.null(workunitid)){
     return(NULL)
   }
+  
   resources <- ({
     rv <- POST('http://localhost:5000/q', 
                body = toJSON(list(login = login, 
@@ -138,8 +138,9 @@ getResources <- function(login, webservicepassword, workunitid){
                encode = 'json'))
     
     rv <- content(rv)
-    sort(sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}), decreasing = TRUE)
-  })
+    # sort(sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}), decreasing = TRUE)
+    rv$res
+     })
   
   return(resources)
 }

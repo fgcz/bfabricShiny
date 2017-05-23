@@ -4,8 +4,8 @@
 #'
 #' @param id 
 #'
-#'@seealso \url{http://fgcz-bfabric.uzh.ch}
-#'@references \url{https://doi.org/10.1145/1739041.1739135}
+#' @seealso \url{http://fgcz-bfabric.uzh.ch}
+#' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return
 #' @export bfabricInput
 bfabricInput <- function(id) {
@@ -22,12 +22,9 @@ bfabricInput <- function(id) {
     actionButton(ns("save"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("workunits")),
-    htmlOutput(ns("resources")),
-   # tags$head(tags$script(src = "message-handler.js")),
-    htmlOutput(ns("load"))
+    htmlOutput(ns("resources"))
   )
 }
-
 
 #' shiny server module for the bfabric
 #'
@@ -39,10 +36,10 @@ bfabricInput <- function(id) {
 #' 
 #' \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
 #' the key files.
-#'@author Christian Panse <cp@fgcz.ethz.ch> 2017
-#'@seealso \url{http://fgcz-bfabric.uzh.ch}
-#'@references \url{https://doi.org/10.1145/1739041.1739135}
-#' @return a list of resources
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2017
+#' @seealso \url{http://fgcz-bfabric.uzh.ch}
+#' @references \url{https://doi.org/10.1145/1739041.1739135}
+#' @return check the \code{input$resourceid} value.
 #' @export bfabric
 bfabric <- function(input, output, session, applicationid) {
   ns <- session$ns
@@ -71,7 +68,7 @@ bfabric <- function(input, output, session, applicationid) {
     
     res <- getWorkunits(input$login, input$webservicepassword, 
                         projectid = input$projectid, 
-                        applicationid = applicationid)
+                        applicationid = input$applicationid)
 
     if (is.null(res)){
       return (NULL)
@@ -85,37 +82,39 @@ bfabric <- function(input, output, session, applicationid) {
   resources <- reactive({
     rv <- NULL
     if (length(input$workunit) > 0){
+      
+      
       rv <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
     }
-    
     rv
   })
   
   output$resources <- renderUI({
     
     if (length(input$workunit) == 0){
-      print ("no resources")
+      print ("no resources yet.")
     }else{
       workunitid = strsplit(input$workunit, " - ")[[1]][1]
-    
       res <- resources()
-      
       if (is.null(res)){
       }else{
-        selectInput(ns("resourceid"), "resourceid:", res, multiple = FALSE)
+        resourceid <- sapply(res, 
+                                  function(y){paste(y$`_id`, y$name, sep=" - ")})
+        
+        relativepath <- sapply(res, 
+                             function(y){y$relativepath})
+        
+        tagList(
+        #selectInput("resourceid", "resourceid:", resourceid, 
+        #            multiple = FALSE),
+        selectInput("relativepath", "resource relativepath:", relativepath, 
+                    multiple = FALSE)
+        )
       }
-      
     }
   })
   
-  output$load <- renderUI({
-    res <- resources()
-    
-    if (length(res) > 0){
-      actionButton(ns("load"), "load", icon("upload"))
-    }else{}
-    })
-  
+  ## shinyStore; for login and password handling
   observe({
     if (input$save <= 0){
       # On initialization, set the value of the text editor to the current val.
@@ -126,18 +125,6 @@ bfabric <- function(input, output, session, applicationid) {
     updateStore(session, "login", isolate(input$login), encrypt=pubKey)
     updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
   })
-  
-  observeEvent(input$load, {
-    
-    print ("HELLO!")
-    print(input$resourceid)
-    session$sendCustomMessage(type = 'testmessage',
-                              message = 'Thank you for clicking')
-  })
 
-  eventReactive(input$load, {
-    return(list(input$resourceid))
-  })
-  #return(input)
 }
 
