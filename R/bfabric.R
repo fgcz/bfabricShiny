@@ -4,6 +4,8 @@
 #'
 #' @param id 
 #'
+#'@seealso \url{http://fgcz-bfabric.uzh.ch}
+#'@references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return
 #' @export bfabricInput
 bfabricInput <- function(id) {
@@ -16,10 +18,13 @@ bfabricInput <- function(id) {
     initStore(ns("store"), "shinyStore-ex2", privKey), 
     textInput(ns('login'), 'bfabric Login'),
     passwordInput(ns('webservicepassword'), 'Web Service Password'),
+    htmlOutput(ns("applications")),
     actionButton(ns("save"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("workunits")),
-    htmlOutput(ns("resources"))
+    htmlOutput(ns("resources")),
+   # tags$head(tags$script(src = "message-handler.js")),
+    htmlOutput(ns("load"))
   )
 }
 
@@ -30,6 +35,7 @@ bfabricInput <- function(id) {
 #' @param output 
 #' @param session 
 #' @description provides a shiny server module for the bfabric system.
+#' It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
 #' 
 #' \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
 #' the key files.
@@ -39,14 +45,10 @@ bfabricInput <- function(id) {
 #' @return a list of resources
 #' @export bfabric
 bfabric <- function(input, output, session, applicationid) {
-  
   ns <- session$ns
   
-  #values <- reactiveValues(login = input$login, webservicepassword = input$webservicepassword)
-  
-  pubKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key.pub"))
-  print("shinyServer")
-  print(pubKey)
+  pubKey <- PKI.load.key(file=file.path(system.file("keys", 
+                                                    package = "bfabricShiny"), "bfabricShiny.key.pub"))
   
   output$projects <- renderUI({
     
@@ -54,17 +56,15 @@ bfabric <- function(input, output, session, applicationid) {
     
     if (is.null(projects)){
     }else{
-      
       selectInput(ns("projectid"), "projectid", projects, multiple = FALSE)
     }
   })
   
+  output$applications <- renderUI({
+    selectInput(ns("applicationid"), "applicationid:", applicationid, multiple = FALSE)
+  })
+  
   output$workunits <- renderUI({
-    
-    print("BEGIN DEBUG WORKUNIT")
-    print(input$projectid)
-    print("END DEBUG")
-    
     if (is.null(input$projectid)){
       return(NULL)
     }
@@ -72,37 +72,32 @@ bfabric <- function(input, output, session, applicationid) {
     res <- getWorkunits(input$login, input$webservicepassword, 
                         projectid = input$projectid, 
                         applicationid = applicationid)
-    print (res)
+
     if (is.null(res)){
       return (NULL)
     }else if (length(res) == 0){
       return (NULL)
     }else{
-      tagList(
-        selectInput(ns("applicationid"), "applicationid:", applicationid, multiple = FALSE),
         selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
-      )
     }
   })
   
-  login <- reactive({input$login})
-  webservicepassword <- reactive({input$webservicepassword})
-  
   resources <- reactive({
-    getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
+    rv <- NULL
+    if (length(input$workunit) > 0){
+      rv <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
+    }
+    
+    rv
   })
   
   output$resources <- renderUI({
     
     if (length(input$workunit) == 0){
-      
       print ("no resources")
     }else{
-      
-      print(input$workunit)
       workunitid = strsplit(input$workunit, " - ")[[1]][1]
-      print(workunitid)
-      
+    
       res <- resources()
       
       if (is.null(res)){
@@ -113,19 +108,36 @@ bfabric <- function(input, output, session, applicationid) {
     }
   })
   
+  output$load <- renderUI({
+    res <- resources()
+    
+    if (length(res) > 0){
+      actionButton(ns("load"), "load", icon("upload"))
+    }else{}
+    })
+  
   observe({
     if (input$save <= 0){
       # On initialization, set the value of the text editor to the current val.
-      
       updateTextInput(session, "login", value=isolate(input$store)$login)
       updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
-      
       return()
     }
     updateStore(session, "login", isolate(input$login), encrypt=pubKey)
     updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
   })
   
-  return(resources)
+  observeEvent(input$load, {
+    
+    print ("HELLO!")
+    print(input$resourceid)
+    session$sendCustomMessage(type = 'testmessage',
+                              message = 'Thank you for clicking')
+  })
+
+  eventReactive(input$load, {
+    return(list(input$resourceid))
+  })
+  #return(input)
 }
 

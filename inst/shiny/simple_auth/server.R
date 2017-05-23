@@ -3,26 +3,27 @@
 
 library(bfabricShiny)
 
+my <- function(input, output, session, bf) {
+  
+}
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  bfsm <- callModule(bfabric, "bfabric8",  applicationid = c(168, 204))
-  
-  print("###########################################" )
- print("DEBUG BFSM" )
- print(bfsm)
- print("END DEBUG BFSM")
-  
+  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 204))
+  #callModule(my, "My8", input)
   
   output$distPlot <- renderPlot({
+    print (bf)
     # generate bins based on input$bins from ui.R
     x    <- faithful[, 2] 
+    
     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    #print(bfsm)
+    
+    # print(input$resourceid)
     # draw the histogram with the specified number of bins
-    print(bfsm$resources)
-    hist(x, breaks = bins, col = 'darkgray', border = 'white', main='')
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white', main='jjjj')
   })
   #print (dd)
   #getApplicationID <- 205;
