@@ -272,8 +272,9 @@ shinyServerModule <- function(input, output, session, applicationid) {
   
   
 
-
-  return(list(login = reactive({'test'}), resources = reactive({resources()} )))
+  login <- "TEST"
+  return(list(login = reactive({ login })))
+              
  #            ç, 
  #             webservicepassword() = reactive({webservicepassword()})
   #            ))

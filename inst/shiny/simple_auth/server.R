@@ -3,11 +3,12 @@
 
 library(bfabricShiny)
 
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
   bfsm <- callModule(shinyServerModule, "bfabric8",  applicationid = c(168, 204))
-  
+  print("###########################################" )
  print("DEBUG BFSM" )
  print(bfsm)
  print("END DEBUG BFSM")
