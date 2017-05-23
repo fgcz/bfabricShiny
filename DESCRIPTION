@@ -4,9 +4,10 @@ Title: Performs shiny application on bfabric data
 Version: 0.0.31
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
-Description: allows the user to automatically generate a certain
-    set of queues for thermo instruments. Queues can be exported as
-    .csv and directly loaded into Xcalibur for running the sequence.
+Description: provides access modules and functions for the FGCZ's 
+    bfabric system and it contains shiny applications, e.g., to allow the FGCZ user 
+    to automatically generate a certain set of queues for thermo 
+    instruments. 
 Depends:
     DT,
     PKI,
