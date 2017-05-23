@@ -5,8 +5,8 @@ library(bfabricShiny)
 
 shinyUI(fluidPage(
   # Application title
-  titlePanel("FGCZ bfabric Web Service Password Test"),
-
+  titlePanel("bfabricShiny module test"),
+  p("browse through your bfabric data."),
   sidebarLayout(
     sidebarPanel(
       bfabricInput("bfabric8"), 
