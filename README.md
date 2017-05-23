@@ -51,7 +51,9 @@ cd bfabricShiny/inst/keys &&  ssh-keygen -f $PWD/bfabricShiny.key -t rsa
 
 ### Launch the shiny application
 ```{r}
+
 bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
+
 shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
 ```
 

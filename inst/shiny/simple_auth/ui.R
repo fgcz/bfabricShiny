@@ -13,7 +13,7 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       #initStore("store", "shinyStore-ex2", privKey), 
-      shinyUIModule("bfabric8"), 
+      bfabricInput("bfabric8"), 
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,
