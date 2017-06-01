@@ -146,6 +146,19 @@ shinyServer(function(input, output, session) {
     })
   )
   
+  
+  output$lcmsmap <- renderPlot({
+    MSM <- getData()
+    MI <- processedData()
+    if(!is.null(MSM)){
+      par(mfrow=c(2,1))
+      SS<- lapply( 2:3, function(c){      
+        plot(MSM, score.cutoff = input$score_cutoff, charges = c)
+        MI.filter <- MI[MI$charge == c & MI$score > input$score_cutoff,  ]
+        points(MI.filter$rtinseconds, MI.filter$pepmass, pch='x', col='red')
+      })
+    }
+  })
   output$findMzPlot <- renderPlot({
     S <- processedData()
     

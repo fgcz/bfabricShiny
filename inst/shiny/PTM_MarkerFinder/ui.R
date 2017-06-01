@@ -31,6 +31,7 @@ shinyUI(fluidPage(
               tabPanel("table - long format", DT::dataTableOutput("findMzTableLong")),
               tabPanel("table - wide format", DT::dataTableOutput("findMzTableWide")),
               tabPanel("boxplot", plotOutput("findMzPlot", height = 700)),
+              tabPanel("lc-ms map", plotOutput("lcmsmap", height = 700)),
               tabPanel("download", htmlOutput("download"))
         ))
      ), 
