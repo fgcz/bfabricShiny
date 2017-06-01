@@ -19,4 +19,3 @@ a vector of resource ids
 \description{
 get all resources of a (login, project)
 }
-

@@ -18,9 +18,8 @@ install_git('https://github.com/cpanse/bfabricShiny', build_vignettes = TRUE, qu
 ```
 
 
-# RUN
-
-## flask: JSON - SOAP proxy
+# Demonstration
+## JSON - SOAP proxy using python flask
 
 - run
 
@@ -34,28 +33,35 @@ bfabric_flask_sample.py
 curl http://127.0.0.1:5000/extract/2450
 ```
 
-## shiny queue generator application
+## Shiny
+
+### queue generator application
 
 ```{r}
 qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
 shiny::runApp(qgs, display.mode = "normal")
 ```
 
-## Test bfabric auth module
 
-### generate keys
+### bfabric authentification
+```{r}
+bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
+shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
+```
+#### On howto generate keys?
 
 ```{sh}
 cd bfabricShiny/inst/keys &&  ssh-keygen -f $PWD/bfabricShiny.key -t rsa
 ```
 
-### Launch the shiny application
+### PTM-MarkerFinder 
+
 ```{r}
-
-bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
-
-shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
+ptmmf <- system.file("shiny", "PTM_MarkerFinder", package = "bfabricShiny")
+shiny::runApp(ptmmf, display.mode = "normal", port=8080)
 ```
+
+
 
 
 

@@ -18,4 +18,3 @@ Shiny UI module
 \seealso{
 \url{http://fgcz-bfabric.uzh.ch}
 }
-

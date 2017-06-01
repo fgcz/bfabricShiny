@@ -23,8 +23,12 @@ It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
 \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
 the key files.
 }
-\author{
-Christian Panse <cp@fgcz.ethz.ch> 2017
+\details{
+\enumerate{
+\item 1 
+\item 2
+\item 3
+}
 }
 \references{
 \url{https://doi.org/10.1145/1739041.1739135}
@@ -32,4 +36,6 @@ Christian Panse <cp@fgcz.ethz.ch> 2017
 \seealso{
 \url{http://fgcz-bfabric.uzh.ch}
 }
-
+\author{
+Christian Panse <cp@fgcz.ethz.ch> 2017
+}

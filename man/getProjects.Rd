@@ -17,4 +17,3 @@ a vector of project ids
 \description{
 queries projects of a login
 }
-

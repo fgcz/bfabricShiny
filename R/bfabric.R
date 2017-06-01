@@ -36,6 +36,12 @@ bfabricInput <- function(id) {
 #' 
 #' \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
 #' the key files.
+#' 
+#' @details \enumerate{
+#' \item 1 
+#' \item 2
+#' \item 3
+#' }
 #' @author Christian Panse <cp@fgcz.ethz.ch> 2017
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
@@ -82,12 +88,12 @@ bfabric <- function(input, output, session, applicationid) {
   resources <- reactive({
     rv <- NULL
     if (length(input$workunit) > 0){
-      
-      
       rv <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
     }
     rv
   })
+  
+
   
   output$resources <- renderUI({
     
@@ -108,12 +114,15 @@ bfabric <- function(input, output, session, applicationid) {
         #selectInput("resourceid", "resourceid:", resourceid, 
         #            multiple = FALSE),
         selectInput("relativepath", "resource relativepath:", relativepath, 
-                    multiple = FALSE)
+                    multiple = FALSE),
+        actionButton("load", "load selected RData", icon("upload"))
         )
       }
     }
   })
   
+  
+
   ## shinyStore; for login and password handling
   observe({
     if (input$save <= 0){

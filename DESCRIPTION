@@ -1,7 +1,7 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.31
+Version: 0.0.32
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: provides access modules and functions for the FGCZ's 
@@ -13,6 +13,7 @@ Depends:
     PKI,
     httr,
     jsonlite (>= 1.4.0),
+    protViz (>= 0.2.31),
     shiny (>= 1.0.3),
     shinyStore (>= 0.1.0),
     xml2 (>= 1.1.1)
@@ -28,4 +29,4 @@ Collate:
     zzz.R
 URL: https://github.com/cpanse/bfabricShiny
 BugReports: https://github.com/cpanse/bfabricShiny/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

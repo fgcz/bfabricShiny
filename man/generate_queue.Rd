@@ -49,4 +49,3 @@ a instrument configuration as \code{data.frame}.
 \description{
 FGCZ mass spec queue generator
 }
-

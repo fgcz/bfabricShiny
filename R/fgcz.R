@@ -33,7 +33,7 @@
 }
 
 
-.query_example0 <- function(){
+.query_example0_REST <- function(){
   login = ''
   webservicepassword = ""
   url0 <- 'http://localhost:5000/q'
@@ -49,6 +49,21 @@
   rv <- content(rv)
 }
   
+.query_example0_SOAP <- function(login=NULL, webservicepassword=NULL, webbase="http://fgcz-bfabric.uzh.ch/bfabric"){
+ 
+  url0 <- 'http://localhost:5000/q'
+  url <-  'http://localhost:5000/custom'
+  rv <- POST(url0, 
+             body=toJSON(list(login = login, 
+                              webservicepassword = webservicepassword,
+                              endpoint = 'workunit', 
+                              query=list('applicationid' = 168, 
+                                         "projectid" = 1000))), 
+             encode = 'json')
+  
+  rv <- content(rv)
+}
+
 
 .query_example1 <- function(){
   login = ''
