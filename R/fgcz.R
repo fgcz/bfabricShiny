@@ -113,6 +113,7 @@ getWorkunits <- function(login, webservicepassword, projectid = NULL, applicatio
                                   webservicepassword = webservicepassword,
                                   endpoint = 'workunit', 
                                   query=list('applicationid' = applicationid, 
+                                             'status' = 'available',
                                              'projectid' = projectid)
                ), 
                encode = 'json'))
