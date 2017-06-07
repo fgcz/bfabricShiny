@@ -70,9 +70,9 @@ The idea is to fetch a RData file stored in bfabric.
 * manage the key thing for housing the bfabric login/webpassword
 * RSTUDIO - new shiny app
 * on the shiny server 
-** ```library(bfabricShiny)```
-** add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
-** define the way you are going to ``stage'' the data
+  * ```library(bfabricShiny)```
+  * add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
+  * define the way you are going to ``stage'' the data
 
 ```{r}
 .ssh_load_RData <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', file = NULL){
