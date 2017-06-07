@@ -70,7 +70,36 @@ The idea is to fetch a RData file stored in bfabric.
 * RSTUDIO
 * ```library(bfabricShiny)```
 * add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
-* 
+* define the way you are going to ``stage'' the data
+
+```{r}
+.ssh_load_RData <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', file = NULL){
+  e <- new.env()
+
+  cmd <- paste('cat ',  file)
+
+  ssh_cmd <- paste("ssh ", user, "@", host, " '", cmd, "'", sep="")
+  message(ssh_cmd)
+
+  S <- load(pipe(ssh_cmd))
+
+  for (x in S){
+    assign(x, get(x), e)
+  }
+  e
+}
+
+.load_RData <- function(file = NULL){
+  e <- new.env()
+
+  S <- load(file)
+
+  for (x in S){
+    assign(x, get(x), e)
+  }
+  e
+}
+```
 
 
 
