@@ -63,5 +63,14 @@ shiny::runApp(ptmmf, display.mode = "normal", port=8080)
 
 
 
+## SOP create your own application
+
+The idea is to fetch a RData file stored in bfabric.
+
+* RSTUDIO
+* ```library(bfabricShiny)```
+* add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
+* 
+
 
 
