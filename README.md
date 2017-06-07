@@ -104,4 +104,20 @@ The idea is to fetch a RData file stored in bfabric.
 ```
 
 
+```{r}
+  # returns an env
+  getRDataEnv <- eventReactive(input$load, {
+    # this is the ``output'' of the bfabric shiny module
+    message(input$relativepath)
+
+    filename <- file.path('/srv/www/htdocs/', input$relativepath)
+
+    if (file.exists(filename)){
+      .load_RData(file=filename)
+    }else{
+      .ssh_load_RData(file = filename, host = 'fgcz-r-021.uzh.ch')
+    }
+  })
+```
+
 
