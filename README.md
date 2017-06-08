@@ -70,7 +70,8 @@ The idea is to fetch a RData file stored in bfabric.
 ### Setup
 
 
-* install the python package (http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python)
+* install the python package http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python
+* install `install_github("https://github.com/cpanse/bfabricShiny")`
 * manage the key thing for housing the bfabric login/webpassword
 * RSTUDIO - new shiny app
 * in the shiny `ui.R` change
