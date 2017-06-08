@@ -79,10 +79,12 @@ The idea is to fetch a RData file stored in bfabric.
 * in the shiny `ui.R` change
 ```{r}
    mainPanel(
+      textOutput("text1"),
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8")),
         tabPanel("plot", plotOutput("distPlot"))
       )
+   )
 ```
 * on the shiny `server.R`
   * ```library(bfabricShiny)```
@@ -137,6 +139,10 @@ The idea is to fetch a RData file stored in bfabric.
     }else{
       .ssh_load_RData(file = filename, host = 'fgcz-r-021.uzh.ch')
     }
+  })
+  
+  output$text1 <- renderText({ 
+    S <- getRDataEnv()
   })
 ```
 
