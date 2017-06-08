@@ -72,6 +72,7 @@ The idea is to fetch a RData file stored in bfabric.
 
 * install the python package http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python
 * install `install_github("https://github.com/cpanse/bfabricShiny")`
+* run the SOAP-REST proxy `bfabric_flask_sample.py` 
 * manage the key thing for housing the bfabric login/webpassword
 * run RStudio - create a new shiny app
 * in the shiny `ui.R` change

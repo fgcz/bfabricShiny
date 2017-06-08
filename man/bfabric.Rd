@@ -24,17 +24,20 @@ It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
 the key files.
 }
 \details{
+t.b.d. 
 \enumerate{
-\item 1 
-\item 2
-\item 3
+\item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))} 
+\item follow the instructions \code{\link{bfabricInput}}
 }
 }
 \references{
 \url{https://doi.org/10.1145/1739041.1739135}
 }
 \seealso{
-\url{http://fgcz-bfabric.uzh.ch}
+\itemize{
+\item \url{http://fgcz-bfabric.uzh.ch}
+\item \url{http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python}
+}
 }
 \author{
 Christian Panse <cp@fgcz.ethz.ch> 2017

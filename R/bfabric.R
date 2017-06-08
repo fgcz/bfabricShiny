@@ -8,6 +8,16 @@
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return
 #' @export bfabricInput
+#' @examples 
+#' \dontrun{
+#' 
+#'     mainPanel(
+#'       tabsetPanel(
+#'         tabPanel("bfabric", bfabricInput("bfabric8")),
+#'         tabPanel("plot", plotOutput("distPlot"))
+#'    )
+#' 
+#' }
 bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -17,7 +27,8 @@ bfabricInput <- function(id) {
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey), 
     textInput(ns('login'), 'bfabric Login'),
-    passwordInput(ns('webservicepassword'), 'Web Service Password'),
+    passwordInput(ns('webservicepassword'), 'Web Service Password', 
+                  placeholder = "in bfabric on 'User Details'."),
     htmlOutput(ns("applications")),
     actionButton(ns("save"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
@@ -37,13 +48,16 @@ bfabricInput <- function(id) {
 #' \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
 #' the key files.
 #' 
-#' @details \enumerate{
-#' \item 1 
-#' \item 2
-#' \item 3
+#' @details t.b.d. 
+#' \enumerate{
+#' \item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))} 
+#' \item follow the instructions \code{\link{bfabricInput}}
 #' }
 #' @author Christian Panse <cp@fgcz.ethz.ch> 2017
-#' @seealso \url{http://fgcz-bfabric.uzh.ch}
+#' @seealso \itemize{
+#' \item \url{http://fgcz-bfabric.uzh.ch}
+#' \item \url{http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python}
+#' }
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return check the \code{input$resourceid} value.
 #' @export bfabric
@@ -129,10 +143,12 @@ bfabric <- function(input, output, session, applicationid) {
       # On initialization, set the value of the text editor to the current val.
       updateTextInput(session, "login", value=isolate(input$store)$login)
       updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
+      updateTextInput(session, "project", value=isolate(input$project)$login)
       return()
     }
     updateStore(session, "login", isolate(input$login), encrypt=pubKey)
     updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+    updateStore(session, "project", isolate(input$project), encrypt=pubKey)
   })
 
 }

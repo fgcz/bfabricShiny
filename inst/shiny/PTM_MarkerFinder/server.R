@@ -7,10 +7,10 @@
 # $HeadURL: svn+ssh://cp@fgcz-148.uzh.ch/home/cp/__SUBVERSION_REPOSITORY__/__projects/2016/20160704_pptm_shiny/server.R $
 # $Id: server.R 915 2017-04-11 12:36:53Z cp $
 # $Date: 2017-04-11 14:36:53 +0200 (Tue, 11 Apr 2017) $
-library(protViz)
-library(parallel)
+
+
 library(bfabricShiny)
-library(DT)
+
 
 source("./ptm_marker_finder.R")
 
@@ -85,27 +85,56 @@ shinyServer(function(input, output, session) {
   
   # return an env
   getRDataEnv <- eventReactive(input$load, {
-    message("eventReactive(input$load")
-    message(input$relativepath)
+    
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
     
     filename <- file.path('/srv/www/htdocs/', input$relativepath)
     
+    progress$set(message = "loading", 
+                 detail = paste("file", filename),
+                 value = 0.10)
+    
+    
+    
+    #e <- NULL
     if (file.exists(filename)){
-      .load_RData(file=filename)
+      e <- .load_RData(file=filename)
     }else{
-      .ssh_load_RData(file = filename, host = 'fgcz-r-021.uzh.ch')
+      e <- .ssh_load_RData(file = filename, host = 'fgcz-r-021.uzh.ch')
     }
+    
+    e.names <- ls(e)
+    for (idx in 1:length(e.names)){
+      nn <- e.names[idx]
+      progress$inc(0.5 + (idx/(2*length(e.names))), detail = paste("converting", nn, "into a psmSet object"))
+  
+      assign (nn, as.psmSet(get(nn, e)), envir = e)
+    }
+    return (e)
   })
   
+ 
+  
   getData <- eventReactive(input$mascot_object, {
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = paste("converting", input$mascot_object, "into a psmSet object"), value = 0)
     
-    message(input$mascot_object)
-    as.psmSet(get(input$mascot_object, getRDataEnv()))
+    # as.psmSet(get(input$mascot_object, getRDataEnv()))
+    get(input$mascot_object, getRDataEnv())
   })
+  
   
   
   
   processedData <- reactive({
+    
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "running PTM Marker Finder", value = 0)
+    
+    
     S <- getData()
     
     mZmarkerIons <- sapply(input$mZmarkerIons, as.numeric)
@@ -148,6 +177,11 @@ shinyServer(function(input, output, session) {
   
   
   output$lcmsmap <- renderPlot({
+    
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "making LC MS map ,,,", value = 0)
+    
     MSM <- getData()
     MI <- processedData()
     if(!is.null(MSM)){
@@ -155,11 +189,22 @@ shinyServer(function(input, output, session) {
       SS<- lapply( 2:3, function(c){      
         plot(MSM, score.cutoff = input$score_cutoff, charges = c)
         MI.filter <- MI[MI$charge == c & MI$score > input$score_cutoff,  ]
-        points(MI.filter$rtinseconds, MI.filter$pepmass, pch='x', col='red')
+        points(MI.filter$rtinseconds, MI.filter$pepmass, 
+               pch = 16, 
+               col = rgb(0.9,0.1,0.1, alpha = 0.1), 
+               cex = 2)
+        # text(MI.filter$rtinseconds, MI.filter$pepmass, MI.filter$peptideSequence, col = rgb(0.9,0.1,0.1, alpha = 0.3), lwd = 0.5)
       })
     }
   })
+  
   output$findMzPlot <- renderPlot({
+    
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "making PTM MarkerFinder boxplot ,,,", value = 0)
+    
+    
     S <- processedData()
     
     op <- par(mfrow=c(1,1))

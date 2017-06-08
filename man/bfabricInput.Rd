@@ -12,6 +12,17 @@ bfabricInput(id)
 \description{
 Shiny UI module
 }
+\examples{
+\dontrun{
+
+    mainPanel(
+      tabsetPanel(
+        tabPanel("bfabric", bfabricInput("bfabric8")),
+        tabPanel("plot", plotOutput("distPlot"))
+   )
+
+}
+}
 \references{
 \url{https://doi.org/10.1145/1739041.1739135}
 }
