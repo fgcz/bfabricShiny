@@ -69,7 +69,15 @@ The idea is to fetch a RData file stored in bfabric.
 
 * manage the key thing for housing the bfabric login/webpassword
 * RSTUDIO - new shiny app
-* on the shiny server 
+* in the shiny `ui.R` change
+```{r}
+   mainPanel(
+      tabsetPanel(
+        tabPanel("bfabric", bfabricInput("bfabric8")),
+        tabPanel("plot", plotOutput("distPlot"))
+      )
+```
+* on the shiny `server.R`
   * ```library(bfabricShiny)```
   * add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
   * define the way you are going to ``stage'' the data
