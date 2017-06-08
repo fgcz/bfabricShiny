@@ -14,6 +14,7 @@ use source code from github
 ```{r}
 #  install.packages('devtools')
 library(devtools)
+install_github("trestletech/shinyStore")
 install_git('https://github.com/cpanse/bfabricShiny', build_vignettes = TRUE, quiet = FALSE)
 ```
 
