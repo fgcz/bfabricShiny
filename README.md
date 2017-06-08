@@ -67,6 +67,10 @@ shiny::runApp(ptmmf, display.mode = "normal", port=8080)
 
 The idea is to fetch a RData file stored in bfabric.
 
+### Setup
+
+
+* install the python package (http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python)
 * manage the key thing for housing the bfabric login/webpassword
 * RSTUDIO - new shiny app
 * in the shiny `ui.R` change
@@ -80,7 +84,12 @@ The idea is to fetch a RData file stored in bfabric.
 * on the shiny `server.R`
   * ```library(bfabricShiny)```
   * add to shiny server function ```bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))```
-  * define the way you are going to ``stage'' the data
+
+* run the shiny application; check `input$relativepath`
+
+
+### Data staging
+* on the shiny `server.R` - define the way you are going to ``stage'' the data
 
 ```{r}
 .ssh_load_RData <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', file = NULL){
