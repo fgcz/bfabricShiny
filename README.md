@@ -64,7 +64,7 @@ shiny::runApp(ptmmf, display.mode = "normal", port=8080)
 
 
 
-## SOP create your own application
+## SOP create your own application with bfabric auth
 
 The idea is to fetch a RData file stored in bfabric.
 
