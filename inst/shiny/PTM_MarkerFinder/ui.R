@@ -7,7 +7,8 @@
 # $HeadURL: svn+ssh://cp@fgcz-148.uzh.ch/home/cp/__SUBVERSION_REPOSITORY__/__projects/2016/20160704_pptm_shiny/ui.R $
 # $Id: ui.R 915 2017-04-11 12:36:53Z cp $
 # $Date: 2017-04-11 14:36:53 +0200 (Tue, 11 Apr 2017) $
-
+#
+# runApp('inst/shiny/PTM_MarkerFinder', port=8282)
  
 library(bfabricShiny)
 library(DT)
@@ -31,7 +32,24 @@ shinyUI(fluidPage(
               tabPanel("table - long format", DT::dataTableOutput("findMzTableLong")),
               tabPanel("table - wide format", DT::dataTableOutput("findMzTableWide")),
               tabPanel("boxplot", plotOutput("findMzPlot", height = 700)),
-              tabPanel("lc-ms map", plotOutput("lcmsmap", height = 700)),
+              tabPanel("lc-ms map", 
+                       tagList(
+                        selectInput('charges', 'charges:',  choices = 1:6, selected = 2, multiple = TRUE),
+                        plotOutput("linkedlcmsmap", height = 550, 
+                                   brush = "plot_brush",
+                                   click = "plot_click",
+                                   hover = hoverOpts(
+                                      id = "plot_hover",
+                                      delayType = "throttle",
+                                      delay = 500
+                             )
+                        ),
+                        tableOutput("plot_hoverinfo"),
+                        plotOutput("findMzPlotBrush", height = 550, click = "plot_click"),
+                        plotOutput("peakplot_click", height = 550, click = "plot_click"),
+                        verbatimTextOutput("info")
+                        #plotOutput("findMzPlot", height = 700)
+                        )),
               tabPanel("download", htmlOutput("download"))
         ))
      ), 

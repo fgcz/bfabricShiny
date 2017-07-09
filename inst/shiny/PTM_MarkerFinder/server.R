@@ -11,6 +11,14 @@
 
 library(bfabricShiny)
 
+xy_range_str <- function(e) {
+  if(is.null(e)) return(NULL)
+  
+  paste0("xmin=", round(e$xmin, 1), " xmax=", round(e$xmax, 1), 
+         " ymin=", round(e$ymin, 1), " ymax=", round(e$ymax, 1))
+  
+  return(list(xmin=e$xmin, xmax=e$xmax, ymin=e$ymin, ymax=e$ymax))
+}
 
 source("./ptm_marker_finder.R")
 
@@ -45,13 +53,20 @@ shinyServer(function(input, output, session) {
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))
   
   
+  markerIonList <- reactive({list(ADPr = c(428.0367, 348.0704, 250.0935, 136.0618, 524.057827, 542.068392, 560.078957, 559.094941, 584.090190),
+                                  Glykan =  c(109.02841, 127.03897, 145.04954, 163.06010, 325.11292),
+                                  HexNAc = c(126.05495, 138.05495, 144.06552, 168.06552, 186.07608, 204.08665))})
+  
+  
+  last_click <- reactiveValues(id = NULL)
+  
   output$mZmarkerIons <- renderUI({
     
-    markerIons <- sort(c(428.0367, 348.0704, 250.0935, 136.0618, 524.057827,
+  markerIons <- sort(c(428.0367, 348.0704, 250.0935, 136.0618, 524.057827,
                          542.068392, 560.078957, 559.094941, 584.090190))
     
     e <- getRDataEnv()
-    
+    marker <- names(markerIonList())
     if (length(ls(e)) > 0){
       tagList(
         
@@ -75,10 +90,14 @@ shinyServer(function(input, output, session) {
                     min = 0,
                     max = 100,
                     value = 25),
+        
+         
         selectInput('mZmarkerIons', 'marker ions:',  markerIons, multiple = TRUE,
-                    selected = markerIons[1:5]),
+                    selected = markerIons),
+        
         checkboxGroupInput("plotLines", label = h3("plot lines"), choices = list("yes" = 1), selected = 1),
-        sliderInput("alpha", "alpha blending %", min=1, max=100, value=40)
+        sliderInput("alpha", "alpha blending %", min=1, max=100, value=40),
+        sliderInput("alpha_brush", "alpha blending brush%", min=1, max=100, value=20)
   
       )}else{print ("no data loaded.")}
   })
@@ -90,24 +109,36 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
     
     filename <- file.path('/srv/www/htdocs/', input$relativepath)
-    
-    progress$set(message = "loading", 
-                 detail = paste("file", filename),
-                 value = 0.10)
-    
-    
-    
-    #e <- NULL
+    filename.cache <- file.path(Sys.getenv("HOME"), 'Downloads', input$relativepath)
+  
     if (file.exists(filename)){
+      
+      progress$set(message = "loading", 
+                   detail = paste("file", filename),
+                   value = 0.10)
+      
       e <- .load_RData(file=filename)
+    } else if (file.exists(filename.cache)){
+      progress$set(message = "loading via local cache", 
+                   detail = paste("file", filename.cache),
+                   value = 0.10)
+      
+      e <- .load_RData(file = filename.cache)
     }else{
+      
+      progress$set(message = "loading via SSH", 
+                   detail = paste("file", filename.cache),
+                   value = 0.10)
+      
       e <- .ssh_load_RData(file = filename, host = 'fgcz-r-021.uzh.ch')
     }
     
     e.names <- ls(e)
+    
     for (idx in 1:length(e.names)){
       nn <- e.names[idx]
-      progress$inc(0.5 + (idx/(2*length(e.names))), detail = paste("converting", nn, "into a psmSet object"))
+      
+      progress$inc(0.5 + (idx / (2 * length(e.names))), detail = paste("converting", nn, "into a psmSet object"))
   
       assign (nn, as.psmSet(get(nn, e)), envir = e)
     }
@@ -126,9 +157,11 @@ shinyServer(function(input, output, session) {
   })
   
   
+  getDataAsDataFrame <- reactive({
+    as.data.frame.psmSet(getData())
+  })
   
-  
-  processedData <- reactive({
+  processedData0 <- reactive({
     
     progress <- shiny::Progress$new()
     on.exit(progress$close())
@@ -139,12 +172,35 @@ shinyServer(function(input, output, session) {
     
     mZmarkerIons <- sapply(input$mZmarkerIons, as.numeric)
     
-    return(findMz(S, 
-                  itol_ppm = 10,
-                  mZmarkerIons=mZmarkerIons,
-                  minMarkerIntensityRatio=input$minMarkerIntensityRatio,
-                  minNumberIons=input$minNumberIons
-    ))
+    rv <- findMz(S, 
+                 itol_ppm = 10,
+                 mZmarkerIons=mZmarkerIons,
+                 minMarkerIntensityRatio=input$minMarkerIntensityRatio,
+                 minNumberIons=input$minNumberIons
+    )
+    
+  
+    rv
+  })
+  
+  processedData <- reactive({
+    
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "filter brush", value = 0)
+    
+    
+    rv <- processedData0()
+    
+    brush.mbb <- xy_range_str(input$plot_brush)
+    rv$brush <- FALSE
+    
+    if (!is.null(brush.mbb)){
+      brush <- brush.mbb$xmin < rv$rtinseconds & rv$rtinseconds < brush.mbb$xmax & brush.mbb$ymin < rv$pepmass & rv$pepmass < brush.mbb$ymax
+      rv$brush[brush] <- TRUE 
+    }
+    
+    rv
   })
   
   output$findMzTableWide <- DT::renderDataTable(DT::datatable({
@@ -175,26 +231,108 @@ shinyServer(function(input, output, session) {
     })
   )
   
-  
-  output$lcmsmap <- renderPlot({
+  output$info <- renderPrint({
     
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "as.data.frame.psmSet", value = 10)
+    
+    # With base graphics, need to tell it what the x and y variables are.
+    MSM <- getDataAsDataFrame()
+    print(names(MSM))
+    nearPoints(MSM, input$plot_click, xvar = "RTINSECONDS", yvar = "moverz", addDist=TRUE)
+    # nearPoints() also works with hover and dblclick events
+  })
+  
+  output$plot_hoverinfo <- renderText({
+    res <- getDataAsDataFrame()
+    S <- getData()
+    
+    xy_str <- function(e) {
+      if(is.null(e)) return("NULL\n")
+      paste0("x=", round(e$x, 1), " y=", round(e$y, 1), "\n")
+    }
+    
+    xy_range_str <- function(e) {
+      if(is.null(e)) return("NULL\n")
+      paste0("xmin=", round(e$xmin, 1), " xmax=", round(e$xmax, 1), 
+             " ymin=", round(e$ymin, 1), " ymax=", round(e$ymax, 1))
+    }
+    
+    if (!is.null(input$plot_click)){
+     rv <- nearPoints(res, input$plot_click, yvar = 'moverz', xvar='RTINSECONDS', maxpoints = 1)
+      last_click$id <- as.integer(row.names(rv[1]))
+    }
+    
+    paste0(
+      "hover: ", xy_str(input$plot_hover),
+      "brush: ", xy_range_str(input$plot_brush),
+      "id:", last_click$id
+    )
+    
+  })
+  
+  output$peakplot_click <- renderPlot({
+   # res <- getDataAsDataFrame()
+    S <- getData()
+    
+    if (!is.null(last_click$id)){
+      #print("-------------------")
+      #print(last_click$id)
+      #print(S[[last_click$id]])
+      plot(S[[last_click$id]])  
+    }
+    
+    
+  })
+  
+  output$linkedlcmsmap <- renderPlot({
+   
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = "making LC MS map ,,,", value = 0)
     
     MSM <- getData()
     MI <- processedData()
+    
     if(!is.null(MSM)){
-      par(mfrow=c(2,1))
-      SS<- lapply( 2:3, function(c){      
-        plot(MSM, score.cutoff = input$score_cutoff, charges = c)
-        MI.filter <- MI[MI$charge == c & MI$score > input$score_cutoff,  ]
-        points(MI.filter$rtinseconds, MI.filter$pepmass, 
-               pch = 16, 
-               col = rgb(0.9,0.1,0.1, alpha = 0.1), 
-               cex = 2)
-        # text(MI.filter$rtinseconds, MI.filter$pepmass, MI.filter$peptideSequence, col = rgb(0.9,0.1,0.1, alpha = 0.3), lwd = 0.5)
-      })
+      par(mfrow=c(1,1))
+        
+      lcmsmap(MSM, score.cutoff = input$score_cutoff, charges = as.numeric(input$charges))
+      
+      MI.filter <- MI[MI$charge %in% as.numeric(input$charges) & MI$score > input$score_cutoff,  ]
+      
+      points(MI.filter$rtinseconds, MI.filter$pepmass, 
+             #pch = 16, 
+             #col = rgb(0.9,0.1,0.1, alpha = input$alpha/100), 
+             cex = 2)
+      # text(MI.filter$rtinseconds, MI.filter$pepmass, MI.filter$peptideSequence, col = rgb(0.9,0.1,0.1, alpha = 0.3), lwd = 0.5)
+  
+    }
+  })
+  
+  output$linkedboxplot <- renderPlot({
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "making LC MS map ,,,", value = 0)
+    
+    MSM <- getData()
+    MI <- processedData()
+    
+   
+    if(!is.null(MSM)){
+      par(mfrow=c(1,1))
+      
+      lcmsmap(MSM, score.cutoff = input$score_cutoff, charges = as.numeric(input$charges))
+      
+      MI.filter <- MI[MI$charge %in% as.numeric(input$charges) & MI$score > input$score_cutoff,  ]
+      
+      points(MI.filter$rtinseconds, MI.filter$pepmass, 
+             #pch = 16, 
+             #col = rgb(0.9,0.1,0.1, alpha = input$alpha/100), 
+             cex = 2)
+      # text(MI.filter$rtinseconds, MI.filter$pepmass, MI.filter$peptideSequence, col = rgb(0.9,0.1,0.1, alpha = 0.3), lwd = 0.5)
+      
     }
   })
   
@@ -204,16 +342,17 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
     progress$set(message = "making PTM MarkerFinder boxplot ,,,", value = 0)
     
-    
     S <- processedData()
-    
     op <- par(mfrow=c(1,1))
     
+    
     if (!is.null(S)){
+      
       b <- boxplot(markerIonIntensity ~ markerIonMZ,
                    data=S,
                    log = "y",
                    main = input$file,
+                   #sub = paste(xy_range_str(input$plot_brush)),
                    xlab = "markerIon m/z",
                    ylab = "log10 based marker ion intensity")
       text(1:length(b$n), b$stats[3,], b$n, col="darkblue", pos=1)
@@ -222,7 +361,7 @@ shinyServer(function(input, output, session) {
       
       if (1 %in% input$plotLines){
         lines(as.factor(S$markerIonMZ), S$markerIonIntensity, 
-              col=rgb(0.1,0.1,0.1, alpha=input$alpha/100),
+              col=rgb(0.1,0.1,0.1, alpha = input$alpha / 100),
               lwd=6)
       }
       
@@ -244,6 +383,58 @@ shinyServer(function(input, output, session) {
     #hist(x, breaks = bins, col = 'darkgray', border = 'white')
   })
   
+
+  
+  
+  output$findMzPlotBrush <- renderPlot({
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "making PTM MarkerFinder boxplot ,,,", value = 0)
+    
+    S <- processedData()
+    
+    op <- par(mfrow=c(1,1))
+    
+    if (!is.null(S)){
+      b <- boxplot(markerIonIntensity ~ markerIonMZ,
+                   data=S,
+                   log = "y",
+                   main = input$file,
+                   sub = paste(xy_range_str(input$plot_brush)),
+                   xlab = "markerIon m/z",
+                   ylab = "log10 based marker ion intensity")
+      
+      text(1:length(b$n), b$stats[3,], b$n, col="darkblue", pos=1)
+      legend('topright', legend=sapply(input$mZmarkerIons, as.numeric))
+      
+      if (1 %in% input$plotLines){
+        
+        lines(as.factor(S$markerIonMZ[!S$brush]), S$markerIonIntensity[!S$brush], 
+                col=rgb(0.1,0.1,0.1, alpha = input$alpha / 100),
+                lwd=3)
+          
+        lines(as.factor(S$markerIonMZ[S$brush]), S$markerIonIntensity[S$brush], 
+                col=rgb(0.95,0.1,0.1, alpha=input$alpha_brush / 100),
+                lwd=6)
+      }
+      
+      legend("topleft", c(paste("minNumberIons =", input$minNumberIons),
+                          paste("minMarkerIntensityRatio =", input$minMarkerIntensityRatio),
+                          paste("Number of queries =",  length(unique(S$query))),
+                          paste("Number of psm (score >=", input$score_cutoff, ") =", 
+                                sum(S$score >= input$score_cutoff, na.rm=TRUE)),
+                          paste("Number of psm (score <", input$score_cutoff, ") =", 
+                                sum(S$score < input$score_cutoff, na.rm=TRUE))
+      ))
+    }else{
+      plot(0,0,
+           type='n',
+           sub=paste(input$minNumberIons, input$minMarkerIntensityRatio, nrow(S)))
+      text(0,0, "no data", cex=3)
+    }
+    # draw the histogram with the specified number of bins
+    #hist(x, breaks = bins, col = 'darkgray', border = 'white')
+  })
   
   
   
