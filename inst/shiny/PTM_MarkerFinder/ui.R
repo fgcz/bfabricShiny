@@ -31,7 +31,7 @@ shinyUI(fluidPage(
               tabPanel("bfabric", bfabricInput("bfabric8")),
               tabPanel("table - long format", DT::dataTableOutput("findMzTableLong")),
               tabPanel("table - wide format", DT::dataTableOutput("findMzTableWide")),
-              tabPanel("boxplot", plotOutput("findMzPlot", height = 700)),
+              tabPanel("sessionInfo", tableOutput("sessionInfo")),
               tabPanel("lc-ms map", 
                        tagList(
                         selectInput('charges', 'charges:',  choices = 1:6, selected = 2, multiple = TRUE),
@@ -46,7 +46,7 @@ shinyUI(fluidPage(
                         ),
                         tableOutput("plot_hoverinfo"),
                         plotOutput("findMzPlotBrush", height = 550, click = "plot_click"),
-                        plotOutput("peakplot_click", height = 550, click = "plot_click"),
+                        plotOutput("peakplot_click", height = 350, click = "plot_click"),
                         verbatimTextOutput("info")
                         #plotOutput("findMzPlot", height = 700)
                         )),

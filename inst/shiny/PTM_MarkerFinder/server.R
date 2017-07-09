@@ -232,17 +232,17 @@ shinyServer(function(input, output, session) {
   )
   
   output$info <- renderPrint({
-    
-    progress <- shiny::Progress$new()
-    on.exit(progress$close())
-    progress$set(message = "as.data.frame.psmSet", value = 10)
-    
-    # With base graphics, need to tell it what the x and y variables are.
-    MSM <- getDataAsDataFrame()
-    print(names(MSM))
-    nearPoints(MSM, input$plot_click, xvar = "RTINSECONDS", yvar = "moverz", addDist=TRUE)
-    # nearPoints() also works with hover and dblclick events
+    df <- getDataAsDataFrame()
+    print(df[last_click$id, ])
   })
+  
+  
+  output$sessionInfo <- renderPrint({
+    sessionInfo()
+  })
+  
+
+  
   
   output$plot_hoverinfo <- renderText({
     res <- getDataAsDataFrame()
@@ -273,17 +273,14 @@ shinyServer(function(input, output, session) {
   })
   
   output$peakplot_click <- renderPlot({
-   # res <- getDataAsDataFrame()
     S <- getData()
     
     if (!is.null(last_click$id)){
-      #print("-------------------")
-      #print(last_click$id)
-      #print(S[[last_click$id]])
       plot(S[[last_click$id]])  
+      abline(v = input$mZmarkerIons ,
+             lwd = 4,
+             col = rgb(0.1,0.1,0.7, alpha = input$alpha_brush / 100))
     }
-    
-    
   })
   
   output$linkedlcmsmap <- renderPlot({
@@ -303,9 +300,15 @@ shinyServer(function(input, output, session) {
       MI.filter <- MI[MI$charge %in% as.numeric(input$charges) & MI$score > input$score_cutoff,  ]
       
       points(MI.filter$rtinseconds, MI.filter$pepmass, 
-             #pch = 16, 
+             pch = 22, 
              #col = rgb(0.9,0.1,0.1, alpha = input$alpha/100), 
-             cex = 2)
+             cex = 1)
+      
+      if (!is.null(last_click$id)){
+        df <- getDataAsDataFrame()
+       # print(df[last_click$id, ])
+        points(df$RTINSECONDS[last_click$id], df$moverz[last_click$id], col = rgb(0.1,0.1,0.9, alpha=0.7), cex =2 , pch =16)
+      }
       # text(MI.filter$rtinseconds, MI.filter$pepmass, MI.filter$peptideSequence, col = rgb(0.9,0.1,0.1, alpha = 0.3), lwd = 0.5)
   
     }
@@ -400,7 +403,7 @@ shinyServer(function(input, output, session) {
                    data=S,
                    log = "y",
                    main = input$file,
-                   sub = paste(xy_range_str(input$plot_brush)),
+                   #sub = paste(xy_range_str(input$plot_brush)),
                    xlab = "markerIon m/z",
                    ylab = "log10 based marker ion intensity")
       
