@@ -35,18 +35,19 @@ shinyUI(fluidPage(
               tabPanel("lc-ms map", 
                        tagList(
                         selectInput('charges', 'charges:',  choices = 1:6, selected = 2, multiple = TRUE),
-                        plotOutput("linkedlcmsmap", height = 550, 
-                                   brush = "plot_brush",
-                                   click = "plot_click",
-                                   hover = hoverOpts(
-                                      id = "plot_hover",
-                                      delayType = "throttle",
-                                      delay = 500
-                             )
-                        ),
+                        splitLayout(cellWidths = c("50%", "50%"),
+                                    plotOutput("findMzPlotBrush", height = 500, click = "plot_click"),
+                                    plotOutput("linkedlcmsmap", height = 500, 
+                                               brush = "plot_brush",
+                                               click = "plot_click",
+                                               hover = hoverOpts(
+                                                 id = "plot_hover",
+                                                 delayType = "throttle",
+                                                 delay = 500
+                                               )
+                                    )),
+                        plotOutput("peakplot_click", height = 300, click = "plot_click"),
                         tableOutput("plot_hoverinfo"),
-                        plotOutput("findMzPlotBrush", height = 550, click = "plot_click"),
-                        plotOutput("peakplot_click", height = 350, click = "plot_click"),
                         verbatimTextOutput("info")
                         #plotOutput("findMzPlot", height = 700)
                         )),

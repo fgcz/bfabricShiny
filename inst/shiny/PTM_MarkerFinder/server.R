@@ -50,6 +50,7 @@ source("./ptm_marker_finder.R")
 }
 
 shinyServer(function(input, output, session) {
+  
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(155))
   
   
@@ -59,47 +60,63 @@ shinyServer(function(input, output, session) {
   
   
   last_click <- reactiveValues(id = NULL)
+  #brush.mbb <- reactiveValues(xmin=NULL, xmax=NULL, ymin=NULL, ymax=NULL)
   
   output$mZmarkerIons <- renderUI({
     
-  markerIons <- sort(c(428.0367, 348.0704, 250.0935, 136.0618, 524.057827,
-                         542.068392, 560.078957, 559.094941, 584.090190))
+    markerIons <- sort(c(428.0367, 348.0704, 250.0935, 136.0618, 524.057827,
+                           542.068392, 560.078957, 559.094941, 584.090190))
+      
+      e <- getRDataEnv()
+      
+      marker <- names(markerIonList())
+      
+      if (length(ls(e)) > 0){
+       # df <- getDataAsDataFrame()
+        
+        tagList(
+          hr(),
+          selectInput('mascot_object', 'mascot_object:',  ls(e), multiple = FALSE),
+          hr(),
+          sliderInput("minMarkerIntensityRatio",
+                      "minMarkerIntensityRatio",
+                      min = 1,
+                      max = 100,
+                      value = 10),
+          
+          sliderInput("minNumberIons",
+                      "minNumberIons",
+                      min = 1,
+                      max = 6,
+                      value = 2),
+          
+          sliderInput("score_cutoff",
+                      "mascot score cut-off",
+                      min = 0,
+                      max = 100,
+                      value = 25),
     
-    e <- getRDataEnv()
-    marker <- names(markerIonList())
-    if (length(ls(e)) > 0){
-      tagList(
-        
-        hr(),
-        selectInput('mascot_object', 'mascot_object:',  ls(e), multiple = FALSE),
-        hr(),
-        sliderInput("minMarkerIntensityRatio",
-                    "minMarkerIntensityRatio",
-                    min = 1,
-                    max = 100,
-                    value = 10),
-        
-        sliderInput("minNumberIons",
-                    "minNumberIons",
-                    min = 1,
-                    max = 6,
-                    value = 2),
-        
-        sliderInput("score_cutoff",
-                    "mascot score cut-off",
-                    min = 0,
-                    max = 100,
-                    value = 25),
-        
+          selectInput('mZmarkerIons', 'marker ions:',  markerIons, multiple = TRUE,
+                      selected = markerIons),
+          
+          checkboxGroupInput("plotLines", label = h3("plot lines"), choices = list("yes" = 1), selected = 1),
+          checkboxGroupInput("plotLegend", label = h3("plot legend"), choices = list("yes" = 1), selected = 0),
          
-        selectInput('mZmarkerIons', 'marker ions:',  markerIons, multiple = TRUE,
-                    selected = markerIons),
-        
-        checkboxGroupInput("plotLines", label = h3("plot lines"), choices = list("yes" = 1), selected = 1),
-        sliderInput("alpha", "alpha blending %", min=1, max=100, value=40),
-        sliderInput("alpha_brush", "alpha blending brush%", min=1, max=100, value=20)
-  
-      )}else{print ("no data loaded.")}
+          checkboxGroupInput("zoom", label = h3("zoom in"), choices = list("yes" = 1), selected = 0),
+          
+         sliderInput("xrange", "x-Range:",
+                      min = 0, max = 3 * 3600, value = c(0,3*3600)),
+          
+         sliderInput("yrange", "y-Range:",
+                     min =0, max = 2000, value = c(0,3600)),
+         
+     
+          sliderInput("alpha", "alpha blending %", min = 1, max = 100, value = 40),
+          sliderInput("alpha_brush", "alpha blending brush%", min = 1, max = 100, value = 20)
+    
+        )}else{
+         text("no data loaded.")
+          }
   })
   
   # return an env
@@ -188,11 +205,11 @@ shinyServer(function(input, output, session) {
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = "filter brush", value = 0)
-    
-    
+  
     rv <- processedData0()
     
     brush.mbb <- xy_range_str(input$plot_brush)
+    
     rv$brush <- FALSE
     
     if (!is.null(brush.mbb)){
@@ -217,7 +234,6 @@ shinyServer(function(input, output, session) {
   })
   )
   
-  
   output$findMzTableLong <- DT::renderDataTable(DT::datatable({
    
       S <- processedData();
@@ -240,8 +256,6 @@ shinyServer(function(input, output, session) {
   output$sessionInfo <- renderPrint({
     sessionInfo()
   })
-  
-
   
   
   output$plot_hoverinfo <- renderText({
@@ -295,7 +309,15 @@ shinyServer(function(input, output, session) {
     if(!is.null(MSM)){
       par(mfrow=c(1,1))
         
-      lcmsmap(MSM, score.cutoff = input$score_cutoff, charges = as.numeric(input$charges))
+      if (1 %in% input$zoom){
+       
+        lcmsmap(MSM, score.cutoff = input$score_cutoff, 
+                charges = as.numeric(input$charges),
+                xlim = input$xrange,
+                ylim = input$yrange)
+      }else{
+        lcmsmap(MSM, score.cutoff = input$score_cutoff, charges = as.numeric(input$charges))
+      }
       
       MI.filter <- MI[MI$charge %in% as.numeric(input$charges) & MI$score > input$score_cutoff,  ]
       
@@ -359,15 +381,17 @@ shinyServer(function(input, output, session) {
                    xlab = "markerIon m/z",
                    ylab = "log10 based marker ion intensity")
       text(1:length(b$n), b$stats[3,], b$n, col="darkblue", pos=1)
+      
+      if (1 %in% input$plotLegend){
       legend('topright', legend=sapply(input$mZmarkerIons, as.numeric))
       
-      
+      }
       if (1 %in% input$plotLines){
         lines(as.factor(S$markerIonMZ), S$markerIonIntensity, 
-              col=rgb(0.1,0.1,0.1, alpha = input$alpha / 100),
-              lwd=6)
+              col = rgb(0.1, 0.1, 0.1, alpha = input$alpha / 100),
+              lwd = 6)
       }
-      
+      if (1 %in% input$plotLegend){
       legend("topleft", c(paste("minNumberIons =", input$minNumberIons),
                           paste("minMarkerIntensityRatio =", input$minMarkerIntensityRatio),
                           paste("Number of queries =",  length(unique(S$query))),
@@ -375,7 +399,7 @@ shinyServer(function(input, output, session) {
                                 sum(S$score >= input$score_cutoff, na.rm=TRUE)),
                           paste("Number of psm (score <", input$score_cutoff, ") =", 
                                 sum(S$score < input$score_cutoff, na.rm=TRUE))
-      ))
+      ))}
     }else{
       plot(0,0,
            type='n',
@@ -390,6 +414,7 @@ shinyServer(function(input, output, session) {
   
   
   output$findMzPlotBrush <- renderPlot({
+    
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = "making PTM MarkerFinder boxplot ,,,", value = 0)
@@ -408,8 +433,10 @@ shinyServer(function(input, output, session) {
                    ylab = "log10 based marker ion intensity")
       
       text(1:length(b$n), b$stats[3,], b$n, col="darkblue", pos=1)
-      legend('topright', legend=sapply(input$mZmarkerIons, as.numeric))
       
+      if (1 %in% input$plotLegend){
+      legend('topright', legend=sapply(input$mZmarkerIons, as.numeric))
+      }
       if (1 %in% input$plotLines){
         
         lines(as.factor(S$markerIonMZ[!S$brush]), S$markerIonIntensity[!S$brush], 
@@ -421,14 +448,15 @@ shinyServer(function(input, output, session) {
                 lwd=6)
       }
       
-      legend("topleft", c(paste("minNumberIons =", input$minNumberIons),
-                          paste("minMarkerIntensityRatio =", input$minMarkerIntensityRatio),
-                          paste("Number of queries =",  length(unique(S$query))),
-                          paste("Number of psm (score >=", input$score_cutoff, ") =", 
-                                sum(S$score >= input$score_cutoff, na.rm=TRUE)),
-                          paste("Number of psm (score <", input$score_cutoff, ") =", 
-                                sum(S$score < input$score_cutoff, na.rm=TRUE))
-      ))
+      if (1 %in% input$plotLegend){
+        legend("topleft", c(paste("minNumberIons =", input$minNumberIons),
+                            paste("minMarkerIntensityRatio =", input$minMarkerIntensityRatio),
+                            paste("Number of queries =",  length(unique(S$query))),
+                            paste("Number of psm (score >=", input$score_cutoff, ") =", 
+                                  sum(S$score >= input$score_cutoff, na.rm=TRUE)),
+                            paste("Number of psm (score <", input$score_cutoff, ") =", 
+                                  sum(S$score < input$score_cutoff, na.rm=TRUE))
+        ))}
     }else{
       plot(0,0,
            type='n',
