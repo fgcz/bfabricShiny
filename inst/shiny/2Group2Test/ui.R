@@ -1,6 +1,6 @@
 ## TESTESTTEST ##
 
-library(shiny)
+library(bfabricShiny)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -9,20 +9,25 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
-      fileInput('proteinGroups', 'Choose MQ ProteinGroups File',
-                accept=c('text/csv',
-                         'text/comma-separated-values,text/plain',
-                         '.csv','.zip')),
+      
+      #fileInput('proteinGroups', 'Choose MQ ProteinGroups File',
+      #          accept=c('text/csv',
+      #                   'text/comma-separated-values,text/plain',
+      #                   '.csv','.zip')),
       tags$hr(),
       uiOutput("parameterUI"),
       tags$hr(),
+     
       uiOutput("generatereportbutton"),
       tags$hr(),
       uiOutput("downloadreport")
     ),
     # Show a plot of the generated distribution
     mainPanel(
-      htmlOutput("fileInformation")
+      tabsetPanel(
+        tabPanel("bfabric", bfabricInput("bfabric8")),
+        tabPanel("fileInformation", uiOutput("fileInformation"))
+      )
     )
   )
 ))

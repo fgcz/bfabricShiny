@@ -2,49 +2,86 @@
 ## shiny::runApp("inst/shiny/2Group2Test",port=1234, host="130.60.81.134")
 ## shiny::runApp('C:/Users/wolski/prog/SRMService/inst/shiny/2Group2Test', port = 1234, host=)
 
-library(shiny)
-library(SRMService)
-#library(rhandsontable)
-options(shiny.maxRequestSize=30*1024^2)
+library(bfabricShiny)
+
+
+options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer( function(input, output) {
+  
+  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168))
+  
   grp2 <- NULL
-  v_upload_file <- reactiveValues(data = NULL)
+  
+  v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL, condition = NULL)
+  
   v_download_links <- reactiveValues(filename= NULL)
 
-  ### observes file upload
-  filename <- observeEvent(input$proteinGroups,{
-    v_upload_file$filenam <- input$proteinGroups
+  
+  
+  
+  rawFileNames <- reactive({
+    if (is.null(v_upload_file$protein)){NULL}else{
+      rv <- gsub("Intensity\\.", "", grep("Intensity\\.",colnames(v_upload_file$protein), value = TRUE) )
+      v_upload_file$condition <- rep(NA, length(rv))
+    }
+    rv
   })
-
+  
+  updateCondition <- observeEvent(input$updateConditions,{
+    raw <- rawFileNames()
+    v_upload_file$condition[raw %in% input$Group1] <- "A"
+    v_upload_file$condition[!raw %in% input$Group1] <- "B"
+  })
+  
+  ### observes file upload
+  loadProteinGroups <- observeEvent(input$load,{
+   
+    filename <- file.path('/srv/www/htdocs/', input$relativepath)
+    
+    v_upload_file$filenam <- filename
+    
+    if (file.exists(v_upload_file$filenam)){
+      v_upload_file$protein <- bfabricShiny:::.unzip(zipfile = filename, file = 'proteinGroups.txt')
+    }else{
+      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt')
+    }
+  })
+  
+  
   ## Create output button
   output$generatereportbutton <- renderUI({
-    if(is.null(v_upload_file$filenam[1])){
+    if(is.null(v_upload_file$filenam)){
       NULL
     }else{
       actionButton("generateReport", "Generate Report" )
     }
   })
-
-  ## File information output for main panel.
+  output$test <- renderUI({HTML("TEST")})
+  
   output$fileInformation <- renderUI({
-    if(is.null(v_upload_file$filenam[1])){
+    if(is.null(v_upload_file$filenam)){
       ("Please upload a ProteinGroups.txt file.")
     }else{
-      protein <- read.csv(v_upload_file$filenam$datapath, sep="\t",stringsAsFactors = F, header=TRUE)
-      v_upload_file$protein <- protein
+      #protein <- read.csv(v_upload_file$filenam$datapath, sep="\t", stringsAsFactors = FALSE, header=TRUE)
+      #v_upload_file$protein <- protein
+    
+      
+      protein <- v_upload_file$protein
 
       ## Prepare annotation table ###
-      rawF <- gsub("Intensity\\.", "", grep("Intensity\\.",colnames(protein),value=T) )
-      condition <- quantable::split2table(rawF)[,3]
+      rawF <- rawFileNames()
+      condition <- v_upload_file$condition
+      #quantable::split2table(rawF)[,3]
 
 
       annotation <-data.frame(Raw.file = rawF,
                               Condition = condition,
-                              BioReplicate = paste("X",1:length(condition),sep=""),
+                              BioReplicate = paste("X",1:length(condition), sep=""),
                               Run = 1:length(condition),
-                              IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = F)
+                              IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = FALSE)
+      
       v_upload_file$annotation <- annotation
 
 
@@ -56,8 +93,8 @@ shinyServer(function(input, output) {
       v_upload_file$minPeptides <- max(protein$Peptides)
 
       ## number of NA's plot ###
-      pint <- protein[,grep("Intensity\\.",colnames(protein))]
-      pint[pint==0] <-NA
+      pint <- protein[, grep("Intensity\\.",colnames(protein))]
+      pint[pint == 0] <-NA
 
 
       pint2 <- pint[protein$Peptides >= 2,]
@@ -79,7 +116,7 @@ shinyServer(function(input, output) {
            renderTable(table(annotation$Condition)),
            nrPeptidePlot,
            naPlot,
-           HTML(paste(v_upload_file$filenam[1], v_upload_file$filenam$datapath , dim(protein)[1], dim(protein)[2],
+           HTML(paste(v_upload_file$filenam, dim(protein)[1], dim(protein)[2],
                       "any questions?",version
                       ,sep="<br/>")))
     }
@@ -87,18 +124,20 @@ shinyServer(function(input, output) {
 
 
   output$parameterUI <- renderUI({
-    if(is.null(v_upload_file$filenam[1])){
+    if(is.null(v_upload_file$protein)){
       NULL
     }else{
       conds <- as.list(v_upload_file$conditions)
       names(conds) <- v_upload_file$conditions
+      
       selection <- selectInput("select", label = h3("Select Control"),
                          choices = conds,
                          selected = 1)
-
-
-      list(selection,
-           numericInput("minPeptides", "Nr of Peptides per protein:", 2, max= v_upload_file$minPeptides),
+      
+      list( gr1 <- selectInput("Group1", "Group1", choices = rawFileNames(), multiple = TRUE),
+            actionButton("updateConditions", "Update Conditions" ),
+           selection,
+           numericInput("minPeptides", "Nr of Peptides per protein:", 2, max = v_upload_file$minPeptides),
            numericInput("maxMissing", "Maximum number of NAs: ",value = v_upload_file$maxMissing, min=0, max = v_upload_file$maxNA),
            #tags$hr(),
            #numericInput("pValue", "p value threshold", value = 0.05, min=0, max=1, step=0.01 ),
