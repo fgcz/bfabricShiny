@@ -61,7 +61,7 @@ bfabricInput <- function(id) {
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return check the \code{input$resourceid} value.
 #' @export bfabric
-bfabric <- function(input, output, session, applicationid) {
+bfabric <- function(input, output, session, applicationid, resoucepattern = ".*") {
   ns <- session$ns
   
   pubKey <- PKI.load.key(file=file.path(system.file("keys", 
@@ -123,6 +123,8 @@ bfabric <- function(input, output, session, applicationid) {
         
         relativepath <- sapply(res, 
                              function(y){y$relativepath})
+        
+        relativepath <- relativepath[grep(resoucepattern, relativepath )]
         
         tagList(
         #selectInput("resourceid", "resourceid:", resourceid, 

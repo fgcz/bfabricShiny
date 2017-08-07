@@ -10,7 +10,7 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 # Define server logic required to draw a histogram
 shinyServer( function(input, output) {
   
-  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168))
+  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168), resoucepattern = 'zip$')
   
   grp2 <- NULL
   
@@ -18,8 +18,6 @@ shinyServer( function(input, output) {
   
   v_download_links <- reactiveValues(filename= NULL)
 
-  
-  
   
   rawFileNames <- reactive({
     if (is.null(v_upload_file$protein)){NULL}else{
@@ -60,41 +58,51 @@ shinyServer( function(input, output) {
   })
   output$test <- renderUI({HTML("TEST")})
   
+  annotation <- reactive({
+    protein <- v_upload_file$protein
+    
+    ## Prepare annotation table ###
+    rawF <- rawFileNames()
+    condition <- v_upload_file$condition
+    #quantable::split2table(rawF)[,3]
+    
+    
+    annotation <- data.frame(Raw.file = rawF,
+                            Condition = condition,
+                            BioReplicate = paste("X",1:length(condition), sep=""),
+                            Run = 1:length(condition),
+                            IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = FALSE)
+    
+    v_upload_file$annotation <- annotation
+    v_upload_file$minPeptides <- max(protein$Peptides)
+    
+    
+    v_upload_file$pint <- protein[, grep("Intensity\\.", colnames(protein))]
+    v_upload_file$maxNA <- ncol(v_upload_file$pint)
+    v_upload_file$maxMissing <- ncol(v_upload_file$pint) - 4
+    
+    annotation
+  })
+  
+  
   output$fileInformation <- renderUI({
     if(is.null(v_upload_file$filenam)){
-      ("Please upload a ProteinGroups.txt file.")
+      ("Please choose and load a MaxQuant resouce zip file.")
     }else{
-      #protein <- read.csv(v_upload_file$filenam$datapath, sep="\t", stringsAsFactors = FALSE, header=TRUE)
-      #v_upload_file$protein <- protein
-    
-      
+
+      annotation <- annotation()
       protein <- v_upload_file$protein
-
-      ## Prepare annotation table ###
-      rawF <- rawFileNames()
-      condition <- v_upload_file$condition
-      #quantable::split2table(rawF)[,3]
-
-
-      annotation <-data.frame(Raw.file = rawF,
-                              Condition = condition,
-                              BioReplicate = paste("X",1:length(condition), sep=""),
-                              Run = 1:length(condition),
-                              IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = FALSE)
-      
-      v_upload_file$annotation <- annotation
-
 
       ## number of peptides plot ####
       nrPep <- cumsum(rev(table(protein$Peptides)))
       nrPeptidePlot<-renderPlot(barplot(nrPep[(length(nrPep)-5):length(nrPep)],
                                         ylim=c(0, length(protein$Peptides)),
                                         xlab='nr of proteins with at least # peptides'))
-      v_upload_file$minPeptides <- max(protein$Peptides)
+      
 
       ## number of NA's plot ###
-      pint <- protein[, grep("Intensity\\.",colnames(protein))]
-      pint[pint == 0] <-NA
+      pint <- v_upload_file$pint
+      pint[pint == 0] <- NA
 
 
       pint2 <- pint[protein$Peptides >= 2,]
@@ -107,9 +115,11 @@ shinyServer( function(input, output) {
         barplot((table(nrNA2)),xlab="nr of NA's per protein (2 or more peptides)")
       })
 
-      v_upload_file$maxNA <- ncol(pint)
-      v_upload_file$maxMissing <- ncol(pint) - 4
+      v_upload_file$pint2 <- pint[protein$Peptides >= 2,]
+
+     
       v_upload_file$conditions <- rownames(table(annotation$Condition))
+      
       version <- help(package="SRMService")$info[[1]][4]
       ## prepare gui output
       list(renderTable(annotation),
@@ -124,29 +134,62 @@ shinyServer( function(input, output) {
 
 
   output$parameterUI <- renderUI({
-    if(is.null(v_upload_file$protein)){
-      NULL
-    }else{
-      conds <- as.list(v_upload_file$conditions)
-      names(conds) <- v_upload_file$conditions
+    if (is.null(v_upload_file$filenam)) {
+      ("Please choose and load a MaxQuant resouce zip file.")
+    } else{
+      annotation <- annotation()
       
-      selection <- selectInput("select", label = h3("Select Control"),
-                         choices = conds,
-                         selected = 1)
-      
-      list( gr1 <- selectInput("Group1", "Group1", choices = rawFileNames(), multiple = TRUE),
-            actionButton("updateConditions", "Update Conditions" ),
-           selection,
-           numericInput("minPeptides", "Nr of Peptides per protein:", 2, max = v_upload_file$minPeptides),
-           numericInput("maxMissing", "Maximum number of NAs: ",value = v_upload_file$maxMissing, min=0, max = v_upload_file$maxNA),
-           #tags$hr(),
-           #numericInput("pValue", "p value threshold", value = 0.05, min=0, max=1, step=0.01 ),
-           #numericInput("pValueFC", "p value foldchange", value = 2, min=0, step=0.05 ),
-           tags$hr(),
-           numericInput("qValue", "q value threshold", value = 0.05, min=0, max=1, step=0.01 ),
-           numericInput("qValueFC", "q value foldchange", value = 2, min=0, step=0.05 ),
-
-           textInput("experimentID", "Experiment Title Name", "p2084_knockout"))
+      if (nrow(annotation) > 0) {
+        list(
+          selectInput(
+            "Group1",
+            "Group1",
+            choices = annotation$Raw.file,
+            multiple = TRUE
+          ),
+          actionButton("updateConditions", "Update Conditions"),
+          selectInput(
+            "select",
+            label = h3("Select Control"),
+            choices = annotation$Condition,
+            selected = 1
+          ),
+          numericInput(
+            "minPeptides",
+            "Nr of Peptides per protein:",
+            2,
+            max = v_upload_file$minPeptides
+          ),
+          numericInput(
+            "maxMissing",
+            "Maximum number of NAs: ",
+            value = v_upload_file$maxMissing,
+            min = 0,
+            max = v_upload_file$maxNA
+          ),
+          tags$hr(),
+          numericInput(
+            "qValue",
+            "q value threshold",
+            value = 0.05,
+            min = 0,
+            max = 1,
+            step = 0.01
+          ),
+          numericInput(
+            "qValueFC",
+            "q value foldchange",
+            value = 2,
+            min = 0,
+            step = 0.05
+          ),
+          textInput(
+            "experimentID",
+            "Experiment Title Name",
+            "p2084_knockout"
+          )
+        )
+      }
     }
   })
 
