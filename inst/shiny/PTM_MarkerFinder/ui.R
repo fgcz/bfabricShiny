@@ -31,7 +31,7 @@ shinyUI(fluidPage(
               tabPanel("bfabric", bfabricInput("bfabric8")),
               tabPanel("table - long format", DT::dataTableOutput("findMzTableLong")),
               tabPanel("table - wide format", DT::dataTableOutput("findMzTableWide")),
-              tabPanel("sessionInfo", tableOutput("sessionInfo")),
+              tabPanel("sessionInfo", verbatimTextOutput("sessionInfo")),
               tabPanel("lc-ms map", 
                        tagList(
                         selectInput('charges', 'charges:',  choices = 1:6, selected = 2, multiple = TRUE),
