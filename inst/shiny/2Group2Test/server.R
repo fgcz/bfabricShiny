@@ -8,10 +8,10 @@ library(bfabricShiny)
 options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
-shinyServer( function(input, output) {
+shinyServer( function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(168), resoucepattern = 'zip$')
-  
+  ns <- NS('session')
   grp2 <- NULL
   
   v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL, condition = NULL)
@@ -30,7 +30,7 @@ shinyServer( function(input, output) {
   updateCondition <- observeEvent(input$updateConditions,{
     raw <- rawFileNames()
     v_upload_file$condition[raw %in% input$Group1] <- "A"
-    v_upload_file$condition[!raw %in% input$Group1] <- "B"
+    v_upload_file$condition[raw %in% input$Group2] <- "B"
   })
   
   ### observes file upload
@@ -134,16 +134,24 @@ shinyServer( function(input, output) {
 
 
   output$parameterUI <- renderUI({
+    
+   
     if (is.null(v_upload_file$filenam)) {
       ("Please choose and load a MaxQuant resouce zip file.")
     } else{
       annotation <- annotation()
-      
+      sp_title <- strsplit(input$relativepath, "/")[[1]]
       if (nrow(annotation) > 0) {
         list(
           selectInput(
             "Group1",
             "Group1",
+            choices = annotation$Raw.file,
+            multiple = TRUE
+          ),
+          selectInput(
+            "Group2",
+            "Group2",
             choices = annotation$Raw.file,
             multiple = TRUE
           ),
@@ -186,7 +194,7 @@ shinyServer( function(input, output) {
           textInput(
             "experimentID",
             "Experiment Title Name",
-            "p2084_knockout"
+            paste("MQ-report", sp_title[2], sp_title[9], sep='-')
           )
         )
       }
@@ -209,7 +217,7 @@ shinyServer( function(input, output) {
     }
     withProgress(message = 'Generating Report', detail = "part 0", value = 0, {
       ### Rendering report
-      library(SRMService)
+    
       print(names(input))
       annotation <- input$fileInformation
       print("Annotation!")
@@ -280,9 +288,10 @@ shinyServer( function(input, output) {
     content = function(file) {
       print(v_download_links$tsvTable)
       # Write to a file specified by the 'file' argument
-      file.copy(v_download_links$tsvTable,file)
+      file.copy(v_download_links$tsvTable, file)
     }
   )
+  
   output$downloadReport <- downloadHandler(
     filename = function() {
       paste(input$experimentID, "pdf", sep = ".")
@@ -294,10 +303,21 @@ shinyServer( function(input, output) {
       print(v_download_links$pdfReport)
       # Write to a file specified by the 'file' argument
       file.copy(v_download_links$pdfReport, file)
+      
+      file_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
+      
+      bfabric_upload_file(login = bf$login(),
+                  webservicepassword = bf$webservicepassword(),
+                  projectid = bf$projectid(),
+                  file_content = file_content, 
+                  workunitname = paste("MaxQuant result of workunit", bf$workunitid()),
+                  resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
+                  applicationid = 217)
     }
   )
 
   output$sessionInfo <- renderPrint({
-    capture.output(sessionInfo())
+    
+   capture.output(sessionInfo())
   })
 })

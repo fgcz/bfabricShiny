@@ -4,7 +4,7 @@
 \alias{bfabric}
 \title{shiny server module for the bfabric}
 \usage{
-bfabric(input, output, session, applicationid)
+bfabric(input, output, session, applicationid, resoucepattern = ".*")
 }
 \arguments{
 \item{input}{}

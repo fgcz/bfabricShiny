@@ -269,3 +269,96 @@ getResources <- function(login, webservicepassword, workunitid){
   return(resources)
 }
 
+
+createWorkunit <-
+  function(login,
+           webservicepassword,
+           projectid,
+           applicationid,
+           status = 'available',
+           name ) {
+    workunitid <- NA
+    rv <- POST('http://localhost:5000/s',
+               body = toJSON(
+                 list(
+                   login = login,
+                   webservicepassword = webservicepassword,
+                   endpoint = 'workunit',
+                   query = list(
+                     'projectid' = projectid,
+                     'applicationid' = applicationid,
+                     'name' = name,
+                     'status' = status
+                   )
+                 ),
+                 encode = 'json'
+               ))
+    
+    rv <- content(rv)
+    return(rv$res)
+  }
+
+
+saveResource <- function(login,
+                         webservicepassword,
+                         workunitid, 
+                         content, 
+                         name){
+  
+  rv <- POST('http://localhost:5000/s',
+             body = toJSON(
+               list(
+                 login = login,
+                 webservicepassword = webservicepassword,
+                 endpoint = 'resource',
+                 query = list(
+                   'name' = name,
+                   'workunitid' = workunitid,
+                   'base64' = content
+                 )
+               ),
+               encode = 'json'
+             ))
+  
+  rv <- content(rv)
+  
+}
+
+#' upload resouce to bfabric
+#'
+#' @param login 
+#' @param webservicepassword 
+#' @param projectid 
+#' @param applicationid 
+#' @param status 
+#' @param workunitname 
+#' @param resourcename 
+#' @param file_content 
+#'
+#' @return
+#' @export bfabric_upload_file
+bfabric_upload_file <- function(login,
+                        webservicepassword,
+                        projectid = 1000,
+                        applicationid = 217,
+                        status,
+                        workunitname = 'MaxQuant result',
+                        resourcename = 'MaxQuant report',
+                        file_content = NULL) {
+  
+  message(workunitname)
+  message(resourcename)
+  wu <-
+    createWorkunit(
+      login = login,
+      webservicepassword = webservicepassword,
+      projectid = projectid,
+      applicationid = applicationid,
+      name = workunitname,
+      status = 'pending'
+    )
+  
+  r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`, content = file_content, name = resourcename)
+  
+  wu[[1]]$`_id`
+}

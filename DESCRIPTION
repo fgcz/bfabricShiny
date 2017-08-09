@@ -1,7 +1,7 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.0.38
+Version: 0.0.39
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Description: provides access modules and functions to interact with the FGCZ's 
@@ -15,7 +15,7 @@ Depends:
     protViz (>= 0.2.31),
     shiny (>= 1.0.3),
     shinyStore (>= 0.1.0),
-    SRMService (>= 0.1.21),
+    SRMService (>= 0.1.23),
     xml2 (>= 1.1.1)
 Suggest: rmarkdown,
     roxygen2,

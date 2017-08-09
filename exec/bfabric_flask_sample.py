@@ -70,6 +70,22 @@ def q():
     except:
         return jsonify({'status': 'jsonify failed'})
 
+
+@app.route('/s', methods=['GET', 'POST'])
+def s():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.'})
+
+    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+    print content
+    res = bf.save_object(endpoint=content['endpoint'][0], obj=content['query'])
+
+    try:
+        return jsonify({'res': res})
+    except:
+        return jsonify({'status': 'jsonify failed'})
     
     
 

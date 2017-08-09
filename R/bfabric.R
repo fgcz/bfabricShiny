@@ -106,7 +106,6 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     }
     rv
   })
-  
 
   
   output$resources <- renderUI({
@@ -129,7 +128,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         tagList(
         #selectInput("resourceid", "resourceid:", resourceid, 
         #            multiple = FALSE),
-        selectInput("relativepath", "resource relativepath:", relativepath, 
+        selectInput("relativepath", "resource relativepath:", relativepath,
                     multiple = FALSE),
         actionButton("load", "load selected RData", icon("upload"))
         )
@@ -153,5 +152,9 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     updateStore(session, "project", isolate(input$project), encrypt=pubKey)
   })
 
+  return(list(login = reactive({input$login}), 
+              webservicepassword = reactive({input$webservicepassword}),
+              workunitid = reactive({input$workunit}),
+              projectid = reactive({input$projectid})))
 }
 
