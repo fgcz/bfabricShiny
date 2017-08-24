@@ -275,6 +275,7 @@ createWorkunit <-
            webservicepassword,
            projectid,
            applicationid,
+           inputresource,
            status = 'available',
            name ) {
     workunitid <- NA
@@ -294,7 +295,10 @@ createWorkunit <-
                  encode = 'json'
                ))
     
+    #'inputresource' = list(inputresource),
+    
     rv <- content(rv)
+    print(rv)
     return(rv$res)
   }
 
@@ -342,6 +346,7 @@ bfabric_upload_file <- function(login,
                         projectid = 1000,
                         applicationid = 217,
                         status,
+                        inputresource = NULL,
                         workunitname = 'MaxQuant result',
                         resourcename = 'MaxQuant report',
                         file_content = NULL) {
@@ -353,6 +358,7 @@ bfabric_upload_file <- function(login,
       login = login,
       webservicepassword = webservicepassword,
       projectid = projectid,
+      inputresource = inputresource,
       applicationid = applicationid,
       name = workunitname,
       status = 'pending'

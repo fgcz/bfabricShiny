@@ -67,6 +67,8 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   pubKey <- PKI.load.key(file=file.path(system.file("keys", 
                                                     package = "bfabricShiny"), "bfabricShiny.key.pub"))
   
+  
+  #value <- reactiveValues(resourceid = NA)
   output$projects <- renderUI({
     
     projects <- getProjects(input$login, input$webservicepassword)
@@ -78,7 +80,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   })
   
   output$applications <- renderUI({
-    selectInput(ns("applicationid"), "applicationid:", applicationid, multiple = FALSE)
+    selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
   })
   
   output$workunits <- renderUI({
@@ -100,11 +102,18 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   })
   
   resources <- reactive({
-    rv <- NULL
+    df <- NULL
     if (length(input$workunit) > 0){
-      rv <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
+      res <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
+     
+      resourceid <- sapply(res, function(y){y$`_id`})
+      relativepath <- sapply(res, function(y){y$relativepath})
+      
+      df <- data.frame(resourceid = resourceid, relativepath = relativepath) 
+      df <- df[grepl(resoucepattern, df$relativepath), ]
     }
-    rv
+    
+    return (df)
   })
 
   
@@ -115,20 +124,13 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     }else{
       workunitid = strsplit(input$workunit, " - ")[[1]][1]
       res <- resources()
+      
       if (is.null(res)){
+        HTML("no resources found.")
       }else{
-        resourceid <- sapply(res, 
-                                  function(y){paste(y$`_id`, y$name, sep=" - ")})
-        
-        relativepath <- sapply(res, 
-                             function(y){y$relativepath})
-        
-        relativepath <- relativepath[grep(resoucepattern, relativepath )]
-        
         tagList(
-        #selectInput("resourceid", "resourceid:", resourceid, 
-        #            multiple = FALSE),
-        selectInput("relativepath", "resource relativepath:", relativepath,
+      
+        selectInput("relativepath", "resource relativepath:", res$relativepath,
                     multiple = FALSE),
         actionButton("load", "load selected RData", icon("upload"))
         )
@@ -154,6 +156,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
 
   return(list(login = reactive({input$login}), 
               webservicepassword = reactive({input$webservicepassword}),
+              resources = reactive({resources()}),
               workunitid = reactive({input$workunit}),
               projectid = reactive({input$projectid})))
 }

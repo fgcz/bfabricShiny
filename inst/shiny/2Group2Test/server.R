@@ -10,11 +10,13 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 # Define server logic required to draw a histogram
 shinyServer( function(input, output, session) {
   
-  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168), resoucepattern = 'zip$')
-  ns <- NS('session')
+  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 223), resoucepattern = 'zip$')
+
   grp2 <- NULL
   
-  v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL, condition = NULL)
+  v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL,
+                                  condition = NULL,
+                                  inputresourceid = NULL)
   
   v_download_links <- reactiveValues(filename= NULL)
 
@@ -35,7 +37,11 @@ shinyServer( function(input, output, session) {
   
   ### observes file upload
   loadProteinGroups <- observeEvent(input$load,{
-   
+    resources <- bf$resources()
+    
+    v_upload_file$inputresouceid = resources$resourceid[resources$relativepath == input$relativepath][1]
+    print (v_upload_file$inputresouceid)
+    
     filename <- file.path('/srv/www/htdocs/', input$relativepath)
     
     v_upload_file$filenam <- filename
@@ -306,11 +312,14 @@ shinyServer( function(input, output, session) {
       
       file_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
       
+      
+      
       bfabric_upload_file(login = bf$login(),
                   webservicepassword = bf$webservicepassword(),
                   projectid = bf$projectid(),
                   file_content = file_content, 
-                  workunitname = paste("MaxQuant result of workunit", bf$workunitid()),
+                  inputresource = v_upload_file$inputresouceid,
+                  workunitname = input$experimentID,
                   resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
                   applicationid = 217)
     }
