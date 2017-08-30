@@ -181,16 +181,42 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   })
   
   
+  getResourcename <- reactive({
+    paste("fgcz-queue-generator_p", input$project, "_", input$instrument, "_", format(Sys.time(), "%Y%m%d"), ".csv", sep='')
+  })
+  
   output$downloadData <- downloadHandler(
+    
+    
     filename = function() {
-      paste("fgcz-queue-generator_", Sys.Date(), ".csv", sep="")
+      getResourcename()
     },
     content = function(file) {
       write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
       res <- getBfabricContent()
-      write.table(res, file = file, 
+       write.table(res, file = file, 
                   sep=',', row.names = FALSE, 
                   append = TRUE, quote = FALSE, eol='\r\n')
+       
+       
+       ########################## WRITE CSV TO BFABRIC
+       fn <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".csv")
+       print (fn)
+       write.csv(cat("Bracket Type=4\r\n", file = fn, append = FALSE))
+       write.table(res, file = fn, 
+                   sep=',', row.names = FALSE, 
+                   append = TRUE, quote = FALSE, eol='\r\n')
+       
+       file_content <- base64encode(readBin(fn, "raw", file.info(file)[1, "size"]), 'csv')
+  
+        rv <- POST("http://localhost:5000/add_resource",
+                   body = toJSON(list(base64=file_content, 
+                                      projectid=input$project, 
+                                      resourcename=getResourcename())
+                               ))
+       
+       print (rv)
+       ########################## WRITE CSV TO BFABRIC
     }
   )
   
@@ -198,7 +224,8 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     
     S <- getBfabricContent()
     if (nrow(S) > 0){
-      rv <- POST(paste("http://localhost:5000/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
+      rv <- POST(paste("http://localhost:5000/add_resource", 
+                       input$project, sep='/'), body = toJSON(getBfabricContent()))
       
       observe({
         session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 
