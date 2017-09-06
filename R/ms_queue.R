@@ -3,14 +3,6 @@
 #
 
 
-#TODOS:
-# think of good generic layout for shiny user interface for selecting the appropriate QC standard(s)
-# select from:
-#Proteomics -> Fetuin, clean, HeLc?, BSA?,
-# -> select QC sample -> drop down with selections
-# insert Cleans -> with every standard/ every second standard/none
-# refactor code to match UI
-
 
 
 #generate testdata sets
@@ -281,13 +273,13 @@ test_data_large <- function(){
 
 #calculate QC inserts
 
-#for fetuin only
+#for QC01 only
 .qc.type.one <- function(x, qc.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet$position <- as.character(fet$position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   res <- rbind(x, fet)
@@ -297,13 +289,13 @@ test_data_large <- function(){
   return(res)
 }
 
-#for even fetuin,clean
+#for even QC01,clean
 .qc.type.two <- function(x, qc.position, clean.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), repetitions), ]
@@ -313,13 +305,13 @@ test_data_large <- function(){
   res$idx <-NULL
   return(res)
 }
-#for odd fetuin,clean
+#for odd QC01,clean
 .qc.type.three <- function(x, qc.position, clean.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
   qc.idx <- how.often*(1:qc.inserts)
   repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC_Fetuin_400amol", extract.id = as.integer(NA), extract.Condition = "QC", position = qc.position)
+  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
   clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
   clean <- clean[rep(row.names(clean), ceiling(qc.inserts/2)*how.many), ]
@@ -375,8 +367,8 @@ test_data_large <- function(){
   } else {
     qc.position <- "2F08"
   }
-  start <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("QC",2), position = rep(qc.position,2))
-  end <- data.frame(extract.name = rep("autoQC_Fetuin_400amol",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("QC",1), position = rep(qc.position,1))
+  start <- data.frame(extract.name = rep("autoQC01",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("autoQC01",2), position = rep(qc.position,2))
+  end <- data.frame(extract.name = rep("autoQC01",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("autoQC01",1), position = rep(qc.position,1))
   res <- rbind(start, x, end)
   return(res)
 }
