@@ -331,11 +331,9 @@ shinyServer( function(input, output, session) {
                   applicationid = 217)
       
       message(wuid)
-      #f <- tempfile()
+    
       f <- file.path(getWorkDir(), "pValues.csv")
       message(f)
-      #write.table(grp2$getResultTable(), file=f, quote=FALSE, sep = "\t", col.names=NA)
-      #write.csv(iris, file=f)
       file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
       
      bfabricShiny:::saveResource(login = bf$login(),
