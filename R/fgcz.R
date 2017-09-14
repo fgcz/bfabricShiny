@@ -364,6 +364,7 @@ bfabric_upload_file <- function(login,
       status = 'pending'
     )
   
+  
   r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`, content = file_content, name = resourcename)
   
   wu[[1]]$`_id`

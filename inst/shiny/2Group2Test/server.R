@@ -21,6 +21,12 @@ shinyServer( function(input, output, session) {
   v_download_links <- reactiveValues(filename= NULL)
 
   
+  getWorkDir <- reactive({
+    tmpdir <- tempdir()
+    workdir <- file.path(tmpdir, gsub(" |:","_",date()))
+    workdir
+  })
+  
   rawFileNames <- reactive({
     if (is.null(v_upload_file$protein)){NULL}else{
       rv <- gsub("Intensity\\.", "", grep("Intensity\\.",colnames(v_upload_file$protein), value = TRUE) )
@@ -243,8 +249,9 @@ shinyServer( function(input, output, session) {
       incProgress(0.1, detail = paste("part", "Set up objects"))
 
 
-      tmpdir <- tempdir()
-      workdir <- file.path(tmpdir, gsub(" |:","_",date()))
+      #tmpdir <- tempdir()
+      #workdir <- file.path(tmpdir, gsub(" |:","_",date()))
+      workdir <- getWorkDir()
       rmdfile <- file.path( path.package("SRMService") , "/reports/Grp2Analysis.Rmd" )
 
       if(!dir.create(workdir)){
@@ -310,18 +317,33 @@ shinyServer( function(input, output, session) {
       # Write to a file specified by the 'file' argument
       file.copy(v_download_links$pdfReport, file)
       
-      file_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
+      file_pdf_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
       
       
       
-      bfabric_upload_file(login = bf$login(),
+      wuid <- bfabric_upload_file(login = bf$login(),
                   webservicepassword = bf$webservicepassword(),
                   projectid = bf$projectid(),
-                  file_content = file_content, 
+                  file_content = file_pdf_content, 
                   inputresource = v_upload_file$inputresouceid,
                   workunitname = input$experimentID,
                   resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
                   applicationid = 217)
+      
+      message(wuid)
+      #f <- tempfile()
+      f <- file.path(getWorkDir(), "pValues.csv")
+      message(f)
+      #write.table(grp2$getResultTable(), file=f, quote=FALSE, sep = "\t", col.names=NA)
+      #write.csv(iris, file=f)
+      file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
+      
+     bfabricShiny:::saveResource(login = bf$login(),
+                   webservicepassword = bf$webservicepassword(),
+                   workunitid = wuid,
+                   content = file_csv_content,
+                   name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
+                   )
     }
   )
 
