@@ -173,7 +173,8 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   output$extract <- renderUI({
     res <- getExtracts()
     if (!is.null(res)){
-      selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
+      selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE, selectize = TRUE)  
+      #selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE, size = 50 , selectize=FALSE)  #would require an alphabetic sorting of the extracts prior to populate the list
     }   else{
       selectInput('extract', 'Extract:', NULL)
      

@@ -153,7 +153,7 @@ test_data_large <- function(){
   res <- .equilize_groups(res, blockgroupindex, cond)
   res$blockrandom <- extract.Condition.vector
   res <- res[order(res$blockrandom),]
-  extract.Condition.vector.2 <- as.vector(replicate(repeats, sample(1:repeats)))
+  extract.Condition.vector.2 <- as.vector(replicate(cond, sample(1:repeats)))
   resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
   res$blockrandom2 <- resort
   res <- res[order(res$blockrandom2), ]
@@ -277,7 +277,13 @@ test_data_large <- function(){
 .qc.type.one <- function(x, qc.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
-  qc.idx <- how.often*(1:qc.inserts)
+  if (qc.inserts == 0){
+    qc.idx <- vector()
+  } else if (how.often == 0)  {
+    qc.idx <- vector()
+  } else {
+    qc.idx <- how.often*(1:qc.inserts)
+  }   
   repetitions <- qc.inserts*how.many
   fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet$position <- as.character(fet$position)
@@ -293,7 +299,13 @@ test_data_large <- function(){
 .qc.type.two <- function(x, qc.position, clean.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
-  qc.idx <- how.often*(1:qc.inserts)
+  if (qc.inserts == 0){
+    qc.idx <- vector()
+  } else if (how.often == 0)  {
+    qc.idx <- vector()
+  } else {
+    qc.idx <- how.often*(1:qc.inserts)
+  }  
   repetitions <- qc.inserts*how.many
   fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
@@ -309,7 +321,13 @@ test_data_large <- function(){
 .qc.type.three <- function(x, qc.position, clean.position, how.often, how.many){
   n <- nrow(x)
   qc.inserts <- floor(n/how.often)
-  qc.idx <- how.often*(1:qc.inserts)
+  if (qc.inserts == 0){
+    qc.idx <- vector()
+  } else if (how.often == 0)  {
+    qc.idx <- vector()
+  } else {
+    qc.idx <- how.often*(1:qc.inserts)
+  }    
   repetitions <- qc.inserts*how.many
   fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
   fet <- fet[rep(row.names(fet), repetitions), ]
@@ -323,6 +341,8 @@ test_data_large <- function(){
   return(res)
 }
 
+
+#needs debuging -> only works with certain numbers of how.often
 #current version
 .insert_qc_samples <- function(x, how.often, how.many, hplc = "", qc.type = 1){
   #TODO: assign these variables generic via the instrument hash table -> value predefined
@@ -504,8 +524,8 @@ generate_queue <- function(x,
   
   cbind('File Name' = res.filename,
         'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
-        'Position' = res.queue$position,
-        'Inj Vol' = 2
+        'Position' = as.character(res.queue$position,
+        'Inj Vol' = 2)
   )
 }
 
