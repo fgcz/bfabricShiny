@@ -4,8 +4,7 @@ author: "Chrstian Trachsel"
 date: "`r doc_date()`"
 package: "`r pkg_ver('bfabricShiny')`"
 abstract: >
-  Instructions on enabling _Bioconductor_ style 
-  in your _R_ markdown vignettes.
+  bla bla whatsoever.
 vignette: >
   %\VignetteIndexEntry{rawfileQC}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,13 +13,14 @@ output:
   BiocStyle::pdf_document
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval=FALSE}
 
 rawfileQC.parameter <<- list(
   mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono',
   exe = '/Users/cp/RiderProjects/fgcz-raw/bin/Debug/fgcz_raw.exe',
   rawfile = '/Users/cp/Downloads/20161010_04_TP_HeLa_200ng.raw'
 )
+
 
 ```
 
@@ -30,9 +30,12 @@ rawfileQC.parameter <<- list(
 
 ```{r echo=FALSE}
 library(knitr)
-cmd <- paste(rawfileQC.parameter$mono, rawfileQC.parameter$exe, rawfileQC.parameter$rawfile,
-             "info | grep ':' | sed -e 's/:\ /;/'",
-             sep = ' ')
+cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+             " ", rawfileQC.parameter$rawfile,
+             " info' | grep ':' | sed -e 's/:\ /;/'",
+             sep = '')
+
+message(cmd)
 
 S <- read.csv(pipe(cmd), sep=';', 
               stringsAsFactors = FALSE, header = FALSE,
@@ -47,7 +50,11 @@ knitr::kable(S)
 ## 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-cmd <- paste(rawfileQC.parameter$mono, rawfileQC.parameter$exe, rawfileQC.parameter$rawfile, "qc", sep = ' ')
+cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono, 
+             " ", rawfileQC.parameter$exe, 
+             " ", rawfileQC.parameter$rawfile,
+             " qc'", 
+             sep = ' ')
 
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 
@@ -79,7 +86,32 @@ TIC.BasePeak(QC)
 # MISC
 
 ## How to reporoduce this vignette
+```{r eval=FALSE}
 
+library(parallel)
+library(rmarkdown)
+library(bfabricShiny)
+
+bfabric_rawfileQC <- function(workunitid){
+  S <- bfabricShiny:::getResources('cpanse', "$2a$10$WgGmm0y6iSi8uQdfumCIgu1EPS1TC1NBA9xQuk6SRXpVlPPJFNdve", workunitid = workunitid)
+  
+  S <- mclapply(S, function(x){
+    
+    rawfileQC.parameter <<- list(
+      mono = 'mono',
+      exe = '~cpanse/bin/fgcz_raw.exe',
+      rawfile = paste("/srv/www/htdocs/", x$relativepath,sep='')
+    )
+    render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
+           output_dir = '/tmp/',
+           output_file = paste(basename(x$relativepath), "pdf", sep='.')
+    )
+  }, mc.cores = 10)
+}
+
+bfabric_rawfileQC(workunitid=158636)
+
+```
 ## Session info
 
 Here is the output of `sessionInfo()` on the system on which this

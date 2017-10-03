@@ -1,9 +1,9 @@
 Package: bfabricShiny
 Type: Package
 Title: Performs shiny application on bfabric data
-Version: 0.1.3
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
+Version: 0.1.4
 Description: provides access modules and functions to interact with the FGCZ's 
     bfabric system. The package contains shiny applications, e.g., to allow the FGCZ user 
     to automatically generate a certain set of queues for thermo instruments. 
