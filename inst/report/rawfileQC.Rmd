@@ -1,0 +1,94 @@
+---
+title: "Thermo Fisher raw file QC"
+author: "Chrstian Trachsel"
+date: "`r doc_date()`"
+package: "`r pkg_ver('bfabricShiny')`"
+abstract: >
+  Instructions on enabling _Bioconductor_ style 
+  in your _R_ markdown vignettes.
+vignette: >
+  %\VignetteIndexEntry{rawfileQC}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::pdf_document
+---
+
+```{r echo=FALSE}
+
+rawfileQC.parameter <<- list(
+  mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono',
+  exe = '/Users/cp/RiderProjects/fgcz-raw/bin/Debug/fgcz_raw.exe',
+  rawfile = '/Users/cp/Downloads/20161010_04_TP_HeLa_200ng.raw'
+)
+
+```
+
+\newpage
+
+# Meta Data
+
+```{r echo=FALSE}
+library(knitr)
+cmd <- paste(rawfileQC.parameter$mono, rawfileQC.parameter$exe, rawfileQC.parameter$rawfile,
+             "info | grep ':' | sed -e 's/:\ /;/'",
+             sep = ' ')
+
+S <- read.csv(pipe(cmd), sep=';', 
+              stringsAsFactors = FALSE, header = FALSE,
+              col.names = c('attribute', 'value'))
+
+knitr::kable(S)
+```
+
+
+# QC
+
+## 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cmd <- paste(rawfileQC.parameter$mono, rawfileQC.parameter$exe, rawfileQC.parameter$rawfile, "qc", sep = ' ')
+
+QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r echo=FALSE, fig.cap='Intensity versus RT'}
+TIC.BasePeak <- function(x){
+  df <- x %>% 
+    filter(grepl("ms ", ScanType)) %>% 
+    select(StartTime, TIC, BasePeakIntensity) %>% 
+    rename(Base_Peak = BasePeakIntensity)
+  
+  df <- df %>% gather(key = "Type", value = "Intensity", TIC, Base_Peak)
+  
+  plot <- ggplot(df,aes(x= StartTime, y = Intensity))+
+    geom_line()+
+    facet_grid(Type~.)
+  
+  return(plot)
+}
+
+TIC.BasePeak(QC)
+```
+
+
+# MISC
+
+## How to reporoduce this vignette
+
+## Session info
+
+Here is the output of `sessionInfo()` on the system on which this
+document was compiled:
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
+
+[1] New RawFileReader from Thermo Fisher Scientific  [http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG], 2017
+[2] [https://github.com/cpanse/bfabricShiny]
