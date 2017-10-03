@@ -93,7 +93,7 @@ library(rmarkdown)
 library(bfabricShiny)
 
 bfabric_rawfileQC <- function(workunitid){
-  S <- bfabricShiny:::getResources('cpanse', "$2a$10$WgGmm0y6iSi8uQdfumCIgu1EPS1TC1NBA9xQuk6SRXpVlPPJFNdve", workunitid = workunitid)
+  S <- bfabricShiny:::getResources('cpanse', "", workunitid = workunitid)
   
   S <- mclapply(S, function(x){
     
