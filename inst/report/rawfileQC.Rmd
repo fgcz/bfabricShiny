@@ -30,11 +30,17 @@ rawfileQC.parameter <<- list(
 
 ```{r echo=FALSE}
 library(knitr)
-cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+  if (file.exists(rawfileQC.parameter$rawfile)){
+      cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+                   " ", rawfileQC.parameter$rawfile,
+                   " info | grep ':' | sed -e 's/:\ /;/'",
+                   sep = '')
+    }else{
+      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
              " ", rawfileQC.parameter$rawfile,
              " info' | grep ':' | sed -e 's/:\ /;/'",
              sep = '')
-
+  }
 message(cmd)
 
 S <- read.csv(pipe(cmd), sep=';', 
@@ -50,11 +56,19 @@ knitr::kable(S)
 ## 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+ if (file.exists(rawfileQC.parameter$rawfile)){
+   cmd <- paste(rawfileQC.parameter$mono, 
+             " ", rawfileQC.parameter$exe, 
+             " ", rawfileQC.parameter$rawfile,
+             " qc", 
+             sep = ' ')
+ }else{
 cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono, 
              " ", rawfileQC.parameter$exe, 
              " ", rawfileQC.parameter$rawfile,
              " qc'", 
              sep = ' ')
+}
 
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 

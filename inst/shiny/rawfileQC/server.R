@@ -33,10 +33,19 @@ shinyServer( function(input, output, session) {
       rawfile = paste("/srv/www/htdocs/",input$relativepath, sep='')
     )
     
-    cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+    cmd <- ''
+    if (file.exists(rawfileQC.parameter$rawfile)){
+      cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+                   " ", rawfileQC.parameter$rawfile,
+                   " info | grep ':' | sed -e 's/:\ /;/'",
+                   sep = '')
+    }
+    else{
+      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
                  " ", rawfileQC.parameter$rawfile,
                  " info' | grep ':' | sed -e 's/:\ /;/'",
                  sep = '')
+    }
     
     message(cmd)
     
