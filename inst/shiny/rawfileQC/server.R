@@ -17,7 +17,7 @@ shinyServer( function(input, output, session) {
                    applicationid = c(89, 90, 160, 161, 162, 163, 171, 176, 177, 197), 
                    resoucepattern = 'raw$')
   
-  values <- reactiveValues(pdf = NULL, inputresouceid=NULL)
+  values <- reactiveValues(pdf = NULL, inputresouceid=NULL, wuid=NULL, notpressed=TRUE)
   
   ### observes file upload
   rawfileInfo <- eventReactive(input$load, {
@@ -62,11 +62,20 @@ shinyServer( function(input, output, session) {
   })
   
   output$generateReportButton <- renderUI({
-    if(nrow(rawfileInfo()) > 1){
-      
+    if(nrow(rawfileInfo()) > 1 && values$notpressed){
       actionButton("generateReport", "Generate Report" )
     }else{
       NULL
+    }
+    
+   
+  })
+  
+  output$wuid <- renderUI({
+    if (!is.null(values$wuid)){
+      actionButton("download",
+                   paste("bfabric download workunit", values$wuid),
+                   onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?workunitId=", values$wuid, "', '_blank')", sep=''))
     }
   })
   
@@ -76,36 +85,54 @@ shinyServer( function(input, output, session) {
       message("DUMM")
     }
     else{
+      if (!values$notpressed){return}
+      values$notpressed <- FALSE
       message("generating report ... ")
       
-      
+      progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+      progress$set(message = "generating report")
+      on.exit(progress$close())
         
         rawfileQC.parameter <<- list(
           mono = 'mono',
           exe = '~cpanse/bin/fgcz_raw.exe',
           rawfile = paste("/srv/www/htdocs/", input$relativepath, sep=''),
-          pdf = tempfile(fileext = ".pdf")
+          pdf = tempfile(fileext = ".pdf"),
+          progress = progress
         )
         
-        render(input = paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
-               output_file = rawfileQC.parameter$pdf) 
+        rawfileQC.parameter$progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)
+        render(input = paste(path.package("bfabricShiny"),
+                             "/report/rawfileQC.Rmd", sep='/'),
+               output_file = rawfileQC.parameter$pdf,
+               intermediates_dir = tempdir(),
+               knit_root_dir = tempdir()) 
      
+      message(tempdir())
       values$pdf <- rawfileQC.parameter$pdf
       
       file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
                                                file.info(values$pdf)[1, "size"]), 
                                        "pdf")  
 
-      
+      rawfileQC.parameter$progress$set(message = "register workunit", detail= "in bfabric", value = 0.95)
       wuid <- bfabric_upload_file(login = bf$login(),
                                   webservicepassword = bf$webservicepassword(),
                                   projectid = bf$projectid(),
                                   file_content = file_pdf_content, 
                                   inputresource = values$inputresouceid,
                                   workunitname = input$experimentID,
-                                  resourcename = paste("Thermo Fisher raw file QC of ", bf$workunitid(), ".pdf", sep=''),
+                                  resourcename = paste("Thermo Fisher raw file QC of ",
+                                                       bf$workunitid(), ".pdf", sep=''),
+                                  status = 'available',
                                   applicationid = 225)
       
+      values$wuid <- wuid
+      
+      rawfileQC.parameter$progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
+      
+      message(bfabric_save(login, webservicepassword, endpoint = 'workunit', 
+                         query =  list(status = 'available', id=wuid)));
       
       message(paste("generate report DONE. the report was written to workunit ID", wuid, "in bfabric."))
       message(rawfileQC.parameter$pdf)

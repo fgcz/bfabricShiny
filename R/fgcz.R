@@ -303,6 +303,37 @@ createWorkunit <-
   }
 
 
+#' Title
+#'
+#' @param login 
+#' @param webservicepassword 
+#' @param endpoint 
+#' @param query 
+#'
+#' @return
+#' @export bfabric_save
+#'
+#' @examples
+bfabric_save <- function(login, webservicepassword, endpoint = 'workunit', query){
+  
+  rv <- POST('http://localhost:5000/s',
+             body = toJSON(
+               list(
+                 login = login,
+                 webservicepassword = webservicepassword,
+                 endpoint = endpoint,
+                 query = query
+               ),
+               encode = 'json'
+             ))
+
+  
+  rv <- content(rv)
+  
+  return(rv$res)
+  
+}
+
 saveResource <- function(login,
                          webservicepassword,
                          workunitid, 

@@ -29,6 +29,8 @@ rawfileQC.parameter <<- list(
 # Meta Data
 
 ```{r echo=FALSE}
+
+rawfileQC.parameter$progress$set(message = "read meta data", detail= "using ThermorFileReader", value = 0.1)
 library(knitr)
   if (file.exists(rawfileQC.parameter$rawfile)){
       cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
@@ -43,6 +45,7 @@ library(knitr)
   }
 message(cmd)
 
+
 S <- read.csv(pipe(cmd), sep=';', 
               stringsAsFactors = FALSE, header = FALSE,
               col.names = c('attribute', 'value'))
@@ -56,6 +59,7 @@ knitr::kable(S)
 ## 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+rawfileQC.parameter$progress$set(message = "read scan information", detail= "using ThermorFileReader", value = 0.3)
  if (file.exists(rawfileQC.parameter$rawfile)){
    cmd <- paste(rawfileQC.parameter$mono, 
              " ", rawfileQC.parameter$exe, 
@@ -78,22 +82,9 @@ library(ggplot2)
 ```
 
 ```{r echo=FALSE, fig.cap='Intensity versus RT'}
-TIC.BasePeak <- function(x){
-  df <- x %>% 
-    filter(grepl("ms ", ScanType)) %>% 
-    select(StartTime, TIC, BasePeakIntensity) %>% 
-    rename(Base_Peak = BasePeakIntensity)
-  
-  df <- df %>% gather(key = "Type", value = "Intensity", TIC, Base_Peak)
-  
-  plot <- ggplot(df,aes(x= StartTime, y = Intensity))+
-    geom_line()+
-    facet_grid(Type~.)
-  
-  return(plot)
-}
+rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
 
-TIC.BasePeak(QC)
+bfabricShiny:::.TIC.BasePeak(QC)
 ```
 
 
@@ -102,7 +93,7 @@ TIC.BasePeak(QC)
 ## How to reporoduce this vignette
 ```{r eval=FALSE}
 
-library(parallel)
+# library(parallel)
 library(rmarkdown)
 library(bfabricShiny)
 
@@ -110,7 +101,7 @@ bfabric_rawfileQC <- function(workunitid){
   S <- bfabricShiny:::getResources('cpanse', "", workunitid = workunitid)
   
   S <- mclapply(S, function(x){
-    
+    # MAIN
     rawfileQC.parameter <<- list(
       mono = 'mono',
       exe = '~cpanse/bin/fgcz_raw.exe',
@@ -124,7 +115,6 @@ bfabric_rawfileQC <- function(workunitid){
 }
 
 bfabric_rawfileQC(workunitid=158636)
-
 ```
 ## Session info
 

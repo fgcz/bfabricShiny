@@ -23,7 +23,9 @@ shinyUI(fluidPage(
                                          tags$hr(),
                                          uiOutput("generateReportButton"),
                                          tags$hr(),
-                                         uiOutput("downloadReport"))),
+                                         uiOutput("downloadReport"),
+                                         tags$hr(),
+                                         uiOutput("wuid"))),
         tabPanel("sessionInfo", verbatimTextOutput("sessionInfo"))
       )),
     # Show a plot of the generated distribution
