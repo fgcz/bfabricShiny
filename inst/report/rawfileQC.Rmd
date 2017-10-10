@@ -110,6 +110,20 @@ bfabricShiny:::.mz.dist(QC)
 bfabricShiny:::.charge.states(QC)
 ```
 
+## Scan to Scan times
+For HF instruments currently the scan to scan time difference is calculated. For Fusion data the "Elapsed Scan Time" value is 
+plotted
+
+```{r echo=FALSE, fig.cap='Scan to scan time difference plot'}
+bfabricShiny:::.scan.times(QC)
+```
+
+## Injection time plot
+
+```{r echo=FALSE, fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
+bfabricShiny:::.injection.times(QC)
+```
+
 # MISC
 
 ## How to reproduce this vignette

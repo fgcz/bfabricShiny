@@ -48,3 +48,44 @@
     scale_x_continuous(breaks = xbreaks)
   return(figure)
 }
+
+.scan.times <- function(x){
+  if("ElapsedScanTimesec" %in% names(x)){
+    figure <- ggplot(x, aes(x = scanNumber, y = ElapsedScanTimesec))+
+      geom_point(size = 0.8)+
+      facet_grid(MSOrder~.)+
+      geom_smooth(colour = "red")
+    return(figure)
+  } else {
+    res <- x %>% 
+      mutate(ElapsedScanTimesec = (lead(x$StartTime)-x$StartTime)*60) %>% 
+      select(scanNumber, MSOrder, ElapsedScanTimesec) %>% 
+      filter(!is.na(.$ElapsedScanTimesec))
+    figure <- ggplot(res, aes(x = scanNumber, y = ElapsedScanTimesec))+
+      geom_point(size = 0.8)+
+      facet_grid(MSOrder~.)+
+      geom_smooth(colour = "red") +
+      return(figure)
+  }
+}
+
+.injection.times <- function(x){
+  if("Max.IonTimems" %in% names(x)){
+    maxtimes <- x %>% 
+      group_by(MSOrder) %>% 
+      summarise(max(Max.IonTimems)) %>% 
+      rename(max = "max(Max.IonTimems)")
+  } else {
+    maxtimes <- x %>% 
+      group_by(MSOrder) %>% 
+      summarise(max(IonInjectionTimems)) %>% 
+      rename(max = "max(IonInjectionTimems)")
+  }
+  figure <- ggplot(x, aes(x = scanNumber, y = IonInjectionTimems))+
+    geom_point(size = 0.8, alpha = 0.5)+
+    geom_hline(data = maxtimes, aes(yintercept = max), colour = "blue")+
+    facet_grid(MSOrder~.)+
+    geom_smooth(colour ="red")
+  return(figure)
+}
+
