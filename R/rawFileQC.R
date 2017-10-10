@@ -35,3 +35,16 @@
     geom_smooth(colour = "red")
   return(plot)
 }
+
+.charge.states <- function(x){
+  res <- x %>% 
+    filter(MSOrder == "Ms2") %>% 
+    count(ChargeState) %>% 
+    rename(Counts = n)
+  xbreaks <- unique(res$ChargeState)
+  figure <- ggplot(res, aes(x = ChargeState, y = Counts)) +
+    geom_bar(stat = "identity")+
+    geom_text(aes(label = Counts), vjust=-0.3, size=3.5)+
+    scale_x_continuous(breaks = xbreaks)
+  return(figure)
+}

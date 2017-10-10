@@ -1,6 +1,6 @@
 ---
 title: "Thermo Fisher raw file QC"
-author: "Chrstian Trachsel"
+author: "Christian Trachsel"
 date: "`r doc_date()`"
 package: "`r pkg_ver('bfabricShiny')`"
 abstract: >
@@ -86,7 +86,7 @@ library(tidyr)
 library(ggplot2)
 ```
 
-```{r echo=FALSE, fig.cap='Intensity versus RT xxx  xxx xxx'}
+```{r echo=FALSE, fig.cap='Intensity versus RT '}
 rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
 
 bfabricShiny:::.TIC.BasePeak(QC)
@@ -94,19 +94,25 @@ bfabricShiny:::.TIC.BasePeak(QC)
 
 ## Cycle Time
 
-```{r}
+```{r echo=FALSE, fig.cap='Cycle Time plot '}
 bfabricShiny:::.cycle.time(QC)
 ```
 
-## XXXX picked of values
+## distribution of selected mZ values
 
-```{r}
+```{r echo=FALSE, fig.cap='Time resolved distribution of selecte precursor mZ values '}
 bfabricShiny:::.mz.dist(QC)
+```
+
+## Frequency of precursor charge states
+
+```{r echo=FALSE, fig.cap='Frequency of precursor charge states'}
+bfabricShiny:::.charge.states(QC)
 ```
 
 # MISC
 
-## How to reporoduce this vignette
+## How to reproduce this vignette
 ```{r eval=FALSE}
 
 # library(parallel)
