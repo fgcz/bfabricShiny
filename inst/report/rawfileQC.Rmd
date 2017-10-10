@@ -31,6 +31,7 @@ rawfileQC.parameter <<- list(
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 rawfileQC.parameter$progress$set(message = "read meta data", detail= "using ThermorFileReader", value = 0.1)
+
 library(knitr)
   if (file.exists(rawfileQC.parameter$rawfile)){
       cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
@@ -71,7 +72,8 @@ cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono,
              " ", rawfileQC.parameter$rawfile,
              " qc'", 
              sep = ' ')
-}
+ }
+message(cmd)
 ```
 
 ## TIC versus RT
@@ -140,5 +142,5 @@ sessionInfo()
 ```
 
 
-[1] New RawFileReader from Thermo Fisher Scientific  [http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG], 2017
+[1] New RawFileReader from Thermo Fisher Scientific [http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG], 2017
 [2] [https://github.com/cpanse/bfabricShiny]

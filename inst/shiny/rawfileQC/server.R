@@ -29,7 +29,8 @@ shinyServer( function(input, output, session) {
     
     rawfileQC.parameter <- list(
       mono = 'mono',
-      exe = '~cpanse/bin/fgcz_raw.exe',
+      #exe = '~cpanse/bin/fgcz_raw.exe',
+      exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
       rawfile = paste("/srv/www/htdocs/",input$relativepath, sep='')
     )
     
@@ -95,7 +96,7 @@ shinyServer( function(input, output, session) {
         
         rawfileQC.parameter <<- list(
           mono = 'mono',
-          exe = '~cpanse/bin/fgcz_raw.exe',
+          exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
           rawfile = paste("/srv/www/htdocs/", input$relativepath, sep=''),
           pdf = tempfile(fileext = ".pdf"),
           progress = progress
@@ -131,7 +132,7 @@ shinyServer( function(input, output, session) {
       
       rawfileQC.parameter$progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
       
-      message(bfabric_save(login, webservicepassword, endpoint = 'workunit', 
+      message(bfabric_save(bf$login, bf$webservicepassword, endpoint = 'workunit', 
                          query =  list(status = 'available', id=wuid)));
       
       message(paste("generate report DONE. the report was written to workunit ID", wuid, "in bfabric."))

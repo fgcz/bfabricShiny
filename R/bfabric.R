@@ -80,7 +80,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   })
   
   application <- reactive({
-    fn <- system.file("extdata/applicatifon.csv", package = "bfabricShiny")
+    fn <- system.file("extdata/application.csv", package = "bfabricShiny")
     
     if (file.exists(fn) &&  nchar(fn) > 0){
       applications <- read.table(fn, header = TRUE)
@@ -94,6 +94,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
       return(applications)
       
     }
+    
   })
   
   output$applications <- renderUI({
@@ -107,9 +108,11 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   
     # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
     
-    selectInput(ns("applicationid"), "input applicationid:",
+    if (nrow(applications) > 0){
+      selectInput(ns("applicationid"), "input applicationid:",
                 xxx,
                 multiple = FALSE)
+    }else{NULL}
     
   })
   
