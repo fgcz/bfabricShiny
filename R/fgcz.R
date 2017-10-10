@@ -270,6 +270,39 @@ getResources <- function(login, webservicepassword, workunitid){
 }
 
 
+#' Title
+#'
+#' @param login 
+#' @param webservicepassword 
+#'
+#' @return
+#' @export getApplications
+#'
+#' @examples
+#' \dont{
+#' A <- getApplications(login, webservicepassword)
+#' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
+#' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
+#' write.table(bfabricApplication, file="./data/application.csv")
+#' }
+#' 
+getApplications <- function(login, webservicepassword){
+  applications <- ({
+    rv <- POST('http://localhost:5000/q', 
+               body = toJSON(list(login = login, 
+                                  webservicepassword = webservicepassword,
+                                  endpoint = 'application',
+                                  query = list()
+               ), 
+               encode = 'json'))
+    
+    rv <- content(rv)
+    rv$res
+  })
+  return(applications)
+}
+
+
 createWorkunit <-
   function(login,
            webservicepassword,
