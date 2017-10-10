@@ -132,8 +132,8 @@ shinyServer( function(input, output, session) {
       
       rawfileQC.parameter$progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
       
-      message(bfabric_save(bf$login, bf$webservicepassword, endpoint = 'workunit', 
-                         query =  list(status = 'available', id=wuid)));
+      rv <- bfabric_save(bf$login(), bf$webservicepassword(), endpoint = 'workunit', 
+                         query =  list(status = 'available', id=wuid));
       
       message(paste("generate report DONE. the report was written to workunit ID", wuid, "in bfabric."))
       message(rawfileQC.parameter$pdf)
