@@ -39,7 +39,7 @@ library(knitr)
                    " info | grep ':' | sed -e 's/:\ /;/'",
                    sep = '')
     }else{
-      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", "~cpanse/bin/fgcz_raw.exe", 
              " ", rawfileQC.parameter$rawfile,
              " info' | grep ':' | sed -e 's/:\ /;/'",
              sep = '')
@@ -68,7 +68,7 @@ rawfileQC.parameter$progress$set(message = "read scan information", detail= "usi
              sep = ' ')
  }else{
 cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono, 
-             " ", rawfileQC.parameter$exe, 
+             " ", "~cpanse/bin/fgcz_raw.exe", 
              " ", rawfileQC.parameter$rawfile,
              " qc'", 
              sep = ' ')
@@ -121,7 +121,8 @@ bfabricShiny:::.scan.times(QC)
 ## Injection time plot
 
 ```{r echo=FALSE, fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
-bfabricShiny:::.injection.times(QC)
+# TODO
+# bfabricShiny:::.injection.times(QC)
 ```
 
 # MISC

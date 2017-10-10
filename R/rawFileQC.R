@@ -64,8 +64,8 @@
     figure <- ggplot(res, aes(x = scanNumber, y = ElapsedScanTimesec))+
       geom_point(size = 0.8)+
       facet_grid(MSOrder~.)+
-      geom_smooth(colour = "red") +
-      return(figure)
+      geom_smooth(colour = "red")
+    return(figure)
   }
 }
 
@@ -74,18 +74,18 @@
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
       summarise(max(Max.IonTimems)) %>% 
-      rename(max = "max(Max.IonTimems)")
+      rename(max = 'max(Max.IonTimems)')
   } else {
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
       summarise(max(IonInjectionTimems)) %>% 
-      rename(max = "max(IonInjectionTimems)")
+      rename(max = 'max(IonInjectionTimems)')
   }
   figure <- ggplot(x, aes(x = scanNumber, y = IonInjectionTimems))+
     geom_point(size = 0.8, alpha = 0.5)+
     geom_hline(data = maxtimes, aes(yintercept = max), colour = "blue")+
     facet_grid(MSOrder~.)+
-    geom_smooth(colour ="red")
+    geom_smooth(colour = "red")
   return(figure)
 }
 
