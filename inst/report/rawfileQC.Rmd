@@ -28,7 +28,7 @@ rawfileQC.parameter <<- list(
 
 # Meta Data
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 rawfileQC.parameter$progress$set(message = "read meta data", detail= "using ThermorFileReader", value = 0.1)
 library(knitr)
@@ -56,10 +56,9 @@ knitr::kable(S)
 
 # QC
 
-## 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 rawfileQC.parameter$progress$set(message = "read scan information", detail= "using ThermorFileReader", value = 0.3)
+
  if (file.exists(rawfileQC.parameter$rawfile)){
    cmd <- paste(rawfileQC.parameter$mono, 
              " ", rawfileQC.parameter$exe, 
@@ -73,7 +72,11 @@ cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono,
              " qc'", 
              sep = ' ')
 }
+```
 
+## TIC versus RT
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 
 library(dplyr)
@@ -81,12 +84,23 @@ library(tidyr)
 library(ggplot2)
 ```
 
-```{r echo=FALSE, fig.cap='Intensity versus RT'}
+```{r echo=FALSE, fig.cap='Intensity versus RT xxx  xxx xxx'}
 rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
 
 bfabricShiny:::.TIC.BasePeak(QC)
 ```
 
+## Cycle Time
+
+```{r}
+bfabricShiny:::.cycle.time(QC)
+```
+
+## XXXX picked of values
+
+```{r}
+bfabricShiny:::.mz.dist(QC)
+```
 
 # MISC
 
