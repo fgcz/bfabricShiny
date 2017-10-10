@@ -87,4 +87,22 @@
   return(figure)
 }
 
-
+.lm.correction <- function(x){
+  if("LMCorrectionppm" %in% names(x)){
+    res <- x %>% 
+      filter(MSOrder == "Ms")
+    figure <- ggplot(res, aes(x = scanNumber , y = LMCorrectionppm))+
+      ylim(-10,10)+
+      geom_hline(yintercept = c(-5,5), colour = "red")+
+      geom_line()
+    return(figure)
+  } else {
+    res <- x %>% 
+      filter(MSOrder == "Ms")
+    figure <- ggplot(res, aes(x = scanNumber, y = `LMmZ-Correctionppm`)) +
+      ylim(-10,10)+
+      geom_hline(yintercept = c(-5,5), colour = "red")+
+      geom_line()
+    return(figure)
+  }
+}
