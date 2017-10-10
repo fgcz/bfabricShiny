@@ -2,7 +2,7 @@
 % Please edit documentation in R/fgcz.R
 \name{getApplications}
 \alias{getApplications}
-\title{Title}
+\title{getApplications}
 \usage{
 getApplications(login, webservicepassword)
 }
@@ -12,14 +12,14 @@ getApplications(login, webservicepassword)
 \item{webservicepassword}{}
 }
 \description{
-Title
+getApplications
 }
 \examples{
-\dont{
+\dontrun{
 A <- getApplications(login, webservicepassword)
 bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
 bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
-write.table(bfabricApplication, file="./data/application.csv")
+write.table(bfabricApplication, file="./inst/extdata/application.csv", row.names = FALSE)
 }
 
 }

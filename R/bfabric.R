@@ -79,18 +79,51 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     }
   })
   
-  output$applications <- renderUI({
-    selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
+  application <- reactive({
+    fn <- system.file("extdata/applicatifon.csv", package = "bfabricShiny")
+    
+    if (file.exists(fn) &&  nchar(fn) > 0){
+      applications <- read.table(fn, header = TRUE)
+      return(applications)
+      
+    }else{
+      
+      A <- getApplications(input$login, input$webservicepassword)
+      bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
+      applications <- bfabricApplication[order(bfabricApplication$id),]
+      return(applications)
+      
+    }
   })
+  
+  output$applications <- renderUI({
+    applications <- application()
+    
+    app.idx <- ns("applicationid")
+   
+    idx <- which(applications$id %in% applicationid)
+    
+    xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep=" - ")
+  
+    # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
+    
+    selectInput(ns("applicationid"), "input applicationid:",
+                xxx,
+                multiple = FALSE)
+    
+  })
+  
   
   output$workunits <- renderUI({
     if (is.null(input$projectid)){
       return(NULL)
     }
     
+    id <- strsplit(input$applicationid, " - ")[[1]][1]
+    
     res <- getWorkunits(input$login, input$webservicepassword, 
                         projectid = input$projectid, 
-                        applicationid = input$applicationid)
+                        applicationid = id)
 
     if (is.null(res)){
       return (NULL)

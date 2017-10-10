@@ -270,7 +270,7 @@ getResources <- function(login, webservicepassword, workunitid){
 }
 
 
-#' Title
+#' getApplications
 #'
 #' @param login 
 #' @param webservicepassword 
@@ -279,11 +279,11 @@ getResources <- function(login, webservicepassword, workunitid){
 #' @export getApplications
 #'
 #' @examples
-#' \dont{
+#' \dontrun{
 #' A <- getApplications(login, webservicepassword)
 #' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
 #' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
-#' write.table(bfabricApplication, file="./data/application.csv")
+#' write.table(bfabricApplication, file="./inst/extdata/application.csv", row.names = FALSE)
 #' }
 #' 
 getApplications <- function(login, webservicepassword){
