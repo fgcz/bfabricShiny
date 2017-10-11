@@ -99,16 +99,13 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   
   output$applications <- renderUI({
     applications <- application()
-    
-    app.idx <- ns("applicationid")
-   
-    idx <- which(applications$id %in% applicationid)
-    
-    xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep=" - ")
-  
+ 
     # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
     
     if (nrow(applications) > 0){
+      idx <- which(applications$id %in% applicationid)
+      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep=" - ")
+      
       selectInput(ns("applicationid"), "input applicationid:",
                 xxx,
                 multiple = FALSE)

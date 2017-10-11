@@ -79,7 +79,7 @@ shinyServer( function(input, output, session) {
     if (file.exists(rawfileQC.parameter$rawfile)){
       cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
                    " ", rawfileQC.parameter$rawfile,
-                   " info | grep ':' | sed -e 's/:\ /;/'",
+                   " qc",
                    sep = '')
     }
     else{
@@ -106,7 +106,7 @@ shinyServer( function(input, output, session) {
          values$qccsvfilename
        },
        content = function(con) {
-         write.csv(rawfileQC(), con)
+         write.csv(rawfileQC(), con, row.names = FALSE)
        }
      )
   
