@@ -29,7 +29,7 @@ shinyServer( function(input, output, session) {
     resources <- bf$resources()
     
     values$inputresouceid <- resources$resourceid[resources$relativepath == input$relativepath][1]
-    values$qccsvfilename <- paste("p", bf$project(), "_", basename(input$relativepath), '.qc.csv', sep='')
+    values$qccsvfilename <- paste("p", bf$project(),  "_R", resources$resourceid, '_', basename(input$relativepath), '.qc.csv', sep='')
  
     rawfileQC.parameter <- list(
       mono = 'mono',
@@ -148,7 +148,8 @@ shinyServer( function(input, output, session) {
           exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
           rawfile = paste("/srv/www/htdocs/", input$relativepath, sep=''),
           pdf = tempfile(fileext = ".pdf"),
-          progress = progress
+          progress = progress,
+          resourceid = bf$resources()$resourceid[bf$resources()$relativepath == input$relativepath]
         )
         
         rawfileQC.parameter$progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)

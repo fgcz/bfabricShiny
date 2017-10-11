@@ -1,5 +1,5 @@
 ---
-title: "Thermo Fisher raw file QC"
+title: "Thermo Fisher raw file QC of BFabric Resource `r rawfileQC.parameter$resourceid`"
 author: "Christian Trachsel"
 date: "`r doc_date()`"
 package: "`r pkg_ver('bfabricShiny')`"
@@ -125,33 +125,26 @@ bfabricShiny:::.scan.times(QC)
 # bfabricShiny:::.injection.times(QC)
 ```
 
+\newpage
+
 # MISC
 
 ## How to reproduce this vignette
-```{r eval=FALSE}
 
-# library(parallel)
-library(rmarkdown)
+Define a global object `rawfileQC.parameter`.
+
+```{r}
+rawfileQC.parameter
+```
+
+```{r eval=FALSE}
 library(bfabricShiny)
 
-bfabric_rawfileQC <- function(workunitid){
-  S <- bfabricShiny:::getResources('cpanse', "", workunitid = workunitid)
-  
-  S <- mclapply(S, function(x){
-    # MAIN
-    rawfileQC.parameter <<- list(
-      mono = 'mono',
-      exe = '~cpanse/bin/fgcz_raw.exe',
-      rawfile = paste("/srv/www/htdocs/", x$relativepath,sep='')
-    )
-    render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
+render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
            output_dir = '/tmp/',
-           output_file = paste(basename(x$relativepath), "pdf", sep='.')
-    )
-  }, mc.cores = 10)
+           output_file = "output.pdf")
+  )
 }
-
-bfabric_rawfileQC(workunitid=158636)
 ```
 ## Session info
 
