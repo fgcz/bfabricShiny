@@ -86,6 +86,12 @@ library(tidyr)
 library(ggplot2)
 ```
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rawfileQC.parameter$progress$set(message = "reshaping Data", detail= "using magic", value = 0.4)
+QC <- bfabricShiny:::.calc.master.scan(QC)
+
+```
+
 ```{r echo=FALSE, fig.cap='Intensity versus RT '}
 rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
 
@@ -95,18 +101,21 @@ bfabricShiny:::.TIC.BasePeak(QC)
 ## Cycle Time
 
 ```{r echo=FALSE, fig.cap='Cycle Time plot '}
+rawfileQC.parameter$progress$set(message = "ploting Cycle Times", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.cycle.time(QC)
 ```
 
 ## distribution of selected mZ values
 
 ```{r echo=FALSE, fig.cap='Time resolved distribution of selecte precursor mZ values '}
+rawfileQC.parameter$progress$set(message = "mZ vs RT", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.mz.dist(QC)
 ```
 
 ## Frequency of precursor charge states
 
 ```{r echo=FALSE, fig.cap='Frequency of precursor charge states'}
+rawfileQC.parameter$progress$set(message = "ploting precursor charge states", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.charge.states(QC)
 ```
 
@@ -115,14 +124,31 @@ For HF instruments currently the scan to scan time difference is calculated. For
 plotted
 
 ```{r echo=FALSE, fig.cap='Scan to scan time difference plot'}
+rawfileQC.parameter$progress$set(message = "ploting scan times", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.scan.times(QC)
 ```
 
 ## Injection time plot
 
 ```{r echo=FALSE, fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
+rawfileQC.parameter$progress$set(message = "ploting injection times", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.injection.times(QC)
 ```
+
+## MS2 cycle load
+
+```{r echo=FALSE, fig.cap='Number of Ms2 scans between two consecutive Ms scans'}
+rawfileQC.parameter$progress$set(message = "ploting Ms2 frequencies", detail= "using ggplot2", value = 0.4)
+bfabricShiny:::.ms2.frequency(QC)
+```
+
+## Lock Mass correction
+
+```{r echo=FALSE, fig.cap='lock mass correction vs RT'}
+rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
+bfabricShiny:::.lm.correction(QC)
+```
+
 
 \newpage
 

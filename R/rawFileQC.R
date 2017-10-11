@@ -5,21 +5,21 @@
 
 .calc.master.scan <- function(x){
   if("MasterScanNumber" %in% names(x)){
+    x <- dplyr::mutate(df1, MasterScanNumber = replace(MasterScanNumber, MasterScanNumber == 0, NA))
     return(x)
   } else {
     set1 <- x %>% 
       dplyr::filter(MSOrder == "Ms") %>% 
-      dplyr::select(masterScan = scanNumber, CycleNumber)
+      dplyr::select(MasterScanNumber = scanNumber, CycleNumber)
     set2 <- dplyr::select(x, scanNumber, CycleNumber)
     res <- dplyr::left_join(set2, set1, by = "CycleNumber") %>% 
       dplyr::mutate(type = x$ScanType) %>% 
-      dplyr::mutate(masterScan = replace(masterScan, scanNumber == masterScan, NA)) %>% 
-      dplyr::select(masterScan) %>% 
+      dplyr::mutate(MasterScanNumber = replace(MasterScanNumber, scanNumber == MasterScanNumber, NA)) %>% 
+      dplyr::select(MasterScanNumber) %>% 
       dplyr::bind_cols(x, .)
     return(res)
   }
 }
-
 
 #plot functions
 .TIC.BasePeak <- function(x){
@@ -126,4 +126,18 @@
       geom_line()
     return(figure)
   }
+}
+
+.ms2.frequency <- function(x){
+  res <- x %>% 
+    dplyr::filter(!is.na(MasterScanNumber)) %>%
+    dplyr::count(MasterScanNumber) %>% 
+    dplyr::count(n) %>% 
+    dplyr::rename(NumberOfMS2Scans = n, Counts = nn)
+  xbreaks <- res$NumberOfMS2Scans
+  figure <- ggplot(res, aes(x = NumberOfMS2Scans, y = Counts)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = Counts), vjust=-0.3, size=3.5)+
+    scale_x_continuous(breaks = xbreaks)
+  return(figure)
 }
