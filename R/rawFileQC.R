@@ -73,19 +73,36 @@
   if("Max.IonTimems" %in% names(x)){
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
-      summarise(max(Max.IonTimems)) %>% 
-      rename(max = 'max(Max.IonTimems)')
+      summarise(maxima = max(Max.IonTimems))
   } else {
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
-      summarise(max(IonInjectionTimems)) %>% 
-      rename(max = 'max(IonInjectionTimems)')
+      summarise(maxima = max(IonInjectionTimems))
   }
   figure <- ggplot(x, aes(x = scanNumber, y = IonInjectionTimems))+
     geom_point(size = 0.8, alpha = 0.5)+
-    geom_hline(data = maxtimes, aes(yintercept = max), colour = "blue")+
+    geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "blue")+
     facet_grid(MSOrder~.)+
-    geom_smooth(colour = "red")
+    geom_smooth(colour ="red")
   return(figure)
 }
 
+.lm.correction <- function(x){
+  if("LMCorrectionppm" %in% names(x)){
+    res <- x %>% 
+      filter(MSOrder == "Ms")
+    figure <- ggplot(res, aes(x = scanNumber , y = LMCorrectionppm))+
+      ylim(-10,10)+
+      geom_hline(yintercept = c(-5,5), colour = "red")+
+      geom_line()
+    return(figure)
+  } else {
+    res <- x %>% 
+      filter(MSOrder == "Ms")
+    figure <- ggplot(res, aes(x = scanNumber, y = `LMmZ-Correctionppm`)) +
+      ylim(-10,10)+
+      geom_hline(yintercept = c(-5,5), colour = "red")+
+      geom_line()
+    return(figure)
+  }
+}
