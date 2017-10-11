@@ -1,6 +1,27 @@
 #R
 
 
+#data shaping
+
+.calc.master.scan <- function(x){
+  if("MasterScanNumber" %in% names(x)){
+    return(x)
+  } else {
+    set1 <- x %>% 
+      dplyr::filter(MSOrder == "Ms") %>% 
+      dplyr::select(masterScan = scanNumber, CycleNumber)
+    set2 <- dplyr::select(x, scanNumber, CycleNumber)
+    res <- dplyr::left_join(set2, set1, by = "CycleNumber") %>% 
+      dplyr::mutate(type = x$ScanType) %>% 
+      dplyr::mutate(masterScan = replace(masterScan, scanNumber == masterScan, NA)) %>% 
+      dplyr::select(masterScan) %>% 
+      dplyr::bind_cols(x, .)
+    return(res)
+  }
+}
+
+
+#plot functions
 .TIC.BasePeak <- function(x){
   df <- x %>% 
     filter(grepl("ms ", ScanType)) %>% 

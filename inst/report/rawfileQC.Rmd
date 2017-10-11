@@ -121,8 +121,7 @@ bfabricShiny:::.scan.times(QC)
 ## Injection time plot
 
 ```{r echo=FALSE, fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
-# TODO
-# bfabricShiny:::.injection.times(QC)
+bfabricShiny:::.injection.times(QC)
 ```
 
 \newpage
