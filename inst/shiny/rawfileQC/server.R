@@ -17,19 +17,23 @@ shinyServer( function(input, output, session) {
                    applicationid = c(89, 90, 160, 161, 162, 163, 171, 176, 177, 197), 
                    resoucepattern = 'raw$')
   
-  values <- reactiveValues(pdf = NULL, inputresouceid=NULL, wuid=NULL, notpressed=TRUE)
+  values <- reactiveValues(pdf = NULL,
+                           inputresouceid = NULL,
+                           wuid = NULL,
+                           qccsvfilename = "qc.csv",
+                           notpressed = TRUE)
   
   ### observes file upload
   rawfileInfo <- eventReactive(input$load, {
     
     resources <- bf$resources()
     
-    values$inputresouceid = resources$resourceid[resources$relativepath == input$relativepath][1]
-    #print (v_upload_file$inputresouceid)
-    
+    values$inputresouceid <- resources$resourceid[resources$relativepath == input$relativepath][1]
+    values$qccsvfilename <- paste("p", bf$project(), "_", basename(input$relativepath), '.qc.csv', sep='')
+ 
     rawfileQC.parameter <- list(
       mono = 'mono',
-      #exe = '~cpanse/bin/fgcz_raw.exe',
+      exe.ssh = '~cpanse/bin/fgcz_raw.exe',
       exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
       rawfile = paste("/srv/www/htdocs/",input$relativepath, sep='')
     )
@@ -42,7 +46,7 @@ shinyServer( function(input, output, session) {
                    sep = '')
     }
     else{
-      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", "~cpanse/bin/fgcz_raw.exe", 
+      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe.ssh, 
                  " ", rawfileQC.parameter$rawfile,
                  " info' | grep ':' | sed -e 's/:\ /;/'",
                  sep = '')
@@ -54,22 +58,66 @@ shinyServer( function(input, output, session) {
                   stringsAsFactors = FALSE, header = FALSE,
                   col.names = c('attribute', 'value'))
     
-    message(nrow(S))
     return (S)
   })
+  
+  
+  rawfileQC <- reactive({
+    
+    resources <- bf$resources()
+    
+    values$inputresouceid = resources$resourceid[resources$relativepath == input$relativepath][1]
+    
+    rawfileQC.parameter <- list(
+      mono = 'mono',
+      exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
+      exe.ssh = "~cpanse/bin/fgcz_raw.exe",
+      rawfile = paste("/srv/www/htdocs/",input$relativepath, sep='')
+    )
+    
+    cmd <- ''
+    if (file.exists(rawfileQC.parameter$rawfile)){
+      cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
+                   " ", rawfileQC.parameter$rawfile,
+                   " info | grep ':' | sed -e 's/:\ /;/'",
+                   sep = '')
+    }
+    else{
+      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", rawfileQC.parameter$exe.ssh, 
+                   " ", rawfileQC.parameter$rawfile,
+                   " qc'",
+                   sep = '')
+    }
+    
+    message(cmd)
+    
+    S <- read.csv(pipe(cmd), sep=';', 
+                  stringsAsFactors = FALSE, header = TRUE)
+    return (S)
+  })
+  
   
   output$fileInformation <- renderTable({
     rawfileInfo()
   })
   
+  output$downloadData <- downloadHandler(
+       filename = function() {
+         values$qccsvfilename
+       },
+       content = function(con) {
+         write.csv(rawfileQC(), con)
+       }
+     )
+  
   output$generateReportButton <- renderUI({
     if(nrow(rawfileInfo()) > 1 && values$notpressed){
-      actionButton("generateReport", "Generate Report" )
+      list(actionButton("generateReport", "Generate PDF Report" ),
+           br(),
+      downloadLink('downloadData', paste("Download QC data as '", values$qccsvfilename, "'.")))
     }else{
       NULL
     }
-    
-   
   })
   
   output$wuid <- renderUI({
