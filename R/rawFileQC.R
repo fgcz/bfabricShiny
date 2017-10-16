@@ -5,7 +5,7 @@
 
 .calc.master.scan <- function(x){
   if("MasterScanNumber" %in% names(x)){
-    x <- dplyr::mutate(df1, MasterScanNumber = replace(MasterScanNumber, MasterScanNumber == 0, NA))
+    x <- dplyr::mutate(x, MasterScanNumber = replace(MasterScanNumber, MasterScanNumber == 0, NA))
     return(x)
   } else {
     set1 <- x %>% 
@@ -83,7 +83,7 @@
       select(scanNumber, MSOrder, ElapsedScanTimesec) %>% 
       filter(!is.na(.$ElapsedScanTimesec))
     figure <- ggplot(res, aes(x = scanNumber, y = ElapsedScanTimesec))+
-      geom_point(size = 0.8)+
+      geom_point(size = 0.6, alpha = 0.3)+
       facet_grid(MSOrder~.)+
       geom_smooth(colour = "red")
     return(figure)
@@ -101,7 +101,7 @@
       summarise(maxima = max(IonInjectionTimems))
   }
   figure <- ggplot(x, aes(x = scanNumber, y = IonInjectionTimems))+
-    geom_point(size = 0.8, alpha = 0.5)+
+    geom_point(size = 0.6, alpha = 0.3)+
     geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "blue")+
     facet_grid(MSOrder~.)+
     geom_smooth(colour ="red")
