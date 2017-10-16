@@ -42,7 +42,7 @@
     select(CycleTime, StartTime) %>% 
     na.omit()
   plot <- ggplot(df, aes(x = StartTime, y = CycleTime))+ 
-    geom_point(size = 0.5)+
+    geom_point(shape = ".")+
     geom_smooth()
   return(plot)
 }
@@ -52,7 +52,7 @@
   df <- x %>% 
     filter(MSOrder == "Ms2")
   plot <- ggplot(df, aes(x = StartTime, y = PrecursorMass))+ 
-    geom_point(size = 0.8)+
+    geom_point(shape = ".")+
     geom_smooth(colour = "red")
   return(plot)
 }
@@ -73,7 +73,7 @@
 .scan.times <- function(x){
   if("ElapsedScanTimesec" %in% names(x)){
     figure <- ggplot(x, aes(x = scanNumber, y = ElapsedScanTimesec))+
-      geom_point(size = 0.8)+
+      geom_point(shape = ".")+
       facet_grid(MSOrder~.)+
       geom_smooth(colour = "red")
     return(figure)
@@ -83,7 +83,11 @@
       select(scanNumber, MSOrder, ElapsedScanTimesec) %>% 
       filter(!is.na(.$ElapsedScanTimesec))
     figure <- ggplot(res, aes(x = scanNumber, y = ElapsedScanTimesec))+
+<<<<<<< HEAD
       geom_point(size = 0.6, alpha = 0.3)+
+=======
+      geom_point(shape = ".")+
+>>>>>>> 904d4c2601e6297f0c069a662798843ac5b85697
       facet_grid(MSOrder~.)+
       geom_smooth(colour = "red")
     return(figure)
@@ -101,7 +105,7 @@
       summarise(maxima = max(IonInjectionTimems))
   }
   figure <- ggplot(x, aes(x = scanNumber, y = IonInjectionTimems))+
-    geom_point(size = 0.6, alpha = 0.3)+
+    geom_point(size = 0.6, alpha = 0.3, shape = ".")+
     geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "blue")+
     facet_grid(MSOrder~.)+
     geom_smooth(colour ="red")
