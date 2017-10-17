@@ -120,8 +120,10 @@
       group_by(MSOrder) %>% 
       summarise(maxima = max(IonInjectionTimems))
   }
+
   figure <- ggplot(x, aes(x = StartTime, y = IonInjectionTimems))+
     geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "red3", alpha = 0.8, linetype = "longdash")+
+    geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "blue")+
     facet_grid(MSOrder~.)+
     geom_point(shape = ".")+
     geom_line(stat = "smooth", method = "gam", formula = y~s(x), colour ="red3", se = FALSE, alpha = 0.8)+
