@@ -57,6 +57,8 @@ knitr::kable(S)
 
 # QC
 
+In this QC report a series of diagnostic plots are presented giving the reader a detailed overview of the raw file which was analyzed. This report should facitlitate the optimization of instrument methods or throubleshooting in case the results of a measurement are not as expecte. The report is focusing on MS parameters only. No direct chromatographic information is implemented as of today.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 rawfileQC.parameter$progress$set(message = "read scan information", detail= "using ThermorFileReader", value = 0.3)
 
@@ -77,7 +79,7 @@ message(cmd)
 ```
 
 ## TIC versus RT
-
+The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 
@@ -85,6 +87,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 ```
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 rawfileQC.parameter$progress$set(message = "reshaping Data", detail= "using magic", value = 0.4)
@@ -98,7 +101,9 @@ rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using gg
 bfabricShiny:::.TIC.BasePeak(QC)
 ```
 
-## Cycle Time
+## Cycle Time and points over peak
+
+The cycle time plot should help to descide if the current instrument method is suited for the LC gradient. A too long cycle time will result in to few points over the chromatographic peaks. This is especially problematic for a quantitative experiment. A estimation of the number of Ms data points over three fixed assumed peak widths (10 sec, 20 sec, 30 sec). 
 
 ```{r echo=FALSE, message=FALSE, fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
 rawfileQC.parameter$progress$set(message = "ploting Cycle Times", detail= "using ggplot2", value = 0.4)

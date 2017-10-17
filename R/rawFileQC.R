@@ -75,39 +75,37 @@
   res <- x %>% 
     filter(MSOrder == "Ms2") %>% 
     count(ChargeState) %>% 
-    rename(Counts = n)
+    rename(Counts = n) %>% 
+    mutate(percentage = (100/sum(Counts)*Counts))
   xbreaks <- unique(res$ChargeState)
-  figure <- ggplot(res, aes(x = ChargeState, y = Counts)) +
+  figure <- ggplot(res, aes(x = ChargeState, y = percentage)) +
     geom_bar(stat = "identity", fill = "forestgreen")+
     geom_text(aes(label = Counts), vjust=-0.3, size=3.5)+
     scale_x_continuous(breaks = xbreaks)+
+    scale_y_continuous(breaks = scales::pretty_breaks(15))+
     labs(title = "Charge State Plot", subtitle = " ploting the number of occurances of all selected precursor charge states")+
-    labs(x = "Charge State", y = "Number of Occurances")
+    labs(x = "Charge State", y = "Percent [%]")
   return(figure)
 }
 
 .scan.times <- function(x){
   if("ElapsedScanTimesec" %in% names(x)){
-    figure <- ggplot(x, aes(x = scanNumber, y = ElapsedScanTimesec))+
-      geom_point(shape = ".")+
-      facet_grid(MSOrder~.)+
-      geom_smooth(colour = "red")
-    return(figure)
+    res <- x
   } else {
     res <- x %>% 
       mutate(ElapsedScanTimesec = (lead(x$StartTime)-x$StartTime)*60000) %>% 
       select(StartTime, scanNumber, MSOrder, ElapsedScanTimesec) %>% 
       filter(!is.na(.$ElapsedScanTimesec))
-    figure <- ggplot(res, aes(x = StartTime, y = ElapsedScanTimesec))+
-      geom_point(shape = ".")+
-      facet_grid(MSOrder~.)+
-      geom_line(stat = "smooth", method = "gam", formula = y~s(x), colour ="red3", se = FALSE, alpha = 0.8)+
-      labs(title = "Scan Time Plot", subtitle = " ploting the elapsed time for each individual scan ")+
-      labs(x = "Retentione Time [min]", y = "Scan Time [ms]")+
-      scale_x_continuous(breaks = scales::pretty_breaks((n = 8)))+
-      scale_y_continuous(breaks = scales::pretty_breaks((n = 8)))
-    return(figure)
-  }
+  } 
+  figure <- ggplot(res, aes(x = StartTime, y = ElapsedScanTimesec))+
+    geom_point(shape = ".")+
+    facet_grid(MSOrder~.)+
+    geom_line(stat = "smooth", method = "gam", formula = y~s(x), colour ="red3", se = FALSE, alpha = 0.8, linetype = "longdash")+
+    labs(title = "Scan Time Plot", subtitle = " ploting the elapsed time for each individual scan ")+
+    labs(x = "Retentione Time [min]", y = "Scan Time [ms]")+
+    scale_x_continuous(breaks = scales::pretty_breaks((n = 8)))+
+    scale_y_continuous(breaks = scales::pretty_breaks((n = 8)))
+  return(figure)
 }
 
 .injection.times <- function(x){
