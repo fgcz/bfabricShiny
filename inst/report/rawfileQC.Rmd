@@ -92,7 +92,7 @@ QC <- bfabricShiny:::.calc.master.scan(QC)
 
 ```
 
-```{r echo=FALSE, message=FALSE, fig.cap='Intensity versus RT '}
+```{r echo=FALSE, message=FALSE, fig.cap='Total Ion Count (TIC) and Base peak plot. '}
 rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
 
 bfabricShiny:::.TIC.BasePeak(QC)
@@ -100,7 +100,7 @@ bfabricShiny:::.TIC.BasePeak(QC)
 
 ## Cycle Time
 
-```{r echo=FALSE, message=FALSE, fig.cap='Cycle Time plot '}
+```{r echo=FALSE, message=FALSE, fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
 rawfileQC.parameter$progress$set(message = "ploting Cycle Times", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.cycle.time(QC)
 ```
@@ -149,6 +149,12 @@ rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", deta
 bfabricShiny:::.lm.correction(QC)
 ```
 
+## MS datapoints over chromatographic peak
+
+```{r echo=FALSE, message=FALSE, fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
+rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
+bfabricShiny:::.ms.data.points(QC)
+```
 
 \newpage
 
