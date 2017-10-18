@@ -112,7 +112,7 @@
   if("Max.IonTimems" %in% names(x)){
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
-      summarise(maxima = max(Max.IonTimems))
+      summarise(maxima = max(MaxIonTimems))
   } else {
     maxtimes <- x %>% 
       group_by(MSOrder) %>% 
@@ -148,7 +148,7 @@
   } else {
     res <- x %>% 
       filter(MSOrder == "Ms")
-    figure <- ggplot(res, aes(x = StartTime, y = `LMmZ-Correctionppm`)) +
+    figure <- ggplot(res, aes(x = StartTime, y = LMmZCorrectionppm)) +
       geom_hline(yintercept = c(-5,5), colour = "red3", linetype = "longdash")+
       geom_line(size = 0.3)+
       geom_line(stat = "smooth", method= "gam", formula = y ~ s(x, bs ="cs"), colour = "red3", se =FALSE, alpha = 0.8)+

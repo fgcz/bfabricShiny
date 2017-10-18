@@ -158,7 +158,7 @@ bfabricShiny:::.lm.correction(QC)
 ## MS datapoints over chromatographic peak
 
 ```{r echo=FALSE, message=FALSE, fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
-rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
+rawfileQC.parameter$progress$set(message = "ploting data points", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.ms.data.points(QC)
 ```
 
