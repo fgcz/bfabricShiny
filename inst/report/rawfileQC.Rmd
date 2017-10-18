@@ -163,25 +163,6 @@ bfabricShiny:::.ms.data.points(QC)
 
 \newpage
 
-# MISC
-
-## How to reproduce this vignette
-
-Define a global object `rawfileQC.parameter`.
-
-```{r}
-rawfileQC.parameter
-```
-
-```{r eval=FALSE}
-library(bfabricShiny)
-
-render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
-           output_dir = '/tmp/',
-           output_file = "output.pdf")
-  )
-}
-```
 ## Session info
 
 This report was compiled by using bfabricShiny version `r packageVersion('bfabricShiny')` and `r R.version.string`.
