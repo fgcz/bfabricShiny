@@ -93,6 +93,8 @@ shinyServer( function(input, output, session) {
     
     S <- read.csv(pipe(cmd), sep=';', 
                   stringsAsFactors = FALSE, header = TRUE)
+    
+    message(paste("dim of data frame =", dim(S), sep=''))
     return (S)
   })
   
@@ -106,7 +108,7 @@ shinyServer( function(input, output, session) {
          values$qccsvfilename
        },
        content = function(con) {
-         write.csv(rawfileQC(), con, row.names = FALSE)
+         write.csv(rawfileQC(), con, row.names = FALSE, sep='\t')
        }
      )
   
