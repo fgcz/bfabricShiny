@@ -281,6 +281,20 @@ def get_extract(sampleid):
 def get_all_sample(projectid):
     samples = bfapp.read_object(endpoint='sample', obj={'projectid': projectid})
 
+    try:
+        annotationDict = {}
+        for annotationId in set(map(lambda x: x.groupingvar._id, samples)):
+            annotation = bfapp.read_object(endpoint='annotation', obj={'id': annotationId})
+            annotationDict[annotationId] = annotation[0].name
+    except:
+        pass
+
+    for sample in samples:
+        try:
+            sample['condition'] = annotationDict[sample.groupingvar._id]
+        except:
+            sample['condition'] = None
+
     if len(samples) == 0:
         return jsonify({'error': 'no extract found.'})
         # abort(404)
