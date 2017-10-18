@@ -184,7 +184,7 @@ render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
 ```
 ## Session info
 
-This report was compiled by using bfabricShiny version `packageVersion('bfabricShiny')` and `R.version.string`.
+This report was compiled by using bfabricShiny version `r packageVersion('bfabricShiny')` and `r R.version.string`.
 
 # References
 
