@@ -80,6 +80,7 @@ message(cmd)
 
 ## TIC versus RT
 The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 
@@ -157,40 +158,17 @@ bfabricShiny:::.lm.correction(QC)
 ## MS datapoints over chromatographic peak
 
 ```{r echo=FALSE, message=FALSE, fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
-rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
+rawfileQC.parameter$progress$set(message = "ploting data points", detail= "using ggplot2", value = 0.4)
 bfabricShiny:::.ms.data.points(QC)
 ```
 
 \newpage
 
-# MISC
-
-## How to reproduce this vignette
-
-Define a global object `rawfileQC.parameter`.
-
-```{r}
-rawfileQC.parameter
-```
-
-```{r eval=FALSE}
-library(bfabricShiny)
-
-render(paste(path.package("bfabricShiny"), "/report/rawfileQC.Rmd", sep='/'),
-           output_dir = '/tmp/',
-           output_file = "output.pdf")
-  )
-}
-```
 ## Session info
 
-Here is the output of `sessionInfo()` on the system on which this
-document was compiled:
+This report was compiled by using [bfabricShiny](https://github.com/cpanse/bfabricShiny) version `r packageVersion('bfabricShiny')` and `r R.version.string`.
 
-```{r sessionInfo, echo=FALSE}
-sessionInfo()
-```
-
+# References
 
 [1] New RawFileReader from Thermo Fisher Scientific [http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG], 2017
 [2] [https://github.com/cpanse/bfabricShiny]
