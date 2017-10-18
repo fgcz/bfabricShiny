@@ -108,7 +108,7 @@ shinyServer( function(input, output, session) {
          values$qccsvfilename
        },
        content = function(con) {
-         write.csv(rawfileQC(), con, row.names = FALSE)
+         write.csv(rawfileQC(), con, row.names = FALSE, sep='\t')
        }
      )
   
