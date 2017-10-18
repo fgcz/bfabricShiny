@@ -93,6 +93,8 @@ shinyServer( function(input, output, session) {
     
     S <- read.csv(pipe(cmd), sep=';', 
                   stringsAsFactors = FALSE, header = TRUE)
+    
+    message(paste("dim of data frame =", dim(S), sep=''))
     return (S)
   })
   
