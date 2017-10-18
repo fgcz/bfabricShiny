@@ -2,27 +2,92 @@
 
 """
 this script can be used as a bfabric <-> shiny wrapper
+it can also be seen a proxy REST to SOAP proxy.
 
 Christian Panse <cp@fgcz.ethz.ch
-Witold E. Wolski <wew@fgcz.ethz.ch>
 Christian Trachsel
 2016-07-05 1700
-
+2017-05-11
 """
-
-from slugify import slugify
 
 import base64
 import json
 from flask import Flask, jsonify, request
+from flask.json import JSONEncoder
+from slugify import slugify
 from bfabric import bfabric
 
+"""
+enables to serialize (jsonify) bfabric wsdl objects
+"""
+class BfabricJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        try:
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return(dict(iterable))
+
+        return JSONEncoder.default(self, obj)
+
 app = Flask(__name__)
-bfapp = bfabric.Bfabric(login='pfeeder')
+app.json_encoder = BfabricJSONEncoder 
+bfapp = bfabric.Bfabric()
 
 inlcude_child_extracts = True
 
+"""
+generic query interface for read interface
 
+example (assumes the proxy runs on localhost):
+
+R>     rv <- POST('http://localhost:5000/query', 
+               body = toJSON(list(login = login, 
+                                  webservicepassword = webservicepassword,
+                                  query = 'resource',
+                                  projectid = project,
+                                  applicationid = 205)), 
+               encode = 'json')
+    
+R>    rv <- content(rv)
+
+TODO(cp@fgcz.ethz.ch): also provide an argument for the webbase
+"""
+@app.route('/q', methods=['GET', 'POST'])
+def q():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.'})
+
+    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+    print content
+    res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
+
+    try:
+        return jsonify({'res': res})
+    except:
+        return jsonify({'status': 'jsonify failed'})
+
+
+@app.route('/s', methods=['GET', 'POST'])
+def s():
+    try:
+        content = json.loads(request.data)
+    except:
+        return jsonify({'error': 'could not get POST content.'})
+
+    bf = bfabric.Bfabric(login = content['login'], password = content['webservicepassword']) 
+    print content
+    res = bf.save_object(endpoint=content['endpoint'][0], obj=content['query'])
+
+    try:
+        return jsonify({'res': res})
+    except:
+        return jsonify({'status': 'jsonify failed'})
+    
+    
 
 def dfs__(extract_id):
     stack = list()
@@ -128,27 +193,27 @@ def compose_ms_queue_dataset(jsoncontent, workunitid, projectid):
     return obj
 
 
-@app.route('/add_resource/<int:projectid>', methods=['GET', 'POST'])
-def add_resource(projectid):
-    
+@app.route('/add_resource', methods=['POST'])
+def add_resource():                            
     try:
         queue_content = json.loads(request.data)
     except:
+        print "failed: could not get POST content"
         return jsonify({'error': 'could not get POST content.'})
 
-    resource_base64 = base64.b64encode(json.dumps(queue_content, indent=4))
+    res = bfapp.save_object('workunit', {'name': 'MassSpec instrument queue configuration',
+                                         'description': "{}".format(queue_content['workunitdescription'][0]),
+                                         'projectid': queue_content['projectid'],
+                                         'applicationid': 212})
 
-    res = bfapp.save_object('workunit', {'name':'MS instrument queue configuration',
-                                         'description': 'source code: https://github.com/cpanse/bfabric_shiny',
-                                         'projectid':projectid,
-                                         'applicationid':212})
     workunit_id = res[0]._id
 
-    res = bfapp.save_object('resource', {'base64': resource_base64,
-                                         'name': 'fgcz_ms_instrument_queue.json',
-                                         'workunitid':workunit_id})
+    print workunit_id
 
-    res = bfapp.save_object('dataset', compose_ms_queue_dataset(queue_content, workunit_id, projectid))
+    res = bfapp.save_object('resource', {'base64': queue_content['base64'],
+                                         'name': queue_content['resourcename'],
+                                         'workunitid': workunit_id})
+
     res = bfapp.save_object('workunit', {'id': workunit_id, 'status': 'available'})
 
     return jsonify(dict(workunit_id=workunit_id))
@@ -212,36 +277,26 @@ def get_extract(sampleid):
         # abort(404)
     return jsonify({'extract': res})
 
-@app.route('/extract/<int:projectid>', methods=['GET'])
-def get_all_extracts(projectid):
-    res = list()
-    extracts = bfapp.read_object(endpoint='extract', obj={'projectid': projectid})
+@app.route('/sample/<int:projectid>', methods=['GET'])
+def get_all_sample(projectid):
+    samples = bfapp.read_object(endpoint='sample', obj={'projectid': projectid})
 
-    for x in extracts:
-        obj = {'id': x._id, 'name': slugify(x.name)}
-
-        try:
-            obj['sampleid'] = x.sample['_id']
-        except:
-            obj['sampleid'] = None
-
-        try:
-            obj['Condition'] = x.condition
-        except:
-            obj['Condition'] = None
-
-        try:
-            obj['parentextract'] = map(lambda x: x._id, x.parentextract)
-        except:
-            obj['parentextract'] = None
-            
-        res.append(obj)
-
-    if len(res) == 0:
+    if len(samples) == 0:
         return jsonify({'error': 'no extract found.'})
         # abort(404)
 
-    return jsonify({'extract': res})
+    return jsonify({'samples': samples})
+
+"""
+example
+curl http://localhost:5000/zip_resource_of_workunitid/154547
+"""
+@app.route('/zip_resource_of_workunitid/<int:workunitid>', methods=['GET'])
+def get_zip_resources_of_workunit(workunitid):
+    res = map(lambda x: x.relativepath, bfapp.read_object(endpoint='resource', obj={'workunitid': workunitid}))
+    print res
+    res = filter(lambda x: x.endswith(".zip"), res)
+    return jsonify(res)
 
 """
 # running in R
@@ -259,6 +314,8 @@ def get_sample(projectid):
         # abort(404)
 
     return jsonify({'sample': res})
+
+
 
 @app.route('/query', methods=['GET', 'POST'])
 def query():
@@ -318,5 +375,5 @@ def add_workunit():
 
 if __name__ == '__main__':
     #wsdl_user(1000)
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5000)
 

@@ -113,27 +113,32 @@ getHPLC <- function(){list(VELOS_1='eksigent',
         checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
   }))
   
-  getSample <- reactive({
-    if (is.null(input$project)){
-      return (NULL)
-    }else{
-      sampleURL <- paste("http://localhost:5000/projectid/", 
-                         input$project, sep='')
-
-     
-      res <- as.data.frame(fromJSON(sampleURL))
-      message(paste('got', nrow(res), 'samples.'))
-      return (res)
-    }
-    })
+ 
   getLogin <- reactive({
     if (is.null(input$project)){
       return (NULL)
     }else{
-    res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", 
+    res <- as.data.frame(fromJSON(paste("http://localhost:5001/user/", 
                                         input$project, sep='')))
     message(paste('got', nrow(res), 'users.'))
     return (res$user)
+    }
+  })
+  
+  getSample <- reactive({
+    if (is.null(input$project)){
+      return (NULL)
+    }else{
+      sampleURL <- paste("http://localhost:5001/projectid/", 
+                         input$project, sep='')
+      
+      
+      res <- as.data.frame(fromJSON(sampleURL))
+      
+      res[, "project.id"] <- input$project
+      
+      message(paste('got', nrow(res), 'samples.'))
+      return (res)
     }
   })
   
@@ -141,7 +146,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     if (is.null(input$project)){
       return (NULL)
     }else{
-      extractURL <- paste("http://localhost:5000/extract/", input$project, sep='')
+      extractURL <- paste("http://localhost:5001/extract/", input$project, sep='')
       res <- as.data.frame(fromJSON(extractURL ))
       message (paste('got', nrow(res), 'extracts from url', extractURL))
       res[, "project.id"] <- input$project
@@ -172,13 +177,14 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   })
   
   output$extract <- renderUI({
-    res <- getExtracts()
-    if (!is.null(res)){
-      selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
-    }   else{
-      selectInput('extract', 'Extract:', NULL)
-     
-    }
+   # res <- getExtracts()
+  #  if (!is.null(res)){
+  #    selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
+  #  }   else{
+  #    selectInput('extract', 'Extract:', NULL)
+  #   
+   # }
+    NULL
   })
   
   output$downloadData <- downloadHandler(
@@ -198,7 +204,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     
     S <- getBfabricContent()
     if (nrow(S) > 0){
-      rv <- POST(paste("http://localhost:5000/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
+      rv <- POST(paste("http://localhost:5001/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
       
       observe({
         session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 
