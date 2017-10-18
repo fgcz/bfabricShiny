@@ -80,6 +80,7 @@ message(cmd)
 
 ## TIC versus RT
 The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
 
@@ -165,7 +166,7 @@ bfabricShiny:::.ms.data.points(QC)
 
 ## Session info
 
-This report was compiled by using bfabricShiny version `r packageVersion('bfabricShiny')` and `r R.version.string`.
+This report was compiled by using [bfabricShiny](https://github.com/cpanse/bfabricShiny) version `r packageVersion('bfabricShiny')` and `r R.version.string`.
 
 # References
 
