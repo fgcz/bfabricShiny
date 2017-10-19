@@ -149,33 +149,33 @@ shinyServer( function(input, output, session) {
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
       progress$set(message = "generating report")
       on.exit(progress$close())
+      
+      progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)
         
-        rawfileQC.parameter <<- list(
-          mono = 'mono',
-          exe =  system.file("exec/fgcz_raw.exe", package = "bfabricShiny"),
-          rawfile = paste("/srv/www/htdocs/", input$relativepath, sep=''),
+      rawfileQC.parameter <<- list(
           pdf = tempfile(fileext = ".pdf"),
-          progress = progress,
           resourceid = bf$resources()$resourceid[bf$resources()$relativepath == input$relativepath],
           data.QC = rawfileQC(),
           data.Info = rawfileInfo()
         )
-        
-        rawfileQC.parameter$progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)
-        render(input = paste(path.package("bfabricShiny"),
+    
+      message(tempdir())
+      render(input = paste(path.package("bfabricShiny"),
                              "/report/rawfileQC.Rmd", sep='/'),
+               output_format ="pdf_document",
                output_file = rawfileQC.parameter$pdf,
                intermediates_dir = tempdir(),
                knit_root_dir = tempdir()) 
      
       message(tempdir())
+      
       values$pdf <- rawfileQC.parameter$pdf
       
       file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
                                                file.info(values$pdf)[1, "size"]), 
                                        "pdf")  
 
-      rawfileQC.parameter$progress$set(message = "register workunit", detail= "in bfabric", value = 0.95)
+      progress$set(message = "register workunit", detail= "in bfabric", value = 0.95)
       wuid <- bfabric_upload_file(login = bf$login(),
                                   webservicepassword = bf$webservicepassword(),
                                   projectid = bf$projectid(),
@@ -189,7 +189,7 @@ shinyServer( function(input, output, session) {
       
       values$wuid <- wuid
       
-      rawfileQC.parameter$progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
+      progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
       
       rv <- bfabric_save(bf$login(), bf$webservicepassword(), endpoint = 'workunit', 
                          query =  list(status = 'available', id=wuid));

@@ -4,175 +4,139 @@ author: "Christian Trachsel"
 date: "`r doc_date()`"
 package: "`r pkg_ver('bfabricShiny')`"
 abstract: >
-  bla bla whatsoever.
+  In this QC report a series of diagnostic plots are presented giving the reader a detailed overview of the raw file which was analyzed. This report should facitlitate the optimization of instrument methods or throubleshooting in case the results of a measurement are not as expecte. The report is focusing on MS parameters only. No direct chromatographic information is implemented as of today.
 vignette: >
   %\VignetteIndexEntry{rawfileQC}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output: 
-  BiocStyle::pdf_document
+  BiocStyle::pdf_document2
 ---
 
-```{r echo=FALSE, eval=FALSE}
-
-rawfileQC.parameter <<- list(
-  mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono',
-  exe = '/Users/cp/RiderProjects/fgcz-raw/bin/Debug/fgcz_raw.exe',
-  rawfile = '/Users/cp/Downloads/20161010_04_TP_HeLa_200ng.raw'
-)
-
-
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=8,
+                      fig.height=8,
+                      echo=FALSE,
+                      warning=FALSE, 
+                      message=TRUE)
 ```
 
 \newpage
 
 # Meta Data
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-rawfileQC.parameter$progress$set(message = "read meta data", detail= "using ThermorFileReader", value = 0.1)
-
+```{r}
 library(knitr)
-  if (file.exists(rawfileQC.parameter$rawfile)){
-      cmd <- paste(rawfileQC.parameter$mono," ", rawfileQC.parameter$exe, 
-                   " ", rawfileQC.parameter$rawfile,
-                   " info | grep ':' | sed -e 's/:\ /;/'",
-                   sep = '')
-    }else{
-      cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono," ", "~cpanse/bin/fgcz_raw.exe", 
-             " ", rawfileQC.parameter$rawfile,
-             " info' | grep ':' | sed -e 's/:\ /;/'",
-             sep = '')
-  }
-message(cmd)
-
-
-#S <- read.csv(pipe(cmd), sep=';', 
-#              stringsAsFactors = FALSE, header = FALSE,
-#              col.names = c('attribute', 'value'))
-
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(bfabricShiny)
 
 knitr::kable(rawfileQC.parameter$data.Info)
 ```
 
+\newpage
 
 # QC
-
-In this QC report a series of diagnostic plots are presented giving the reader a detailed overview of the raw file which was analyzed. This report should facitlitate the optimization of instrument methods or throubleshooting in case the results of a measurement are not as expecte. The report is focusing on MS parameters only. No direct chromatographic information is implemented as of today.
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-rawfileQC.parameter$progress$set(message = "read scan information", detail= "using ThermorFileReader", value = 0.3)
-
- if (file.exists(rawfileQC.parameter$rawfile)){
-   cmd <- paste(rawfileQC.parameter$mono, 
-             " ", rawfileQC.parameter$exe, 
-             " ", rawfileQC.parameter$rawfile,
-             " qc", 
-             sep = ' ')
- }else{
-cmd <- paste("ssh fgcz-r-021 '", rawfileQC.parameter$mono, 
-             " ", "~cpanse/bin/fgcz_raw.exe", 
-             " ", rawfileQC.parameter$rawfile,
-             " qc'", 
-             sep = ' ')
- }
-message(cmd)
-```
 
 ## TIC versus RT
 The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-#QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
-QC <- rawfileQC.parameter$data.QC
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
+```{r}
+QC <- bfabricShiny:::.calc.master.scan(rawfileQC.parameter$data.QC)
 ```
 
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-rawfileQC.parameter$progress$set(message = "reshaping Data", detail= "using magic", value = 0.4)
-QC <- bfabricShiny:::.calc.master.scan(QC)
-
-```
-
-```{r echo=FALSE, message=FALSE, fig.cap='Total Ion Count (TIC) and Base peak plot. '}
-rawfileQC.parameter$progress$set(message = "ploting TIC data", detail= "using ggplot2", value = 0.4)
-
+```{r fig.cap='Total Ion Count (TIC) and Base peak plot. '}
 bfabricShiny:::.TIC.BasePeak(QC)
 ```
+
+\newpage
 
 ## Cycle Time and points over peak
 
 The cycle time plot should help to descide if the current instrument method is suited for the LC gradient. A too long cycle time will result in to few points over the chromatographic peaks. This is especially problematic for a quantitative experiment. A estimation of the number of Ms data points over three fixed assumed peak widths (10 sec, 20 sec, 30 sec). 
 
-```{r echo=FALSE, message=FALSE, fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
-rawfileQC.parameter$progress$set(message = "ploting Cycle Times", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
 bfabricShiny:::.cycle.time(QC)
 ```
 
+\newpage
+
 ## distribution of selected mZ values
 
-```{r echo=FALSE, message=FALSE, fig.cap='Time resolved distribution of selecte precursor mZ values '}
-rawfileQC.parameter$progress$set(message = "mZ vs RT", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Time resolved distribution of selecte precursor mZ values '}
 bfabricShiny:::.mz.dist(QC)
 ```
 
+\newpage
 ## Frequency of precursor charge states
 
-```{r echo=FALSE, message=FALSE, fig.cap='Frequency of precursor charge states'}
-rawfileQC.parameter$progress$set(message = "ploting precursor charge states", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Frequency of precursor charge states'}
 bfabricShiny:::.charge.states(QC)
 ```
+
+\newpage
 
 ## Scan to Scan times
 For HF instruments currently the scan to scan time difference is calculated. For Fusion data the "Elapsed Scan Time" value is 
 plotted
 
-```{r echo=FALSE, message=FALSE, fig.cap='Scan to scan time difference plot'}
-rawfileQC.parameter$progress$set(message = "ploting scan times", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Scan to scan time difference plot'}
 bfabricShiny:::.scan.times(QC)
 ```
 
+\newpage
+
 ## Injection time plot
 
-```{r echo=FALSE, message=FALSE, fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
-rawfileQC.parameter$progress$set(message = "ploting injection times", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
 bfabricShiny:::.injection.times(QC)
 ```
 
+\newpage
+
 ## MS2 cycle load
 
-```{r echo=FALSE, message=FALSE, fig.cap='Number of Ms2 scans between two consecutive Ms scans'}
-rawfileQC.parameter$progress$set(message = "ploting Ms2 frequencies", detail= "using ggplot2", value = 0.4)
+```{r fig.cap='Number of Ms2 scans between two consecutive Ms scans'}
 bfabricShiny:::.ms2.frequency(QC)
 ```
 
 \newpage
+
 ## Lock Mass correction
 
-```{r echo=FALSE, message=FALSE, fig.cap='lock mass correction vs RT'}
-rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
-try(bfabricShiny:::.lm.correction(QC))
-```
-
-## MS datapoints over chromatographic peak
-
-```{r echo=FALSE, message=FALSE, fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
-rawfileQC.parameter$progress$set(message = "ploting data points", detail= "using ggplot2", value = 0.4)
-try(bfabricShiny:::.ms.data.points(QC))
+```{r fig.cap='lock mass correction vs RT'}
+out <- tryCatch({
+  bfabricShiny:::.lm.correction(QC)
+}, error = function(cond){
+  message("This plot is not available for this meassurement.")
+})
 ```
 
 \newpage
 
-## Session info
+## MS datapoints over chromatographic peak
+
+```{r fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
+out <- tryCatch({
+  bfabricShiny:::.ms.data.points(QC)
+}, error = function(cond){
+  message("This plot is not available for this meassurement.")
+})
+
+```
+
+\newpage
+
+# Session info
 
 This report was compiled by using [bfabricShiny](https://github.com/cpanse/bfabricShiny) version `r packageVersion('bfabricShiny')` and `r R.version.string`.
 
 # References
 
-[1] New RawFileReader from Thermo Fisher Scientific [http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG], 2017
-[2] [https://github.com/cpanse/bfabricShiny]
+[1] New RawFileReader from Thermo Fisher Scientific http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG, 2017
+
+[2] https://github.com/cpanse/bfabricShiny
+ 
+[3] https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=`r rawfileQC.parameter$resourceid`
+
