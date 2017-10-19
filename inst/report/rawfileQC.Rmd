@@ -47,11 +47,12 @@ library(knitr)
 message(cmd)
 
 
-S <- read.csv(pipe(cmd), sep=';', 
-              stringsAsFactors = FALSE, header = FALSE,
-              col.names = c('attribute', 'value'))
+#S <- read.csv(pipe(cmd), sep=';', 
+#              stringsAsFactors = FALSE, header = FALSE,
+#              col.names = c('attribute', 'value'))
 
-knitr::kable(S)
+
+knitr::kable(rawfileQC.parameter$data.Info)
 ```
 
 
@@ -82,7 +83,9 @@ message(cmd)
 The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
+
+#QC <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
+QC <- rawfileQC.parameter$data.QC
 
 library(dplyr)
 library(tidyr)
@@ -148,18 +151,19 @@ rawfileQC.parameter$progress$set(message = "ploting Ms2 frequencies", detail= "u
 bfabricShiny:::.ms2.frequency(QC)
 ```
 
+\newpage
 ## Lock Mass correction
 
 ```{r echo=FALSE, message=FALSE, fig.cap='lock mass correction vs RT'}
 rawfileQC.parameter$progress$set(message = "ploting lock mass corrections", detail= "using ggplot2", value = 0.4)
-bfabricShiny:::.lm.correction(QC)
+try(bfabricShiny:::.lm.correction(QC))
 ```
 
 ## MS datapoints over chromatographic peak
 
 ```{r echo=FALSE, message=FALSE, fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
 rawfileQC.parameter$progress$set(message = "ploting data points", detail= "using ggplot2", value = 0.4)
-bfabricShiny:::.ms.data.points(QC)
+try(bfabricShiny:::.ms.data.points(QC))
 ```
 
 \newpage

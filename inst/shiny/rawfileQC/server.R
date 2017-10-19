@@ -62,7 +62,7 @@ shinyServer( function(input, output, session) {
   })
   
   
-  rawfileQC <- reactive({
+  rawfileQC <- eventReactive(input$load, {
     
     resources <- bf$resources()
     
@@ -156,7 +156,9 @@ shinyServer( function(input, output, session) {
           rawfile = paste("/srv/www/htdocs/", input$relativepath, sep=''),
           pdf = tempfile(fileext = ".pdf"),
           progress = progress,
-          resourceid = bf$resources()$resourceid[bf$resources()$relativepath == input$relativepath]
+          resourceid = bf$resources()$resourceid[bf$resources()$relativepath == input$relativepath],
+          data.QC = rawfileQC(),
+          data.Info = rawfileInfo()
         )
         
         rawfileQC.parameter$progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)
