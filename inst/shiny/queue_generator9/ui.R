@@ -12,8 +12,8 @@ shinyUI(fluidPage(
   fluidRow(
     column(2, htmlOutput("project")),
     
-    column(3, htmlOutput("sample")),
-    column(7, htmlOutput("extract"))
+    column(3, htmlOutput("sample"))
+    # column(7, htmlOutput("extract"))
     ),
   fluidRow(
     column(3, htmlOutput("area")),
