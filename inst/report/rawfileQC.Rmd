@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output: 
-  BiocStyle::pdf_document2
+  BiocStyle::pdf_document
 ---
 
 ```{r global_options, include=FALSE}
@@ -43,11 +43,12 @@ knitr::kable(rawfileQC.parameter$data.Info)
 The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a quick overview about the signal distribution over the LC-MS run. It should help to descide if the proper amount of sample was loaded and give insights about the complexity of the sample.
 
 ```{r}
-QC <- bfabricShiny:::.calc.master.scan(rawfileQC.parameter$data.QC)
+try(QC <- bfabricShiny:::.calc.master.scan(rawfileQC.parameter$data.QC))
 ```
 
-```{r fig.cap='Total Ion Count (TIC) and Base peak plot. '}
-bfabricShiny:::.TIC.BasePeak(QC)
+```{r fig.cap='Total Ion Count (TIC) and Base peak plot.'}
+try(bfabricShiny:::.TIC.BasePeak(QC))
+
 ```
 
 \newpage
@@ -57,7 +58,7 @@ bfabricShiny:::.TIC.BasePeak(QC)
 The cycle time plot should help to descide if the current instrument method is suited for the LC gradient. A too long cycle time will result in to few points over the chromatographic peaks. This is especially problematic for a quantitative experiment. A estimation of the number of Ms data points over three fixed assumed peak widths (10 sec, 20 sec, 30 sec). 
 
 ```{r fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
-bfabricShiny:::.cycle.time(QC)
+try(bfabricShiny:::.cycle.time(QC))
 ```
 
 \newpage
@@ -65,24 +66,28 @@ bfabricShiny:::.cycle.time(QC)
 ## distribution of selected mZ values
 
 ```{r fig.cap='Time resolved distribution of selecte precursor mZ values '}
-bfabricShiny:::.mz.dist(QC)
+try(bfabricShiny:::.mz.dist(QC))
 ```
 
 \newpage
+
 ## Frequency of precursor charge states
 
 ```{r fig.cap='Frequency of precursor charge states'}
-bfabricShiny:::.charge.states(QC)
+try(bfabricShiny:::.charge.states(QC))
 ```
 
 \newpage
 
 ## Scan to Scan times
+
 For HF instruments currently the scan to scan time difference is calculated. For Fusion data the "Elapsed Scan Time" value is 
 plotted
 
 ```{r fig.cap='Scan to scan time difference plot'}
-bfabricShiny:::.scan.times(QC)
+
+try(bfabricShiny:::.scan.times(QC))
+
 ```
 
 \newpage
@@ -90,7 +95,8 @@ bfabricShiny:::.scan.times(QC)
 ## Injection time plot
 
 ```{r fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
-bfabricShiny:::.injection.times(QC)
+
+try(bfabricShiny:::.injection.times(QC))
 ```
 
 \newpage
@@ -98,7 +104,9 @@ bfabricShiny:::.injection.times(QC)
 ## MS2 cycle load
 
 ```{r fig.cap='Number of Ms2 scans between two consecutive Ms scans'}
-bfabricShiny:::.ms2.frequency(QC)
+
+try(bfabricShiny:::.ms2.frequency(QC))
+
 ```
 
 \newpage
@@ -106,11 +114,9 @@ bfabricShiny:::.ms2.frequency(QC)
 ## Lock Mass correction
 
 ```{r fig.cap='lock mass correction vs RT'}
-out <- tryCatch({
-  bfabricShiny:::.lm.correction(QC)
-}, error = function(cond){
-  message("This plot is not available for this meassurement.")
-})
+
+try(bfabricShiny:::.lm.correction(QC))
+
 ```
 
 \newpage
@@ -118,12 +124,8 @@ out <- tryCatch({
 ## MS datapoints over chromatographic peak
 
 ```{r fig.cap='Displays the number of Ms data points which are recorded with the current method over three theoretical chromatographic peak width. Plot is only a help. Actual peak width needs to be checked by XIC in the raw data.'}
-out <- tryCatch({
-  bfabricShiny:::.ms.data.points(QC)
-}, error = function(cond){
-  message("This plot is not available for this meassurement.")
-})
 
+try(bfabricShiny:::.ms.data.points(QC))
 ```
 
 \newpage
@@ -134,9 +136,9 @@ This report was compiled by using [bfabricShiny](https://github.com/cpanse/bfabr
 
 # References
 
-[1] New RawFileReader from Thermo Fisher Scientific http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG, 2017
+1. New RawFileReader from Thermo Fisher Scientific [planetorbitrap](http://planetorbitrap.com/rawfilereader#.WdOKzIqLnmG), 2017
 
-[2] https://github.com/cpanse/bfabricShiny
+2. https://github.com/cpanse/bfabricShiny
  
-[3] https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=`r rawfileQC.parameter$resourceid`
+3. [bfabric resource `r rawfileQC.parameter$resourceid`](https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=`r rawfileQC.parameter$resourceid`)
 

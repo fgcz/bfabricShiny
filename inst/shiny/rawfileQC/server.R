@@ -17,16 +17,23 @@ shinyServer( function(input, output, session) {
                    applicationid = c(89, 90, 160, 161, 162, 163, 171, 176, 177, 197), 
                    resoucepattern = 'raw$')
   
+  
   values <- reactiveValues(pdf = NULL,
                            inputresouceid = NULL,
                            wuid = NULL,
                            qccsvfilename = "qc.csv",
                            notpressed = TRUE)
   
+  
+ 
+  
   ### observes file upload
   rawfileInfo <- eventReactive(input$load, {
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "fetching meta data ...")
+    on.exit(progress$close())
     
-    resources <- bf$resources()
+      resources <- bf$resources()
     
     values$inputresouceid <- resources$resourceid[resources$relativepath == input$relativepath][1]
     values$qccsvfilename <- paste("p", bf$project(),  "_R", resources$resourceid, '_', basename(input$relativepath), '.qc.csv', sep='')
@@ -63,8 +70,12 @@ shinyServer( function(input, output, session) {
   
   
   rawfileQC <- eventReactive(input$load, {
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "fetching QC data ...")
+    on.exit(progress$close())
     
     resources <- bf$resources()
+   
     
     values$inputresouceid = resources$resourceid[resources$relativepath == input$relativepath][1]
     
@@ -102,6 +113,7 @@ shinyServer( function(input, output, session) {
   
   
   output$fileInformation <- renderTable({
+    
     rawfileInfo()
   })
   
@@ -162,7 +174,7 @@ shinyServer( function(input, output, session) {
       message(tempdir())
       render(input = paste(path.package("bfabricShiny"),
                              "/report/rawfileQC.Rmd", sep='/'),
-               output_format ="pdf_document",
+               #output_format ="pdf_document",
                output_file = rawfileQC.parameter$pdf,
                intermediates_dir = tempdir(),
                knit_root_dir = tempdir()) 
