@@ -165,7 +165,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
       
         selectInput("relativepath", "resource relativepath:", res$relativepath,
                     multiple = FALSE),
-        actionButton("load", "load selected RData", icon("upload"))
+        actionButton("load", "load selected data resource", icon("upload"))
         )
       }
     }
