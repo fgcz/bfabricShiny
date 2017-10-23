@@ -1,5 +1,7 @@
 #R
 
+# AUTHOR CHristian Trachsel 2017
+
 
 #data shaping
 
