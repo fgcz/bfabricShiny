@@ -10,7 +10,6 @@ library(jsonlite)
 library(httr)
 library(DT)
 
-# source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
 ##
 shinyServer(function(input, output, session) {
   
@@ -220,7 +219,7 @@ shinyServer(function(input, output, session) {
     
     idx.hplc <- getHPLC()[[input$instrument]]
     
-    rv <- generate_queue(x = res, #[idx, c("extract.name", "extract.id", "extract.Condition")], uncomment to get original prior 17.01.2017
+    rv <- generate_queue(x = res, 
                          foldername = input$folder,
                          projectid=input$project,
                          area = input$area,
@@ -287,8 +286,8 @@ shinyServer(function(input, output, session) {
     ########################## WRITE CSV TO BFABRIC
     fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
     print (fn)
-    write.csv(cat("Bracket Type=4\r\n", file = fn, append = FALSE))
-    write.csv(res, file = fn, 
+    cat("Bracket Type=4\r\n", file = fn, append = FALSE)
+    write.table(res, file = fn, 
                 sep=',', row.names = FALSE, 
                 append = TRUE, quote = FALSE, eol='\r\n')
     
@@ -303,7 +302,7 @@ shinyServer(function(input, output, session) {
                                   projectid=input$project, 
                                   applicationid=212,
                                   workunitdescription = paste("The spreadsheet contains a ", input$instrument,
-                                                              " queue configuration having ", nrow(res), " rows.\n",
+                                                              " queue configuration having ", nrow(res), " rows.\n", 
                                                               "The parameters are:\n", 
                                                               "\thow.often: ", as.integer(input$howoften), "\n",
                                                               "\thow.many:  ", as.integer(input$howmany), "\n",
