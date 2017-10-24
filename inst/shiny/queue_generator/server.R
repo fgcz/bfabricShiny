@@ -1,3 +1,4 @@
+# bfabric8
 
 # This is the server logic for a Shiny web application.
 # You can find out more about building applications with Shiny here:
@@ -187,8 +188,6 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   })
   
   output$downloadData <- downloadHandler(
-    
-    
     filename = function() {
       getResourcename()
     },

@@ -197,14 +197,17 @@ def compose_ms_queue_dataset(jsoncontent, workunitid, projectid):
 def add_resource():                            
     try:
         queue_content = json.loads(request.data)
+        print queue_content
     except:
         print "failed: could not get POST content"
         return jsonify({'error': 'could not get POST content.'})
 
-    res = bfapp.save_object('workunit', {'name': 'MassSpec instrument queue configuration',
+    res = bfapp.save_object('workunit', {'name': queue_content['name'],
                                          'description': "{}".format(queue_content['workunitdescription'][0]),
                                          'projectid': queue_content['projectid'],
-                                         'applicationid': 212})
+                                         'applicationid': queue_content['applicationid']
+                                         })
+    print res
 
     workunit_id = res[0]._id
 

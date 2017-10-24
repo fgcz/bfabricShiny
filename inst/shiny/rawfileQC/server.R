@@ -117,7 +117,7 @@ shinyServer( function(input, output, session) {
     rawfileInfo()
   })
   
-  output$downloadData <- downloadHandler(
+  output$Data <- downloadHandler(
        filename = function() {
          values$qccsvfilename
        },
