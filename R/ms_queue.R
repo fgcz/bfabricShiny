@@ -435,7 +435,10 @@ test_data_large <- function(){
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%02d", c(1:n))
   injection.name <- paste(rundate, injection.index, sep = "_")
-  injection.name <- paste(injection.name, x$extract.id, sep = "_")
+  injection.name <- paste(injection.name, paste("S", x$extract.id,sep=''), sep = "_")
+  
+  injection.name <- gsub("_SNA", "", injection.name)
+  
   injection.name <- paste(injection.name, x$extract.name, sep = "_")
   if (showcondition == TRUE){
     injection.name <- paste(injection.name, x$extract.Condition, sep = "_")

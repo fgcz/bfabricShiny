@@ -66,7 +66,7 @@ shinyServer(function(input, output, session) {
   }))
   
   output$folder <- renderUI(({
-    textInput('folder', 'Data Folder Name:', "enter your folder name here", width = NULL, placeholder = NULL)
+    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder ="enter your folder name here")
   }))
   
   output$qctype <- renderUI(({
@@ -293,8 +293,6 @@ shinyServer(function(input, output, session) {
     
     print ("ALIVE")
     file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
-    
-    
     
     rv <- POST("http://localhost:5000/add_resource",
                body = toJSON(list(base64=file_content,
