@@ -71,10 +71,26 @@ try(bfabricShiny:::.mz.dist(QC))
 
 \newpage
 
+## Precursor mass frequency
+
+```{r fig.cap='Frequency of precursor masses for each charge state '}
+try(bfabricShiny:::.mz.frequency(QC))
+```
+
+\newpage
+
 ## Frequency of precursor charge states
 
 ```{r fig.cap='Frequency of precursor charge states'}
 try(bfabricShiny:::.charge.states(QC))
+```
+
+\newpage
+
+## Cumulative precursor charges
+
+```{r fig.cap='Cumulation of precursor charge percentages'}
+try(bfabricShiny:::.charge.states.quantiles(QC))
 ```
 
 \newpage
