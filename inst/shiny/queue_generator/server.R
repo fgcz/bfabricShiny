@@ -256,6 +256,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
 #    	write(selected.order, file = 'iorder.txt') for troubleshooting only
 
     	    	res <- res[idx, c("extract.name", "extract.id", "extract.Condition")]
+    	    	print (res)
     	res <- res[match(input$extract, res$extract.name),]
     	
     	if(any(is.na(res$extract.Condition))){
