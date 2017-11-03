@@ -199,11 +199,22 @@
   return(figure)
 }
 
+
+
+#' Title
+#'
+#' @param x 
+#'
+#' @return
+#' @import dplyr
+#'
+#' @examples
 .ms2.frequency <- function(x){
   NoMS2 <- x %>% 
     dplyr::filter(MSOrder == "Ms") %>% 
     dplyr::count() %>% 
-    dplyr::rename(Counts = n) %>% pull
+    dplyr::rename(Counts = n) %>% 
+    dplyr::pull()
   res <- x %>% 
     dplyr::filter(MSOrder == "Ms2") %>% 
     dplyr::count(MasterScanNumber) %>% 
