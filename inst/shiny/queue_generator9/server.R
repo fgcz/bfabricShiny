@@ -10,54 +10,55 @@ library(jsonlite)
 library(httr)
 library(DT)
 
-# source("C:/Users/christian/__GitHub_clones/R/bfabric_shiny/R/ms_queue.r")
 ##
 shinyServer(function(input, output, session) {
-
- # TODOO(cp):
-getHPLC <- function(){list(VELOS_1='eksigent',
-                       VELOS_2='eksigent',
-                       G2HD_1='waters',
-                       QTRAP_1='eksigent',
-                       TSQ_1='eksigent',
-                       TSQ_2='eksigent',
-                       QEXACTIVE_2='easylc',
-                       QEXACTIVE_3='easylc',
-                       FUSION_1='easylc',
-                       FUSION_2='easylc',
-                       QEXACTIVEHF_1='waters',
-                       QEXACTIVEHF_2='waters',
-                       IMSTOF_1='eksigent')}
-
-
+  
+  values <- reactiveValues(wuid = NULL)
+  
+  # TODOO(cp):
+  getHPLC <- function(){list(VELOS_1='eksigent',
+                             VELOS_2='eksigent',
+                             G2HD_1='waters',
+                             QTRAP_1='eksigent',
+                             TSQ_1='eksigent',
+                             TSQ_2='eksigent',
+                             QEXACTIVE_2='easylc',
+                             QEXACTIVE_3='easylc',
+                             FUSION_1='easylc',
+                             FUSION_2='easylc',
+                             QEXACTIVEHF_1='waters',
+                             QEXACTIVEHF_2='waters',
+                             IMSTOF_1='eksigent')}
+  
+  
   getInstrument <- reactive({list(VELOS_1='Xcalibur',
-                       VELOS_2='Xcalibur',
-                       G2HD_1='MassLynx',
-                       QTRAP_1='Xcalibur',
-                       TSQ_1='Xcalibur',
-                       TSQ_2='Xcalibur',
-                       QEXACTIVE_2='Xcalibur',
-                       QEXACTIVE_3='Xcalibur',
-                       FUSION_1='Xcalibur',
-                       FUSION_2='Xcalibur',
-                       QEXACTIVEHF_1='Xcalibur',
-                       QEXACTIVEHF_2='Xcalibur',
-                       IMSTOF_1='TOFWERK')})
+                                  VELOS_2='Xcalibur',
+                                  G2HD_1='MassLynx',
+                                  QTRAP_1='Xcalibur',
+                                  TSQ_1='Xcalibur',
+                                  TSQ_2='Xcalibur',
+                                  QEXACTIVE_2='Xcalibur',
+                                  QEXACTIVE_3='Xcalibur',
+                                  FUSION_1='Xcalibur',
+                                  FUSION_2='Xcalibur',
+                                  QEXACTIVEHF_1='Xcalibur',
+                                  QEXACTIVEHF_2='Xcalibur',
+                                  IMSTOF_1='TOFWERK')})
   
   
   getInstrumentSuffix <- reactive({list(VELOS_1='RAW',
-                                  VELOS_2='RAW',
-                                  G2HD_1='wiff',
-                                  QTRAP_1='wiff',
-                                  TSQ_1='RAW',
-                                  TSQ_2='RAW',
-                                  QEXACTIVE_2='raw',
-                                  QEXACTIVE_3='raw',
-                                  FUSION_1='raw',
-                                  FUSION_2='raw',
-                                  QEXACTIVEHF_1='raw',
-                                  QEXACTIVEHF_2='raw',
-                                  IMSTOF_1='h5')})
+                                        VELOS_2='RAW',
+                                        G2HD_1='wiff',
+                                        QTRAP_1='wiff',
+                                        TSQ_1='RAW',
+                                        TSQ_2='RAW',
+                                        QEXACTIVE_2='raw',
+                                        QEXACTIVE_3='raw',
+                                        FUSION_1='raw',
+                                        FUSION_2='raw',
+                                        QEXACTIVEHF_1='raw',
+                                        QEXACTIVEHF_2='raw',
+                                        IMSTOF_1='h5')})
   
   output$area <- renderUI(({
     res.area <- c("Proteomics", "Metabolomics")
@@ -65,7 +66,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   }))
   
   output$folder <- renderUI(({
-      textInput('folder', 'Data Folder Name:', "enter your folder name here", width = NULL, placeholder = NULL)
+    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder ="enter your folder name here")
   }))
   
   output$qctype <- renderUI(({
@@ -86,7 +87,7 @@ getHPLC <- function(){list(VELOS_1='eksigent',
   
   output$project <- renderUI({
     res.project <- c(NA, 1000, 1959, 2121)
-    numericInput('project', 'Project:', value = 1000,  min = 1000, max = 2500, width=100)
+    numericInput('project', 'Project:', value = 2066,  min = 1000, max = 2500, width=100)
   })
   
   output$howoften <- renderUI({
@@ -104,67 +105,67 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
   })
   
-
+  
   output$method <- renderUI(({
     selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'testing'), multiple = FALSE, selected = 'default')
   }))
   
   output$showcondition <- renderUI(({
-        checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
+    checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
   }))
   
- 
+  
   getLogin <- reactive({
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "fetching user data ...")
+    on.exit(progress$close())
+    
     if (is.null(input$project)){
       return (NULL)
     }else{
-    res <- as.data.frame(fromJSON(paste("http://localhost:5001/user/", 
-                                        input$project, sep='')))
-    message(paste('got', nrow(res), 'users.'))
-    return (res$user)
+      res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", 
+                                          input$project, sep='')))
+      message(paste('got', nrow(res), 'users.'))
+      return (res$user)
     }
   })
   
+  
+  # res <- as.data.frame(fromJSON("http://localhost:5000/sample/2066"))
   getSample <- reactive({
+    
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "fetching sample data ...")
+    on.exit(progress$close())
+    
+    
     if (is.null(input$project)){
       return (NULL)
     }else{
-      sampleURL <- paste("http://localhost:5001/projectid/", 
+      sampleURL <- paste("http://localhost:5000/sample/", 
                          input$project, sep='')
       
-      
+      message(sampleURL)
       res <- as.data.frame(fromJSON(sampleURL))
       
-      res[, "project.id"] <- input$project
+      
       
       message(paste('got', nrow(res), 'samples.'))
+      
       return (res)
     }
   })
   
-  getExtracts <- reactive({
-    if (is.null(input$project)){
-      return (NULL)
-    }else{
-      extractURL <- paste("http://localhost:5001/extract/", input$project, sep='')
-      res <- as.data.frame(fromJSON(extractURL ))
-      message (paste('got', nrow(res), 'extracts from url', extractURL))
-      res[, "project.id"] <- input$project
-      if (!"extract.Condition" %in% names(res)){
-        res[, "extract.Condition"] <- "A" #res$sampleid
-      }
-      res <- res[order(res$extract.id, decreasing = TRUE),]
-    }
-    return (res)
-  })
   
   output$sample <- renderUI({
     res <- getSample()
+    
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
-      res <- getSample()
-      selectInput('sample', 'Sample:', paste(res$sample.id, res$sample.name, sep='-'), multiple = TRUE)
+      #res <- getSample()
+      
+      selectInput('sample', 'Sample:', paste(res$samples._id, res$samples.name, sep='-'), multiple = TRUE)
     }
   })
   output$login <- renderUI({
@@ -176,106 +177,149 @@ getHPLC <- function(){list(VELOS_1='eksigent',
     }
   })
   
-  output$extract <- renderUI({
-   # res <- getExtracts()
-  #  if (!is.null(res)){
-  #    selectInput('extract', 'Extract:', res$extract.name, multiple = TRUE)  
-  #  }   else{
-  #    selectInput('extract', 'Extract:', NULL)
-  #   
-   # }
-    NULL
+  
+  getResourcename <- reactive({
+    paste("fgcz-queue-generator_p", input$project, "_", input$instrument, "_", format(Sys.time(), "%Y%m%d"), ".csv", sep='')
   })
   
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste("fgcz-queue-generator_", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(cat("Bracket Type=4\r\n", file = file, append = FALSE))
-      res <- getBfabricContent()
-      write.table(res, file = file, 
-                  sep=',', row.names = FALSE, 
-                  append = TRUE, quote = FALSE, eol='\r\n')
-    }
-  )
-  
-  datasetID <- observeEvent(input$bfabricButton, {
-    
-    S <- getBfabricContent()
-    if (nrow(S) > 0){
-      rv <- POST(paste("http://localhost:5001/add_resource", input$project, sep='/'), body = toJSON(getBfabricContent()))
-      
-      observe({
-        session$sendCustomMessage(type = 'testmessage', message = 'try to commit as dataset to bfabric.') 
-      })
-    }else{
-      #session$sendCustomMessage(type = 'testmessage', message = 'not enough lines.') 
-    }
-    
-  })
   
   
   getBfabricContent <- reactive({
-
-    res <- getExtracts()
-#    save(res, file='tmpResults.RData', compression_level = )
-    	res[, "instrument"] <- input$instrument
-#      save(res, file='tmpResults2.RData', compression_level = ) for troubleshooting only
-    	
-      # TODO(cp): check of extract names are unique
-    	idx <- res$extract.name %in% input$extract
-#    	write(idx, file = 'idx.txt') for troubleshooting only
-#    	selected.order <- input$extract for troubleshooting only
-#    	write(selected.order, file = 'iorder.txt') for troubleshooting only
-
-    	
-    	# TODO(cp): replace with sample information
-    	res <- res[idx, c("extract.name", "extract.id", "extract.Condition")]
-    	res <- res[match(input$extract, res$extract.name), ]
-    	
-    	if(any(is.na(res$extract.Condition))){
-    	  
-    	  res$extract.Condition[is.na(res$extract.Condition)] <- "A"
-
-      } else{
-    	  
-    	}
-    	
-    	idx.hplc <- getHPLC()[[input$instrument]]
+    if (is.null(input$sample))
+    {return(NULL)}
+    if (length(input$sample) == 1 && input$sample == ""){
+      return (NULL)
+    }
+    values$wuid <- NULL
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "counting  lambdas 11 ...")
+    on.exit(progress$close())
     
-    	rv <- generate_queue(x = res, #[idx, c("extract.name", "extract.id", "extract.Condition")], uncomment to get original prior 17.01.2017
-                           foldername = input$folder,
-                           projectid=input$project,
-                           area = input$area,
-                           instrument = input$instrument,
-                           username = input$login,
-                           hplc = idx.hplc,
-                           how.often = as.integer(input$howoften),
-                           how.many = as.integer(input$howmany),
-                           nr.methods = as.integer(input$testmethods),
-                           nr.replicates = as.integer(input$replicates),
-                           showcondition = input$showcondition,
-                           qc.type = as.integer(input$qctype),
-                           method = as.character(input$method))
-    	
-#    	save(rv, file='queue.RData', compression_level = ) for trouble shooting only
-#    	rv
-    	#cbind(rv, extract.id = res[idx, 'extract.id'])
+    
+    
+    res <- getSample()
+    
+    res[, "instrument"] <- input$instrument
+    
+    idx.filter <- (paste(res$samples._id, res$samples.name, sep="-") %in% input$sample)
+    
+    
+    res <- res[idx.filter, c("samples.name", "samples._id", "samples.condition")]
+    
+    # TODO(cp): replace extract by sample
+    names(res) <- c("extract.name", "extract.id", "extract.Condition")
+    
+    if(any(is.na(res$extract.Condition))){
+      
+      res$extract.Condition[is.na(res$extract.Condition)] <- "A"
+      
+    } else{
+      
+    }
+    
+    idx.hplc <- getHPLC()[[input$instrument]]
+    
+    rv <- generate_queue(x = res, 
+                         foldername = input$folder,
+                         projectid=input$project,
+                         area = input$area,
+                         instrument = input$instrument,
+                         username = input$login,
+                         hplc = idx.hplc,
+                         how.often = as.integer(input$howoften),
+                         how.many = as.integer(input$howmany),
+                         nr.methods = as.integer(input$testmethods),
+                         nr.replicates = as.integer(input$replicates),
+                         showcondition = input$showcondition,
+                         qc.type = as.integer(input$qctype),
+                         method = as.character(input$method))
+    
+    
   })
   
   
   
   output$table <- DT::renderDataTable(DT::datatable({
     #print(paste("extract", input$extract, sep='='))
-
-      if (input$extract != "" && length(input$extract) >= 1){
+    
+    if (input$sample != "" && length(input$sample) >= 1){
       getBfabricContent()
+      
     }else{
       #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))
-      as.data.frame(list(output="no data - select extracts first."))
+      as.data.frame(list(output="no data - select sample first."))
     }
     
-    }))
-
+  }))
+  
+  
+  
+  
+  output$download <- renderUI({
+    res <- getBfabricContent()
+    
+    if (is.null(res)){
+      HTML("Download not possible yet.")
+      
+    }else if (!is.null(values$wuid)){
+      # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
+      actionButton("download",
+                   paste("bfabric download workunit", values$wuid),
+                   onclick = paste("window.open('https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=", 
+                                   values$wuid, "', '_blank')", sep=''))
+    }else{
+      actionButton('generate', 'Download configuration')
+    }
+    
+  })
+  
+  
+  bfabricUpload <- observeEvent(input$generate, {
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "upload configuration to bfabric")
+    on.exit(progress$close())
+    
+    
+    res <- getBfabricContent()
+    
+    
+    ########################## WRITE CSV TO BFABRIC
+    fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
+    print (fn)
+    cat("Bracket Type=4\r\n", file = fn, append = FALSE)
+    write.table(res, file = fn, 
+                sep=',', row.names = FALSE, 
+                append = TRUE, quote = FALSE, eol='\r\n')
+    
+    print ("ALIVE")
+    file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
+    
+    rv <- POST("http://localhost:5000/add_resource",
+               body = toJSON(list(base64=file_content,
+                                  name='MS configuration',
+                                  projectid=input$project, 
+                                  applicationid=212,
+                                  workunitdescription = paste("The spreadsheet contains a ", input$instrument,
+                                                              " queue configuration having ", nrow(res), " rows.\n", 
+                                                              "The parameters are:\n", 
+                                                              "\thow.often: ", as.integer(input$howoften), "\n",
+                                                              "\thow.many:  ", as.integer(input$howmany), "\n",
+                                                              "\tnr.methods:",  as.integer(input$testmethods), "\n",
+                                                              "\tnr.replicates:", as.integer(input$replicates), "\n",
+                                                              "\tshowcondition: ",  input$showcondition, "\n",
+                                                              "\tqc.type: ", as.integer(input$qctype), "\n",
+                                                              "\tmethod: ",  as.character(input$method), 
+                                                              "\nThe resource was generated by using the R package bfabricShiny version ",
+                                                              packageVersion('bfabricShiny'), ".\n", sep=''),
+                                  resourcename = getResourcename())
+               ))
+    
+   
+    wuid <-  (content(rv)$workunit_id)
+    values$wuid <- wuid
+    ########################## WRITE CSV TO BFABRIC
+  }
+  )
+  
 })
+
