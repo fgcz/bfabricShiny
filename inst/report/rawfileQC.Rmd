@@ -44,6 +44,7 @@ The Total Ion Chromatogram (TIC) as well as the Base Peak plot should present a 
 
 ```{r}
 try(QC <- bfabricShiny:::.calc.master.scan(rawfileQC.parameter$data.QC))
+try(QC <- bfabricShiny:::.calc.transient(QC))
 ```
 
 ```{r fig.cap='Total Ion Count (TIC) and Base peak plot.'}
@@ -57,15 +58,15 @@ try(bfabricShiny:::.TIC.BasePeak(QC))
 
 The cycle time plot should help to descide if the current instrument method is suited for the LC gradient. A too long cycle time will result in to few points over the chromatographic peaks. This is especially problematic for a quantitative experiment. A estimation of the number of Ms data points over three fixed assumed peak widths (10 sec, 20 sec, 30 sec). 
 
-```{r fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The blue horizontal line represents the 95ntil (95 % of all datapoints are below the blue line)'}
+```{r fig.cap='Cycle Time plot. The plot displays the calculated time between two consecutive Ms scans. The red horizontal line represents the 95ntil (95% of all datapoints are below the blue line). The blue curve displays a "gam" fit which indicates the cycle time trend over time.'}
 try(bfabricShiny:::.cycle.time(QC))
 ```
 
 \newpage
 
-## distribution of selected mZ values
+## distribution of selected m/z values
 
-```{r fig.cap='Time resolved distribution of selecte precursor mZ values '}
+```{r fig.cap='Time resolved distribution of selecte precursor m/z values. The blue curve displays a "gam" fit which indicates the m/z trend over time.'}
 try(bfabricShiny:::.mz.dist(QC))
 ```
 
@@ -73,7 +74,7 @@ try(bfabricShiny:::.mz.dist(QC))
 
 ## Precursor mass frequency
 
-```{r fig.cap='Frequency of precursor masses for each charge state '}
+```{r fig.cap='Frequency of peptide masses for each charge state. The plot displays frequency of all deconvoluted neutral mass values for all selected precursors according to their measured charge state.'}
 try(bfabricShiny:::.mz.frequency(QC))
 ```
 
@@ -95,12 +96,12 @@ try(bfabricShiny:::.charge.states.quantiles(QC))
 
 \newpage
 
-## Scan to Scan times
+## Scan time plot
 
 For HF instruments currently the scan to scan time difference is calculated. For Fusion data the "Elapsed Scan Time" value is 
 plotted
 
-```{r fig.cap='Scan to scan time difference plot'}
+```{r fig.cap='Scan to scan time difference plot. The red horizontal line indicates the theoretical transient lenght for the orbitrap resolution defined in the method. ITMS scans will not show this line.'}
 
 try(bfabricShiny:::.scan.times(QC))
 
@@ -110,9 +111,18 @@ try(bfabricShiny:::.scan.times(QC))
 
 ## Injection time plot
 
-```{r fig.cap='Injection time plot for Ms and Ms2 scans. Blue lines indicate the max. injection time parameter'}
+```{r fig.cap='Injection time plot for Ms and Ms2 scans. Red horizontal lines displays the max. injection time value set in the instrument method. The Blue curves is a "gam" fit which indicated the injection time trend over time'}
 
 try(bfabricShiny:::.injection.times(QC))
+```
+
+\newpage
+
+## MS2 versus retention time
+
+```{r fig.cap='Ms2 cycle load plotted agains retention time. The plot displays the density of Ms2 scans during the gradient.'}
+
+try(bfabricShiny:::.ms2.vs.RT(QC))
 ```
 
 \newpage
@@ -127,9 +137,9 @@ try(bfabricShiny:::.ms2.frequency(QC))
 
 \newpage
 
-## Lock Mass correction
+## Lock mass correction
 
-```{r fig.cap='lock mass correction vs RT'}
+```{r fig.cap='Lock mass correction vs RT. The plot displays the applied lock mass correction during the run. The two horizontal red lines indicate +/- 5ppm which indicates the FGCZ system recalibration limits.'}
 
 try(bfabricShiny:::.lm.correction(QC))
 
