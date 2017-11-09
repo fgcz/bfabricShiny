@@ -237,11 +237,13 @@ shinyServer( function(input, output, session) {
 
       cat("SELECT", input$select, "\n")
       grp2 <- Grp2Analysis(v_upload_file$annotation,
-                           input$experimentID, maxNA=input$maxMissing,
+                           input$experimentID, 
+                           maxNA=input$maxMissing,
                            nrPeptides=input$minPeptides,
                            reference = input$select
                            )
 
+      
       grp2$setMQProteinGroups(v_upload_file$protein)
       grp2$setQValueThresholds(qvalue = input$qValue , qfoldchange = input$qValueFC)
       #grp2$setPValueThresholds(pvalue = input$pValue, pfoldchange = input$pValueFC)
@@ -263,8 +265,12 @@ shinyServer( function(input, output, session) {
         stopApp(7)
       }
 
+      
+      #save(grp2, file="/tmp/grp2__.RData")
+      # generate the LFQ report
       rmarkdown::render(rmdfile2run,
                         bookdown::pdf_document2())
+      
       incProgress(0.1, detail = paste("part", "Rendering"))
 
       print(dir())

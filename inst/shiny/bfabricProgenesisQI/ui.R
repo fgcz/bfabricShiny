@@ -13,13 +13,14 @@ library(bfabricShiny)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("FASTA Statistics"),
+  titlePanel("ProgenesisQI"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8"))),
+       selectInput("sep", "csv file separator", list(";", ",")),
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,
@@ -28,8 +29,13 @@ shinyUI(fluidPage(
     ),
     
     # Show a plot of the generated distribution
-    mainPanel(
-       plotOutput("distPlot",height = 600)
+    mainPanel(tabsetPanel(
+      tabPanel("measurements",
+      DT::dataTableOutput("measurements")),
+      tabPanel("identifications",
+               DT::dataTableOutput("identifications")))
+      
+      # plotOutput("distPlot",height = 600)
     )
   )
 ))
