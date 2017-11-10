@@ -34,8 +34,11 @@ shinyServer(function(input, output, session) {
     if (!file.exists(zip_filename())){
       cmd <- paste("ssh fgcz-r-021 '", cmd, "'", sep='')
     }
-    read.csv(pipe(cmd), sep=input$sep, 
-             stringsAsFactors = FALSE, header = TRUE)
+    read.csv(pipe(cmd), 
+             sep=input$sep, 
+             stringsAsFactors = FALSE,
+             header = TRUE, 
+             skip = 2)
   })
   
   get_measurements <- reactive({
@@ -51,8 +54,11 @@ shinyServer(function(input, output, session) {
     
     message(cmd)
     
-   read.csv(pipe(cmd), sep=input$sep, 
-                  stringsAsFactors = FALSE, header = TRUE)
+   read.csv(pipe(cmd), 
+            sep=input$sep, 
+            stringsAsFactors = FALSE,
+            header = TRUE, 
+            skip = 2)
   })
 
   output$measurements<- DT::renderDataTable({
