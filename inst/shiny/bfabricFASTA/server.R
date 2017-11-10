@@ -15,7 +15,7 @@ shinyServer(function(input, output, session) {
     resources <- bf$resources()
  
     FASTA.parameter <- list(
-      FASTAfile = paste("/srv/www/htdocs/",input$relativepath, sep='')
+      FASTAfile = paste("/srv/www/htdocs/fasta", input$relativepath, sep='/')
     )
     cmd <- paste("cat", FASTA.parameter$FASTAfile, "| fcat | tryptic-digest", sep=" ")
     
@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
     message(cmd)
     
     S<-scan(pipe(cmd), what='character')
-    S[nchar(S)>2 & nchar(S)<60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$",S)]
+    S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
   })
   
   parent_ion_mass <- reactive({parentIonMass(get_tryptic_peptides())})
