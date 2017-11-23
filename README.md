@@ -34,6 +34,12 @@ bfabric_flask_sample.py
 curl http://127.0.0.1:5000/extract/2450
 ```
 
+### restart the shiny server
+
+```{r}
+service shiny-server stop && service shiny-server start
+```
+
 ## Shiny
 
 ### queue generator application
