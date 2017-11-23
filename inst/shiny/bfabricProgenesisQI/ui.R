@@ -21,11 +21,9 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8"))),
        selectInput("sep", "csv file separator", list(";", ",")),
-       sliderInput("bins",
-                   "Number of bins:",
-                   min = 1,
-                   max = 50,
-                   value = 30)
+      uiOutput("generateReportButton"),
+      tags$hr(),
+      uiOutput("wuid")
     ),
     
     # Show a plot of the generated distribution
@@ -33,7 +31,8 @@ shinyUI(fluidPage(
       tabPanel("measurements",
       DT::dataTableOutput("measurements")),
       tabPanel("identifications",
-               DT::dataTableOutput("identifications")))
+               DT::dataTableOutput("identifications")),
+      tabPanel("sessionInfo", verbatimTextOutput("sessionInfo")))
       
       # plotOutput("distPlot",height = 600)
     )
