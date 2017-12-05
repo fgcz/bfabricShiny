@@ -200,9 +200,9 @@
   
   figure <- ggplot(x, aes(x = StartTime, y = IonInjectionTimems)) +
     geom_hline(data = maxtimes, aes(yintercept = maxima), colour = "red3", linetype = "longdash") +
+    geom_point(shape = ".") +
     geom_line(stat = "smooth", method = "gam", formula = y~s(x), colour = "deepskyblue3", se = FALSE) +
     facet_grid(MSOrder~., scales = "free") +
-    geom_point(shape = ".") +
     scale_y_continuous(breaks = scales::pretty_breaks((n = 8))) +
     scale_x_continuous(breaks = scales::pretty_breaks((n = 8))) +
     labs(title = "Injection time plot", subtitle = "Plotting injection time against retention time for MS and MSn level") +
