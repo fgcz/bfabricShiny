@@ -265,7 +265,7 @@ shinyServer(function(input, output, session) {
       # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
       actionButton("download",
                    paste("bfabric download workunit", values$wuid),
-                   onclick = paste("window.open('https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=", 
+                   onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=", 
                                    values$wuid, "', '_blank')", sep=''))
     }else{
       actionButton('generate', 'Download configuration')
