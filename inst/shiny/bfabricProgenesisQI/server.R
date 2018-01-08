@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
    p389Devel::ProgenesisRead(pipe(cmd), sep=';')
   })
 
-  output$measurements<- DT::renderDataTable({
+  output$measurements <- DT::renderDataTable({
     get_measurements()
   })
   
@@ -111,7 +111,16 @@ shinyServer(function(input, output, session) {
         QI_Data <<- list(
           Identification = get_identifications(),
           Intensities = get_measurements(),
-          Annotation = ProgenesisBuildAnnotation(get_measurements())$annotation)
+          resourceid = bf$resources()$resourceid[bf$resources()$relativepath == input$relativepath]
+          )
+        
+        #QI_Data <- list()
+        #QI_Data$Identification <- preprocessQIIdent(readIdentFile(identification))
+        #QI_Data$Intensities <- ProgenesisRead(intensities, sep = ";")
+        
+        
+        # TODO(cp): TESTING
+        QI_Data <- prepareQIDATA(QI_Data)
         
         # for debugging
         # save(QI_Data, file="/tmp/QI_Data.RData")
@@ -121,28 +130,62 @@ shinyServer(function(input, output, session) {
         
         message(tempdir())
         
-        rmarkdown::render(file.path(tempdir(), "BGAAnalysis.Rmd"), 
-                          output_file = values$pdf, 
-                          output_format = "pdf_document")
+        # for download
+        # QI_Data$Int_ID
         
-        message(values$pdf)
-        file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
-                                                 file.info(values$pdf)[1, "size"]), 
-                                         "pdf")  
+        
+        
+   
+        
+        ###
+        (fn <- tempfile(pattern = "file-", tmpdir = tempdir(), fileext = ".csv"))
+        write.table(QI_Data$Int_ID,
+                    file = fn,
+                    sep='\t',
+                    row.names = FALSE,
+                    append = TRUE,
+                    quote = FALSE, eol='\r\n')
+        
+        file_txt_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
+
+        
+        ###
         
         progress$set(message = "register workunit", detail= "in bfabric", value = 0.95)
         wuid <- bfabric_upload_file(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     projectid = bf$projectid(),
-                                    file_content = file_pdf_content, 
+                                    file_content = file_txt_content, 
                                     inputresource = values$inputresouceid,
                                     workunitname = input$experimentID,
-                                    resourcename = paste("made4 report",
-                                                         bf$workunitid(), ".pdf", sep=''),
+                                    resourcename = paste("identified-quantitative-values-",
+                                                         bf$workunitid(), ".csv", sep=''),
                                     status = 'available',
                                     applicationid = 227)
         
         values$wuid <- wuid
+        
+        
+        if(length(unique(QI_Data$Annotation$Condition)) > 1){
+            rmarkdown::render(file.path(tempdir(), "BGAAnalysis.Rmd"), 
+                              output_file = values$pdf, 
+                              output_format = "pdf_document")
+          
+          
+            message(values$pdf)
+            file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
+                                                   file.info(values$pdf)[1, "size"]), 
+                                           "pdf")  
+            bfabricShiny:::saveResource(login = bf$login(),
+                                      webservicepassword = bf$webservicepassword(),
+                                      workunitid = wuid,
+                                      content = file_pdf_content,
+                                      name =  paste("made4-report_", bf$workunitid(), ".pdf", sep='')
+          )
+          
+        }else{
+          message("no valid group information.")
+        }
         
         progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
         
@@ -156,7 +199,7 @@ shinyServer(function(input, output, session) {
       if (!is.null(values$wuid)){
         actionButton("download",
                      paste("bfabric download workunit", values$wuid),
-                     onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?workunitId=", 
+                     onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=", 
                                      values$wuid, "', '_blank')", sep=''))
       }
     })
