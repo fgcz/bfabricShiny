@@ -20,7 +20,7 @@ shinyUI(fluidPage(
     sidebarPanel(
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8"))),
-       selectInput("sep", "csv file separator", list(";", ",")),
+       #selectInput("sep", "csv file separator", list(";", ",")),
       uiOutput("generateReportButton"),
       tags$hr(),
       uiOutput("wuid")

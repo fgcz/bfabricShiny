@@ -310,6 +310,7 @@ createWorkunit <-
            applicationid,
            inputresource,
            status = 'available',
+           description = '',
            name ) {
     workunitid <- NA
     rv <- POST('http://localhost:5000/s',
@@ -322,7 +323,8 @@ createWorkunit <-
                      'projectid' = projectid,
                      'applicationid' = applicationid,
                      'name' = name,
-                     'status' = status
+                     'status' = status,
+                     'description' = description
                    )
                  ),
                  encode = 'json'
@@ -410,6 +412,7 @@ bfabric_upload_file <- function(login,
                         projectid = 1000,
                         applicationid = 217,
                         status,
+                        description = '',
                         inputresource = NULL,
                         workunitname = 'MaxQuant result',
                         resourcename = 'MaxQuant report',
@@ -425,7 +428,8 @@ bfabric_upload_file <- function(login,
       inputresource = inputresource,
       applicationid = applicationid,
       name = workunitname,
-      status = 'pending'
+      status = 'pending',
+      description = description
     )
   
   

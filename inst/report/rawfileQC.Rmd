@@ -166,5 +166,5 @@ This report was compiled by using [bfabricShiny](https://github.com/cpanse/bfabr
 
 2. https://github.com/cpanse/bfabricShiny
  
-3. [bfabric resource `r rawfileQC.parameter$resourceid`](https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=`r rawfileQC.parameter$resourceid`)
+3. [bfabric input resource `r rawfileQC.parameter$resourceid`](https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?id=`r rawfileQC.parameter$resourceid`)
 

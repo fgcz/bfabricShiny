@@ -2,6 +2,8 @@
 library(bfabricShiny)
 library(p389Devel)
 
+stopifnot( packageVersion('p389Devel') >= "0.1.4")
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   values <- reactiveValues(pdf = NULL,
@@ -106,7 +108,7 @@ shinyServer(function(input, output, session) {
         progress$set(message = "generating report")
         on.exit(progress$close())
         
-        progress$set(message = "render document", detail= "using rmarkdown", value = 0.9)
+        progress$set(message = "render document", detail= "using rmarkdown", value = 0.1)
         
         QI_Data <<- list(
           Identification = get_identifications(),
@@ -124,7 +126,7 @@ shinyServer(function(input, output, session) {
         
         # for debugging
         # save(QI_Data, file="/tmp/QI_Data.RData")
-        values$pdf <-  file.path(tempdir(), "BGA1.pdf")
+        (values$pdf <-  file.path(tempdir(), "made4-BGA1.pdf"))
         
         markdownFile <- RMD_p389_BGA(workdir = tempdir())
         
@@ -132,12 +134,8 @@ shinyServer(function(input, output, session) {
         
         # for download
         # QI_Data$Int_ID
-        
-        
-        
-   
-        
         ###
+        progress$set(message = "write quantitative data to bfabric ... ", detail= "using rmarkdown", value = 0.2)
         (fn <- tempfile(pattern = "file-", tmpdir = tempdir(), fileext = ".csv"))
         write.table(QI_Data$Int_ID,
                     file = fn,
@@ -148,15 +146,22 @@ shinyServer(function(input, output, session) {
         
         file_txt_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
 
-        
+        description <- ""
+        if(length(unique(QI_Data$Annotation$Condition)) > 1){
+          
+        }
+        else{
+          description <- "No valid group information to conduct a report."
+          progress$set(message = description, detail= "using rmarkdown", value = 0.1)
+        }
         ###
-        
         progress$set(message = "register workunit", detail= "in bfabric", value = 0.95)
         wuid <- bfabric_upload_file(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     projectid = bf$projectid(),
                                     file_content = file_txt_content, 
                                     inputresource = values$inputresouceid,
+                                    description = description,
                                     workunitname = input$experimentID,
                                     resourcename = paste("identified-quantitative-values-",
                                                          bf$workunitid(), ".csv", sep=''),
@@ -165,8 +170,10 @@ shinyServer(function(input, output, session) {
         
         values$wuid <- wuid
         
-        
         if(length(unique(QI_Data$Annotation$Condition)) > 1){
+          
+            progress$set(message = "render PDF document", detail= "using rmarkdown", value = 0.5)
+          
             rmarkdown::render(file.path(tempdir(), "BGAAnalysis.Rmd"), 
                               output_file = values$pdf, 
                               output_format = "pdf_document")
@@ -176,6 +183,8 @@ shinyServer(function(input, output, session) {
             file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
                                                    file.info(values$pdf)[1, "size"]), 
                                            "pdf")  
+            
+            progress$set(message = "saving PDF to bfabric ...", detail= "using rmarkdown", value = 0.8)
             bfabricShiny:::saveResource(login = bf$login(),
                                       webservicepassword = bf$webservicepassword(),
                                       workunitid = wuid,
@@ -187,7 +196,7 @@ shinyServer(function(input, output, session) {
           message("no valid group information.")
         }
         
-        progress$set(message = paste("set workunit", wuid), detail= "status to 'available'", value = 0.95)
+        progress$set(message = paste("set workunit", wuid, "available."), detail= "status to 'available'", value = 0.95)
         
         rv <- bfabric_save(bf$login(), bf$webservicepassword(), endpoint = 'workunit', 
                            query =  list(status = 'available', id=wuid));
