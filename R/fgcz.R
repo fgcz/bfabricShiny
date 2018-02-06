@@ -280,6 +280,7 @@ getResources <- function(login, webservicepassword, workunitid){
 #'
 #' @examples
 #' \dontrun{
+#' library(bfabricShiny)
 #' A <- getApplications(login, webservicepassword)
 #' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
 #' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
