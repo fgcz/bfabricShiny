@@ -27,6 +27,7 @@ shinyServer(function(input, output, session) {
                              FUSION_1='easylc',
                              FUSION_2='easylc',
                              QEXACTIVEHF_1='waters',
+                             QEXACTIVEHFX_1='waters',
                              QEXACTIVEHF_2='waters',
                              IMSTOF_1='eksigent')}
   
@@ -42,6 +43,7 @@ shinyServer(function(input, output, session) {
                                   FUSION_1='Xcalibur',
                                   FUSION_2='Xcalibur',
                                   QEXACTIVEHF_1='Xcalibur',
+                                  QEXACTIVEHFX_1='Xcalibur',
                                   QEXACTIVEHF_2='Xcalibur',
                                   IMSTOF_1='TOFWERK')})
   
@@ -57,6 +59,7 @@ shinyServer(function(input, output, session) {
                                         FUSION_1='raw',
                                         FUSION_2='raw',
                                         QEXACTIVEHF_1='raw',
+                                        QEXACTIVEHFX_1='raw',
                                         QEXACTIVEHF_2='raw',
                                         IMSTOF_1='h5')})
   
@@ -71,7 +74,7 @@ shinyServer(function(input, output, session) {
   
   output$qctype <- renderUI(({
     selectInput('qctype', 'Type of sample QC:', 
-                choices = list("Fetuin only" = 1, "Fetuin and clean" = 2, "Fetuin and clean every second " = 3), 
+                choices = list("autoQC01" = 1, "autoQC01 and clean" = 2, "autoQC01 and clean every second " = 3),
                 selected = 1)
   }))
   

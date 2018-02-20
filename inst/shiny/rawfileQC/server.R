@@ -14,7 +14,7 @@ library(bfabricShiny)
 shinyServer( function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric8", 
-                   applicationid = c(160, 161, 162, 163, 176, 177, 197, 214), 
+                   applicationid = c(160, 161, 162, 163, 176, 177, 197, 214, 232), 
                    resoucepattern = 'raw$')
   
   
