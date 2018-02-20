@@ -22,7 +22,7 @@ shinyServer(function(input, output, session) {
                              QTRAP_1='eksigent',
                              TSQ_1='eksigent',
                              TSQ_2='eksigent',
-                             QEXACTIVE_2='easylc',
+                             QEXACTIVE_2='waters',
                              QEXACTIVE_3='easylc',
                              FUSION_1='easylc',
                              FUSION_2='easylc',
