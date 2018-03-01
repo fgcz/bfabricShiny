@@ -213,6 +213,71 @@ getProjects <- function(login, webservicepassword) {
   projetcs
 }
 
+
+#' query bfabric 
+#'
+#' @param endpoint the endpoint, e.g., workunit, resource, application, project.
+#' @param query the query object list
+#' @param login bfabric login
+#' @param webservicepassword bfabric password, check user details. 
+#' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
+#' @return a nested list object
+#' 
+#' @importFrom httr POST 
+#' @export query
+#'
+#' @examples
+#' \dontrun{
+#'  RES <- query(endpoint = 'resource',
+#'     query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
+#'     login, webservicepassword)
+#'     
+#'  WU.pending <- query(endpoint='workunit', 
+#'     query = list('status' = 'pending'),
+#'     login, webservicepassword)
+#'     
+#'  APP.analysis <- query(endpoint='application',
+#'     query=list('applicationtype' = 'analysis'),
+#'     login, webservicepassword)
+#'     
+#'  # a more complex example
+#'  
+#'  ## query metadata
+#'  Q <- query(login, webservicepassword,
+#'    endpoint = 'resource', 
+#'    query = list('workunitid' = 163763))
+#'  
+#'  ## stage data
+#'  uris <- sapply(Q$res, function(x){x$uris[3]})
+#'  (rawfilenames <- sapply(strsplit(unlist(uris), ":"), function(x){x[3]}))
+#'  library(rawfileQC)
+#'  library(parallel)
+#'  RAW <- do.call('rbind', 
+#'    mclapply(rawfilenames, read.raw, ssh = TRUE, mc.cores = 12))
+#'
+#'  ## have fun  
+#'  hex.bin(RAW)
+#' }
+#' 
+#' 
+#' 
+#' ## have fun
+query <- function(login, webservicepassword,
+                  endpoint = 'workunit', 
+                  query, 
+                  posturl = 'http://localhost:5000/q'){
+  
+  query_result <- POST(posturl, 
+               body = toJSON(list(login = login, 
+                                  webservicepassword = webservicepassword,
+                                  endpoint = endpoint, 
+                                  query = query
+               ), 
+               encode = 'json'))
+    
+  content(query_result)
+}
+
 getWorkunits <- function(login, webservicepassword, projectid = NULL, applicationid = 168){
   
   workunits <- ({
