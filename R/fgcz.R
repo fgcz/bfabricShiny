@@ -221,6 +221,7 @@ getProjects <- function(login, webservicepassword) {
 #' @param login bfabric login
 #' @param webservicepassword bfabric password, check user details. 
 #' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
+#' @param as_data_frame if TRUE it returns a data.frame object.
 #' @return a nested list object
 #' 
 #' @importFrom httr POST 
@@ -265,7 +266,8 @@ getProjects <- function(login, webservicepassword) {
 query <- function(login, webservicepassword,
                   endpoint = 'workunit', 
                   query, 
-                  posturl = 'http://localhost:5000/q'){
+                  posturl = 'http://localhost:5000/q',
+                  as_data_frame = FALSE){
   
   query_result <- POST(posturl, 
                body = toJSON(list(login = login, 
@@ -275,7 +277,12 @@ query <- function(login, webservicepassword,
                ), 
                encode = 'json'))
     
-  content(query_result)
+  rv <- content(query_result)
+  if(as_data_frame){
+    rv <- as.data.frame(do.call('rbind', rv$res))
+    rv <- t(apply(rv, 1,unlist))
+  }
+  rv
 }
 
 getWorkunits <- function(login, webservicepassword, projectid = NULL, applicationid = 168){
