@@ -107,7 +107,7 @@
 .mz.frequency <- function(x){
   res <-  x %>% 
     dplyr::filter(MSOrder == "Ms2") %>% 
-    dplyr::select(ChargeState, PrecursorMass) %>% 
+    dplyr::select(ChargeState, PrecursorMass, filename) %>% 
     dplyr::mutate(deconv = round((PrecursorMass -1.00782)*ChargeState, 0))
   
   figure <- ggplot(res, aes(x=deconv, fill = factor(ChargeState), colour = factor(ChargeState))) +
@@ -118,6 +118,7 @@
     labs(fill="Charge State", colour = "Charge State") +
     scale_x_continuous(breaks = scales::pretty_breaks(8)) +
     theme_light()
+  
   return(figure)
 }
 
@@ -126,7 +127,7 @@
     dplyr::filter(MSOrder == "Ms2") %>% 
     dplyr::count(ChargeState) %>% 
     dplyr::rename(Counts = n) %>% 
-    dplyr::mutate(percentage = (100/sum(Counts)*Counts))
+    dplyr::mutate(percentage = (100 / sum(Counts) * Counts))
   xbreaks <- unique(res$ChargeState)
   
   figure <- ggplot(res, aes(x = ChargeState, y = percentage)) +
