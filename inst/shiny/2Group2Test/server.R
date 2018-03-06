@@ -55,7 +55,7 @@ shinyServer( function(input, output, session) {
     if (file.exists(v_upload_file$filenam)){
       v_upload_file$protein <- bfabricShiny:::.unzip(zipfile = filename, file = 'proteinGroups.txt')
     }else{
-      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt')
+      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user="wolski")
     }
   })
   
@@ -251,22 +251,14 @@ shinyServer( function(input, output, session) {
       incProgress(0.1, detail = paste("part", "Set up objects"))
 
 
-      #tmpdir <- tempdir()
-      #workdir <- file.path(tmpdir, gsub(" |:","_",date()))
       workdir <- getWorkDir()
-      rmdfile <- file.path( path.package("SRMService") , "/reports/Grp2Analysis.Rmd" )
-
       if(!dir.create(workdir)){
         stopApp(7)
       }
-      rmdfile2run <- file.path(workdir ,"Grp2Analysis.Rmd")
-      print(rmdfile2run)
-      if(!file.copy(rmdfile , rmdfile2run)){
-        stopApp(7)
-      }
-
       
-      #save(grp2, file="/tmp/grp2__.RData")
+      
+      SRMService::RMD_MQ_Quant_2GrpAnalysis(workdir = workdir)
+      rmdfile2run <- file.path(workdir ,"Grp2Analysis.Rmd")
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
                         bookdown::pdf_document2())
