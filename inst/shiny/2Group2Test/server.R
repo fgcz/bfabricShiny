@@ -9,7 +9,6 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
 shinyServer( function(input, output, session) {
-  
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 224), resoucepattern = 'zip$')
   
   grp2 <- NULL
@@ -55,7 +54,7 @@ shinyServer( function(input, output, session) {
     if (file.exists(v_upload_file$filenam)){
       v_upload_file$protein <- bfabricShiny:::.unzip(zipfile = filename, file = 'proteinGroups.txt')
     }else{
-      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user="cpanse")
+      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user=bf$login())
     }
   })
   
