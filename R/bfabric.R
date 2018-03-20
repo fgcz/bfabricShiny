@@ -61,7 +61,7 @@ bfabricInput <- function(id) {
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return check the \code{input$resourceid} value.
 #' @export bfabric
-bfabric <- function(input, output, session, applicationid, resoucepattern = ".*") {
+bfabric <- function(input, output, session, applicationid, resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
   
   pubKey <- PKI.load.key(file=file.path(system.file("keys", 
@@ -164,7 +164,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         tagList(
       
         selectInput("relativepath", "resource relativepath:", res$relativepath,
-                    multiple = FALSE),
+                    multiple = resourcemultiple),
         actionButton("load", "load selected data resource", icon("upload"))
         )
       }
