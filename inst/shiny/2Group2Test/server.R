@@ -11,7 +11,7 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 shinyServer( function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 224), resoucepattern = 'zip$')
-
+  
   grp2 <- NULL
   
   v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL,
@@ -19,7 +19,7 @@ shinyServer( function(input, output, session) {
                                   inputresourceid = NULL)
   
   v_download_links <- reactiveValues(filename= NULL)
-
+  
   
   getWorkDir <- reactive({
     tmpdir <- tempdir()
@@ -37,8 +37,8 @@ shinyServer( function(input, output, session) {
   
   updateCondition <- observeEvent(input$updateConditions,{
     raw <- rawFileNames()
-    v_upload_file$condition[raw %in% input$Group1] <- "A"
-    v_upload_file$condition[raw %in% input$Group2] <- "B"
+    v_upload_file$condition[raw %in% input$Group1] <- "Group1"
+    v_upload_file$condition[raw %in% input$Group2] <- "Group2"
   })
   
   ### observes file upload
@@ -80,10 +80,10 @@ shinyServer( function(input, output, session) {
     
     
     annotation <- data.frame(Raw.file = rawF,
-                            Condition = condition,
-                            BioReplicate = paste("X",1:length(condition), sep=""),
-                            Run = 1:length(condition),
-                            IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = FALSE)
+                             Condition = condition,
+                             BioReplicate = paste("X",1:length(condition), sep=""),
+                             Run = 1:length(condition),
+                             IsotopeLabelType = rep("L",length(condition)), stringsAsFactors = FALSE)
     
     v_upload_file$annotation <- annotation
     v_upload_file$minPeptides <- max(protein$Peptides)
@@ -101,35 +101,35 @@ shinyServer( function(input, output, session) {
     if(is.null(v_upload_file$filenam)){
       ("Please choose and load a MaxQuant resouce zip file.")
     }else{
-
+      
       annotation <- annotation()
       protein <- v_upload_file$protein
-
+      
       ## number of peptides plot ####
       nrPep <- cumsum(rev(table(protein$Peptides)))
       nrPeptidePlot<-renderPlot(barplot(nrPep[(length(nrPep)-5):length(nrPep)],
                                         ylim=c(0, length(protein$Peptides)),
                                         xlab='nr of proteins with at least # peptides'))
       
-
+      
       ## number of NA's plot ###
       pint <- v_upload_file$pint
       pint[pint == 0] <- NA
-
-
+      
+      
       pint2 <- pint[protein$Peptides >= 2,]
       nrNA <- apply(pint , 1, function(x){sum(is.na(x))})
       nrNA2 <- apply(pint2 , 1, function(x){sum(is.na(x))})
-
+      
       naPlot <- renderPlot({
         par(mfrow=c(1,2))
         barplot((table(nrNA)),xlab="nr of NA's per protein (1 or more peptides)")
         barplot((table(nrNA2)),xlab="nr of NA's per protein (2 or more peptides)")
       })
-
+      
       v_upload_file$pint2 <- pint[protein$Peptides >= 2,]
-
-     
+      
+      
       v_upload_file$conditions <- rownames(table(annotation$Condition))
       
       version <- help(package="SRMService")$info[[1]][4]
@@ -143,11 +143,11 @@ shinyServer( function(input, output, session) {
                       ,sep="<br/>")))
     }
   })
-
-
+  
+  
   output$parameterUI <- renderUI({
     
-   
+    
     if (is.null(v_upload_file$filenam)) {
       ("Please choose and load a MaxQuant resouce zip file.")
     } else{
@@ -212,91 +212,87 @@ shinyServer( function(input, output, session) {
       }
     }
   })
-
+  
   ## Create some summary of the loaded data
-
+  
   progress <- function(howmuch, detail){
     incProgress(howmuch, detail = detail)
   }
-
+  
   ## react on GO button
   ## this method does all the computation
   generateReport <- eventReactive(input$generateReport, {
     #here will processing happen!
     if(is.null(v_upload_file$protein)){
-      print("DUMM")
-
+      print("No protein report was uploaded")
     }
     withProgress(message = 'Generating Report', detail = "part 0", value = 0, {
       ### Rendering report
-    
+      
       print(names(input))
       annotation <- input$fileInformation
       print("Annotation!")
       print(annotation)
-
+      
       cat("SELECT", input$select, "\n")
       grp2 <- Grp2Analysis(v_upload_file$annotation,
                            input$experimentID, 
                            maxNA=input$maxMissing,
                            nrPeptides=input$minPeptides,
                            reference = input$select
-                           )
-
+      )
+      
       
       grp2$setMQProteinGroups(v_upload_file$protein)
       grp2$setQValueThresholds(qvalue = input$qValue , qfoldchange = input$qValueFC)
-      #grp2$setPValueThresholds(pvalue = input$pValue, pfoldchange = input$pValueFC)
-
+      
       incProgress(0.1, detail = paste("part", "Set up objects"))
-
-
+      
+      
       workdir <- getWorkDir()
       if(!dir.create(workdir)){
         stopApp(7)
       }
       
-      
       SRMService::RMD_MQ_Quant_2GrpAnalysis(workdir = workdir)
       rmdfile2run <- file.path(workdir ,"Grp2Analysis.Rmd")
+      
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
                         bookdown::pdf_document2())
       
       incProgress(0.1, detail = paste("part", "Rendering"))
-
-      print(dir())
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
-
-            ### Writing p-values
+      
+      ### Writing p-values
       write.table(grp2$getResultTable(), file=file.path(workdir,"pValues.csv"), quote=FALSE, sep = "\t", col.names=NA)
       incProgress(0.1, detail = paste("part", "report"))
       v_download_links$tsvTable <- file.path(workdir,"pValues.csv")
     })
     return(v_download_links$filename)
   })
-
-
+  
+  
   output$downloadreport <- renderUI({
     files <- generateReport()
-
-    downloads <- c(downloadReport="Download Report (.pdf)", downloadData = "Data (.xls)")
+    downloads <- c("downloadReport"="Download Report (.pdf)", "downloadData" = "Data (.xls)")
     ll <- list()
-
     for(i in 1:length(downloads)){
-      ll[[i]]<-downloadButton(names(downloads)[i], label=downloads[[i]])
+      ll[[i]]<-downloadButton(names(downloads)[i], label=downloads[i])
     }
     return(ll)
   })
-
+  
   output$downloadData <- downloadHandler(
     filename = function() {
       paste(input$experimentID, "xls", sep = ".")
     },
-
+    
     # This function should write data to a file given to it by
     # the argument 'file'.
     content = function(file) {
+      print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+      cat("file",file,"\n")
       print(v_download_links$tsvTable)
       # Write to a file specified by the 'file' argument
       file.copy(v_download_links$tsvTable, file)
@@ -305,46 +301,50 @@ shinyServer( function(input, output, session) {
   
   output$downloadReport <- downloadHandler(
     filename = function() {
+      cat("experimentID", input$experimentID)
       paste(input$experimentID, "pdf", sep = ".")
+      
     },
-
+    
     # This function should write data to a file given to it by
     # the argument 'file'.
     content = function(file) {
+      print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
       print(v_download_links$pdfReport)
       # Write to a file specified by the 'file' argument
       file.copy(v_download_links$pdfReport, file)
-      
-      file_pdf_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
-      
-      
-      
-      wuid <- bfabric_upload_file(login = bf$login(),
-                  webservicepassword = bf$webservicepassword(),
-                  projectid = bf$projectid(),
-                  file_content = file_pdf_content, 
-                  inputresource = v_upload_file$inputresouceid,
-                  workunitname = input$experimentID,
-                  resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
-                  applicationid = 217)
-      
-      message(wuid)
-    
-      f <- file.path(getWorkDir(), "pValues.csv")
-      message(f)
-      file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
-      
-     bfabricShiny:::saveResource(login = bf$login(),
-                   webservicepassword = bf$webservicepassword(),
-                   workunitid = wuid,
-                   content = file_csv_content,
-                   name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
-                   )
     }
+    
+    # contentXX = function(file) {
+    #   print(v_download_links$pdfReport)
+    #   # Write to a file specified by the 'file' argument
+    #   file.copy(v_download_links$pdfReport, file)
+    #   
+    #   file_pdf_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
+    #   wuid <- bfabric_upload_file(login = bf$login(),
+    #                               webservicepassword = bf$webservicepassword(),
+    #                               projectid = bf$projectid(),
+    #                               file_content = file_pdf_content, 
+    #                               inputresource = v_upload_file$inputresouceid,
+    #                               workunitname = input$experimentID,
+    #                               resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
+    #                               applicationid = 217)
+    #   
+    #   message(wuid)
+    #   f <- file.path(getWorkDir(), "pValues.csv")
+    #   file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
+    #   
+    #   bfabricShiny:::saveResource(login = bf$login(),
+    #                               webservicepassword = bf$webservicepassword(),
+    #                               workunitid = wuid,
+    #                               content = file_csv_content,
+    #                               name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
+    #   )
+    # }
   )
-
+  
   output$sessionInfo <- renderPrint({
     
-   capture.output(sessionInfo())
+    capture.output(sessionInfo())
   })
 })
