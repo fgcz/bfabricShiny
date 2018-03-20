@@ -55,7 +55,7 @@ shinyServer( function(input, output, session) {
     if (file.exists(v_upload_file$filenam)){
       v_upload_file$protein <- bfabricShiny:::.unzip(zipfile = filename, file = 'proteinGroups.txt')
     }else{
-      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user="wolski")
+      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user="cpanse")
     }
   })
   
