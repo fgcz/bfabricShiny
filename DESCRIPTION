@@ -1,6 +1,6 @@
 Package: bfabricShiny
 Type: Package
-Title: Performs shiny application on bfabric data
+Title: A Shiny Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Trachsel<cp@fgcz.ethz.ch>
 Version: 0.9.9
