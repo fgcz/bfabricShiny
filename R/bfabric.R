@@ -21,8 +21,8 @@
 bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
-  system.file("keys", package = "bfabricShiny")
-  privKey <- PKI.load.key(file=file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key"))
+  
+  privKey <- PKI.load.key(file = file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key"))
   
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey), 
@@ -175,7 +175,9 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
 
   ## shinyStore; for login and password handling
   observe({
+
     if (input$save <= 0){
+
       # On initialization, set the value of the text editor to the current val.
       updateTextInput(session, "login", value=isolate(input$store)$login)
       updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
