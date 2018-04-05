@@ -30,7 +30,7 @@ bfabricInput <- function(id) {
     passwordInput(ns('webservicepassword'), 'Web Service Password', 
                   placeholder = "in bfabric on 'User Details'."),
     htmlOutput(ns("applications")),
-    actionButton(ns("save"), "Save password", icon("save")),
+    actionButton(ns("saveBfabricPassword"), "Save password", icon("save")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("workunits")),
     htmlOutput(ns("resources"))
@@ -176,7 +176,8 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   ## shinyStore; for login and password handling
   observe({
 
-    if (input$save <= 0){
+if (exists("input$saveBfabricPassword")){
+    if (input$saveBfabricPassword <= 0){
 
       # On initialization, set the value of the text editor to the current val.
       updateTextInput(session, "login", value=isolate(input$store)$login)
@@ -187,7 +188,8 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     updateStore(session, "login", isolate(input$login), encrypt=pubKey)
     updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
     updateStore(session, "project", isolate(input$project), encrypt=pubKey)
-  })
+  }                                     }
+  )
 
   return(list(login = reactive({input$login}), 
               webservicepassword = reactive({input$webservicepassword}),
