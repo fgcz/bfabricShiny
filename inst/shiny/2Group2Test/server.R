@@ -234,7 +234,7 @@ shinyServer( function(input, output, session) {
       print(annotation)
       
       cat("SELECT", input$select, "\n")
-      grp2 <- Grp2Analysis(v_upload_file$annotation,
+      grp2 <- SRMService::Grp2Analysis(v_upload_file$annotation,
                            input$experimentID, 
                            maxNA=input$maxMissing,
                            nrPeptides=input$minPeptides,
