@@ -119,7 +119,7 @@ shinyServer(function(input, output, session) {
   
 # -------checkbox FGCZ naming conventions -----
   output$hubify <- renderUI(({
-    checkboxInput('hubify', 'follow FGCZ naming conventions', value = TRUE)
+    checkboxInput('hubify', 'Follow FGCZ naming conventions', value = TRUE)
   }))
   
   getLogin <- reactive({
