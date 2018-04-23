@@ -114,6 +114,10 @@ getHPLC <- function(){list(VELOS_1='eksigent',
         checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
   }))
   
+  output$hubify <- renderUI(({
+    checkboxInput('hubify', 'hubify', value = TRUE)
+  }))
+  
   getSample <- reactive({
     if (is.null(input$project)){
       return (NULL)
