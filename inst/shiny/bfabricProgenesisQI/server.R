@@ -115,7 +115,8 @@ shinyServer(function(input, output, session) {
       # for debugging
       (values$pdf <-  file.path(tempdir(), "made4-BGA1.pdf"))
       
-      markdownFile <- RMD_p389_BGA(workdir = tempdir())
+      message("XXXXXXXXXXXXXXXXXXXXXXX",tempdir())
+      
       # for download
       # QI_Data$Int_ID
       ###
@@ -150,15 +151,16 @@ shinyServer(function(input, output, session) {
                                                        bf$workunitid(), ".csv", sep=''),
                                   status = 'available',
                                   applicationid = 227)
-      
       values$wuid <- wuid
       
       if(length(unique(QI_Data$Annotation$Condition)) > 1){
         progress$set(message = "render PDF document", detail= "using rmarkdown", value = 0.5)
-
-        rmarkdown::render(file.path(tempdir(), "BGAAnalysis.Rmd"), 
+        markdownFile <- RMD_p389_BGA(workdir = tempdir())
+        
+        message("XXXXXXXXXXXXXXX",markdownFile)
+        rmarkdown::render(file.path(tempdir(),markdownFile), 
                           output_file = values$pdf, 
-                          output_format = "pdf_document", params=list(QI_Data = QI_Data))
+                          output_format = "pdf_document", params=list(QI_Data = QI_Data), envir = new.env())
         
         message(values$pdf)
         file_pdf_content <- base64encode(readBin(values$pdf, "raw", 
