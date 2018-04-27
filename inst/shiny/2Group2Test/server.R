@@ -4,7 +4,6 @@
 
 library(bfabricShiny)
 
-
 options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
