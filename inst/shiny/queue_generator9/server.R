@@ -240,6 +240,11 @@ shinyServer(function(input, output, session) {
                          method = as.character(input$method))
     if (input$hubify){
       rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
+      rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
+      rv[, 'File Name' ] <- gsub("_autoQC02_autoQC02", "_autoQC02", rv[, 'File Name' ])
+      rv[, 'File Name' ] <- gsub("_autoQC4L_autoQC4L", "_autoQC4L", rv[, 'File Name' ])
+      rv[, 'File Name' ] <- gsub("_Clean_Clean", "_Clean", rv[, 'File Name' ])
+      
     }
     rv
     
