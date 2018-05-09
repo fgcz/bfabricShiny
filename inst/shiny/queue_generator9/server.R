@@ -117,6 +117,10 @@ shinyServer(function(input, output, session) {
     checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
   }))
   
+# -------checkbox FGCZ naming conventions -----
+  output$hubify <- renderUI(({
+    checkboxInput('hubify', 'Follow FGCZ naming conventions', value = TRUE)
+  }))
   
   getLogin <- reactive({
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -166,8 +170,8 @@ shinyServer(function(input, output, session) {
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
-      #res <- getSample()
-      
+      idx <- rev(order(res$samples._id))
+      res <- res[idx, ]
       selectInput('sample', 'Sample:', paste(res$samples._id, res$samples.name, sep='-'), multiple = TRUE)
     }
   })
@@ -186,7 +190,7 @@ shinyServer(function(input, output, session) {
   })
   
   
-  
+#------------------------ getBfabricContent ----
   getBfabricContent <- reactive({
     if (is.null(input$sample))
     {return(NULL)}
@@ -197,8 +201,6 @@ shinyServer(function(input, output, session) {
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "counting  lambdas 11 ...")
     on.exit(progress$close())
-    
-    
     
     res <- getSample()
     
@@ -236,27 +238,27 @@ shinyServer(function(input, output, session) {
                          showcondition = input$showcondition,
                          qc.type = as.integer(input$qctype),
                          method = as.character(input$method))
-    
+    if (input$hubify){
+      rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
+    }
+    rv
     
   })
   
   
-  
+#----- DT::renderDataTable ----
   output$table <- DT::renderDataTable(DT::datatable({
-    #print(paste("extract", input$extract, sep='='))
-    
+   
     if (input$sample != "" && length(input$sample) >= 1){
+    
       getBfabricContent()
       
     }else{
-      #as.data.frame(list(extract.name=NA, sampleid=NA, extract.id=NA))
+    
       as.data.frame(list(output="no data - select sample first."))
     }
     
   }))
-  
-  
-  
   
   output$download <- renderUI({
     res <- getBfabricContent()
@@ -276,7 +278,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  
+#------------------- bfabricUpload --------
   bfabricUpload <- observeEvent(input$generate, {
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "upload configuration to bfabric")

@@ -30,7 +30,8 @@ shinyUI(fluidPage(
   ),
 
   fluidRow(
-    column(3, htmlOutput("showcondition"))
+    column(3, htmlOutput("showcondition")),
+    column(3, htmlOutput("hubify"))
       ),
   
   fluidRow(

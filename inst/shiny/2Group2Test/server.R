@@ -4,7 +4,6 @@
 
 library(bfabricShiny)
 
-
 options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
@@ -20,11 +19,11 @@ shinyServer( function(input, output, session) {
   v_download_links <- reactiveValues(filename= NULL)
   
   
-  getWorkDir <- reactive({
+  getWorkDir <- function(){
     tmpdir <- tempdir()
     workdir <- file.path(tmpdir, gsub(" |:","_",date()))
     workdir
-  })
+  }
   
   rawFileNames <- reactive({
     if (is.null(v_upload_file$protein)){NULL}else{
@@ -235,10 +234,10 @@ shinyServer( function(input, output, session) {
       
       cat("SELECT", input$select, "\n")
       grp2 <- SRMService::Grp2Analysis(v_upload_file$annotation,
-                           input$experimentID, 
-                           maxNA=input$maxMissing,
-                           nrPeptides=input$minPeptides,
-                           reference = input$select
+                                       input$experimentID, 
+                                       maxNA=input$maxMissing,
+                                       nrPeptides=input$minPeptides,
+                                       reference = input$select
       )
       
       
@@ -249,8 +248,18 @@ shinyServer( function(input, output, session) {
       
       
       workdir <- getWorkDir()
-      if(!dir.create(workdir)){
-        stopApp(7)
+      #if(dir.exists(workdir)){
+      #  paste(workdir)
+      #}
+      message("will be processing in ", workdir)
+      if(!dir.exists(workdir)){
+        
+        if(!dir.create(workdir)){
+          warning("can't create", workdir)
+          stopApp(7)
+        }
+      }else{
+        message("workdir Already Exists :", workdir)
       }
       
       SRMService::RMD_MQ_Quant_2GrpAnalysis(workdir = workdir)
@@ -318,7 +327,7 @@ shinyServer( function(input, output, session) {
       print(v_download_links$pdfReport)
       # Write to a file specified by the 'file' argument
       file.copy(v_download_links$pdfReport, file)
-
+      
       file_pdf_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
       wuid <- bfabric_upload_file(login = bf$login(),
                                   webservicepassword = bf$webservicepassword(),
@@ -328,11 +337,11 @@ shinyServer( function(input, output, session) {
                                   workunitname = input$experimentID,
                                   resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
                                   applicationid = 217)
-
+      
       message(wuid)
       f <- file.path(getWorkDir(), "pValues.csv")
       file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
-
+      
       bfabricShiny:::saveResource(login = bf$login(),
                                   webservicepassword = bf$webservicepassword(),
                                   workunitid = wuid,
