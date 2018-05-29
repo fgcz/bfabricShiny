@@ -309,45 +309,46 @@ shinyServer( function(input, output, session) {
   
   output$downloadReport <- downloadHandler(
     filename = function() {
-      cat("experimentID", input$experimentID)
       paste(input$experimentID, "pdf", sep = ".")
-      
     },
     
-    # This function should write data to a file given to it by
-    # the argument 'file'.
-    # content = function(file) {
-    #   print(v_download_links$pdfReport)
-    #   # Write to a file specified by the 'file' argument
-    #   file.copy(v_download_links$pdfReport, file)
-    # }
     
     content = function(file) {
       print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-      print(v_download_links$pdfReport)
-      # Write to a file specified by the 'file' argument
+      
+      ###
+      {
+        if(! file.exists(v_download_links$pdfReport)){
+          warning("File does not exist" , v_download_links$tsvTable)
+        }
+        
+        file_pdf_content <- base64encode(readBin(v_download_links$pdfReport, "raw", file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
+        wuid <- bfabric_upload_file(login = bf$login(),
+                                    webservicepassword = bf$webservicepassword(),
+                                    projectid = bf$projectid(),
+                                    file_content = file_pdf_content,
+                                    inputresource = v_upload_file$inputresouceid,
+                                    workunitname = input$experimentID,
+                                    resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
+                                    applicationid = 217)
+        
+        message(wuid)
+        
+        if(! file.exists(v_download_links$tsvTable)){
+          warning("File does not exist" , v_download_links$tsvTable)
+        }
+        file_csv_content <- base64encode(readBin(v_download_links$tsvTable, "raw", file.info(v_download_links$tsvTable)[1, "size"]), "csv")
+        bfabricShiny:::saveResource(login = bf$login(),
+                                    webservicepassword = bf$webservicepassword(),
+                                    workunitid = wuid,
+                                    content = file_csv_content,
+                                    name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
+                                    
+        )
+      }### copy to b-fabric
+      
       file.copy(v_download_links$pdfReport, file)
       
-      file_pdf_content <- base64encode(readBin(file, "raw", file.info(file)[1, "size"]), "pdf")
-      wuid <- bfabric_upload_file(login = bf$login(),
-                                  webservicepassword = bf$webservicepassword(),
-                                  projectid = bf$projectid(),
-                                  file_content = file_pdf_content,
-                                  inputresource = v_upload_file$inputresouceid,
-                                  workunitname = input$experimentID,
-                                  resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
-                                  applicationid = 217)
-      
-      message(wuid)
-      f <- file.path(getWorkDir(), "pValues.csv")
-      file_csv_content <- base64encode(readBin(f, "raw", file.info(f)[1, "size"]), "csv")
-      
-      bfabricShiny:::saveResource(login = bf$login(),
-                                  webservicepassword = bf$webservicepassword(),
-                                  workunitid = wuid,
-                                  content = file_csv_content,
-                                  name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
-      )
     }
   )
   

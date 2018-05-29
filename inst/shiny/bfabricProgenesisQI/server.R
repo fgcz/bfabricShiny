@@ -158,6 +158,9 @@ shinyServer(function(input, output, session) {
         markdownFile <- RMD_p389_BGA(workdir = tempdir())
         
         message("XXXXXXXXXXXXXXX",markdownFile)
+        message(file.path(tempdir(),markdownFile))
+        message(dir(tempdir()))
+        
         rmarkdown::render(file.path(tempdir(),markdownFile), 
                           output_file = values$pdf, 
                           output_format = "pdf_document", params=list(QI_Data = QI_Data), envir = new.env())
