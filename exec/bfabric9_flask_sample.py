@@ -284,9 +284,11 @@ def get_extract(sampleid):
 def get_all_sample(projectid):
     samples = bfapp.read_object(endpoint='sample', obj={'projectid': projectid})
 
+
     try:
         annotationDict = {}
-        for annotationId in set(map(lambda x: x.groupingvar._id, samples)):
+        for annotationId in filter(lambda x: x is not None, set(map(lambda x: x.groupingvar._id if "groupingvar" in x else None, samples))):
+            print annotationId
             annotation = bfapp.read_object(endpoint='annotation', obj={'id': annotationId})
             annotationDict[annotationId] = annotation[0].name
     except:
