@@ -10,6 +10,7 @@
 
 
 library(bfabricShiny)
+library(protViz)
 
 xy_range_str <- function(e) {
   if(is.null(e)) return(NULL)
@@ -19,8 +20,6 @@ xy_range_str <- function(e) {
   
   return(list(xmin=e$xmin, xmax=e$xmax, ymin=e$ymin, ymax=e$ymax))
 }
-
-source("./ptm_marker_finder.R")
 
 .ssh_load_RData <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', file = NULL){
   e <- new.env()
