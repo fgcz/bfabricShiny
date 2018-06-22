@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package 'bfabricShiny'}
 
+\section{Changes until version 0.9.16 (2018-06-22)}{
+  \itemize{
+	  \item cosmetics on PTM marker finder application, e.g., remove source statement
+  }
+}
+
 \section{Changes until version 0.0.38 (2017-08-08)}{
   \itemize{
 	  \item cosmetics on layout and verbatim output
