@@ -1,88 +1,359 @@
 #R
 # Autors: Christian Trachsel / Christian Panse / Witold Wolski
 #
+#generate test data set ----
 
-
-
-
-#generate testdata sets
 test_data_single <- function(){
   extract.name <- "Sample_1"
-  extract.id <- 1
+  extract.id <- "SID1"
   extract.Condition <- "Control"
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
 test_data_medium <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
-  extract.id <- c(1:20)
+  extract.id <- c(paste("SID", 1:20, sep = ""))
   extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
+  data.frame(extract.name, extract.id, extract.Condition)
+}
+
+test_data_medium_random <- function(){
+  extract.name <- c(paste("Sample", 1:20, sep = "_"))
+  extract.id <- c(paste("SID", 1:20, sep = ""))
+  condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
+  extract.Condition <- condition[sample(1:20)]
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
 test_data_large <- function(){
   extract.name <- c(paste("Sample", 1:80, sep = "_"))
-  extract.id <- c(1:80)
+  extract.id <- c(paste("SID", 1:80, sep = ""))
   extract.Condition <- c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20))
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
-#' .equilize_groups
-#'
-#' @param df: a dataframe (data.frame)
-#' @param group: a column index indicating along which the grouping (split) is performed (integer)
-#' @param rowsneeded: a value indicating how many rows each group will contain after the function call (numeric)
-#'
-#' @return a new dataframe in which each group is containing the same number of rows as indicated by rowsneeded. New inserted rows will
-#' contain <NA> as value
-#' @export
-#'
-#' @examples
-#' 
-#' data <- data.frame(extract.name = paste("Sample", 1:4, sep = "_"), extract.id = 1:4, extract.Condition = c(rep("A",2), rep("B",2)))
-#' grouping <- which(colnames(data) == "extract.Condition")
-#' 
-#' equilize_groups(data, grouping, 4)
-#' 
-#' equilize_groups(test_data_medium(), 3, 2)
-#' 
-.equilize_groups <- function(df, group, rowsneeded){
-  do.call(rbind, lapply(split(df, df[[group]]), function(x){
-    x <- data.frame(lapply(x, `length<-`, rowsneeded))
-    x[group] <- x[[group]][1]
-    return(x)
-  }))
+#HPLC position helper functions ----
+
+.eksigent <- function(){
+  tray1 <- rep(2, times = 46) %>% 
+    paste(rep(LETTERS[1:6], each = 8), sep = "") %>% 
+    paste(rep(sprintf("%02d", c(1:8)), times = 6), sep = "") 
+  pos <- tray1[1:45]
+  return(pos)
 }
 
-#' .order_extract.Condition_blocks
+.waters <- function(){
+  tray1 <- rep(1, times = 46) %>% 
+    paste(rep(LETTERS[1:6], each = 8), sep = ":") %>% 
+    paste(rep(1:8, times = 6), sep = ",") %>% 
+    paste0('"', ., '"')
+  tray2 <- rep(2, times = 46) %>% 
+    paste(rep(LETTERS[1:6], each = 8), sep = ":") %>% 
+    paste(rep(1:8, times = 6), sep = ",") %>% 
+    paste0('"', ., '"')
+  pos <- c(tray1[1:45], tray2[1:45]) 
+  return(pos)
+}
+
+.easylc <- function(){
+  tray1 <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
+  pos <- tray1[1:45]
+  return(pos)
+}
+
+#Define HPLC, autoQC01, autoQC02, autoQC4L, clean ----
+#list elements are: 1) HPLC, 2) sample positions, 3) autoQC01 position, 4) autoQC02 position, 5) autoQC4L position, 6) clean position
+getHPLCparameter <- function(){list(VELOS_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+                                    VELOS_2 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
+                                    G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+                                    QTRAP_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+                                    TSQ_1 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
+                                    TSQ_2 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+                                    QEXACTIVE_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+                                    QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+                                    FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
+                                    FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+                                    QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+                                    QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+                                    QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+                                    IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
+
+getQCsample <- function(){list(extract.name = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
+                               extract.Condition = c(as.integer(NA), as.integer(NA), as.integer(NA), as.integer(NA)),
+                               extract.Condition = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
+                               position = c(3, 4, 5, 6))}
+
+#other helper functions ----
+
+.emptydf <- function(){
+  res <- data.frame(extract.name = character(),
+                    extract.id = integer(), 
+                    extract.Condition = character(), 
+                    position = character(),
+                    idx = numeric(),
+                    stringsAsFactors = FALSE)
+  
+  return(res)
+}
+
+#' Title
 #'
-#' a function for randomization of a queue of samples in a block randomized manner.
+#' @param x 
+#' @param instrument 
 #'
-#' @param x: the sample information containing the extract.Condition information in one column (data.frame)
-#'
-#' @return returns the initial dataframe but sample order within the extract.Conditions is randomly shuffled (data.frame)
+#' @return
 #' @export
 #'
 #' @examples
-#' 
-#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, extract.Condition = c(rep("A",5), rep("B",5)))
-#' 
-#' block_randomizer(data)
-#' 
-#' block_randomizer(test_data_medium())
-#' 
-.order_condition_blocks <- function(x){
-  unique.extract.Conditions <- unique(x$extract.Condition) 
-  number.of.extract.Conditions <-length(unique.extract.Conditions) 
-  df <- vector(number.of.extract.Conditions, mode = "list")
-  for(i in 1:number.of.extract.Conditions){ 
-    sub <- x[x$extract.Condition == unique.extract.Conditions[i], ] 
-    sub <- sub[sample(1:nrow(sub)), ] 
-    df[[i]] <-  sub 
+.tray_position <- function(x, instrument = ""){
+  
+  pos.idx <- unlist(getHPLCparameter()[[instrument]][2])
+  n <- nrow(x) 
+  positions.needed <- ceiling(n/46)
+  pos <- rep(pos.idx, times = positions.needed)
+  pos <- pos[1:n]
+  x$position <- pos
+  res <- x
+  
+  return(res)
+}
+
+.equal.groups <- function(x){
+  empty.line <- data.frame(extract.name = "NA", extract.id = as.integer(NA))
+  y <- x %>% 
+    dplyr::group_by(extract.Condition) %>% 
+    dplyr::summarise(n()) %>% 
+    dplyr::pull("n()")
+  condition.names <- data.frame(extract.Condition = unique(x$extract.Condition))
+  lines.needed <-  max(y) - y
+  df <- empty.line[rep(row.names(empty.line), dplyr::n_distinct(x$extract.Condition)), ] %>% 
+    dplyr::mutate(extract.Condition = unique(x$extract.Condition)) %>% 
+    dplyr::arrange(extract.Condition) %>% 
+    dplyr::mutate(IDX = 1:length(y)+ 0.1) %>% 
+    dplyr::mutate(z = lines.needed)
+  df <- df[rep(seq_len(nrow(df)), df$z), 1:4]
+  res <- x %>% 
+    dplyr::mutate(randomidx = rnorm(nrow(x))) %>% 
+    dplyr::arrange(extract.Condition, randomidx) %>% 
+    dplyr::mutate(IDX = rep(1:length(y), y)) %>% 
+    dplyr::bind_rows(df) %>% 
+    dplyr::arrange(IDX)
+  res <- res %>% dplyr::select("extract.name", "extract.id", "extract.Condition")
+  
+  return(res)
+}
+
+#QC inserting functions ----
+
+.autoQC01 <- function(x, instrument, QC01o, QC01m, autoQC01){ 
+  if (QC01o == 0|autoQC01 == "FALSE"){
+    res <- .emptydf()
+  } else {
+    check <- floor(nrow(x)/QC01o)
+    if(check < 1){
+      qc.inserts <- 1
+      qc.idx <- nrow(x)
+    }else {
+      qc.inserts = floor(nrow(x)/QC01o)
+      qc.idx <- QC01o*(1:qc.inserts)
+    }
+    repetitions <- qc.inserts*QC01m
+    df <- data.frame(extract.name = "autoQC01",
+                     extract.id = as.integer(NA), 
+                     extract.Condition = "autoQC01", 
+                     position = unlist(getHPLCparameter()[[instrument]][3]),
+                     idx = as.numeric(NA),
+                     stringsAsFactors = FALSE)
+    res <- df[rep(1, times = repetitions), ]
+    res$idx  <-  rep(qc.idx + 0.6, each = QC01m)
   }
-  df <- do.call("rbind", df)  
+  
+  return(res)
+}
+
+.autoQC02 <- function(x, instrument, QC02o, QC02m, autoQC02){
+  if (QC02o == 0 |autoQC02 == "FALSE"){
+    res <- .emptydf()
+  } else {
+    check <- floor(nrow(x)/QC02o)
+    if(check < 1){
+      qc.inserts <- 1
+      qc.idx <- nrow(x)
+    }else {
+      qc.inserts = floor(nrow(x)/QC02o)
+      qc.idx <- QC02o*(1:qc.inserts)
+    }
+    repetitions <- qc.inserts*QC02m
+    df <- data.frame(extract.name = "autoQC02",
+                     extract.id = as.integer(NA), 
+                     extract.Condition = "autoQC02", 
+                     position = unlist(getHPLCparameter()[[instrument]][4]),
+                     stringsAsFactors = FALSE)
+    res <- df[rep(1, times = repetitions), ]
+    res$idx  <-  rep(qc.idx + 0.8, each = QC02m)
+  }
+  
+  return(res)
+}
+
+.autoQC4L <- function(x, instrument, QC4Lo, QC4Lm, autoQC4L){
+  if (QC4Lo == 0|autoQC4L == "FALSE"){
+    res <- .emptydf()
+  } else {
+    check <- floor(nrow(x)/QC4Lo)
+    if(check < 1){
+      qc.inserts <- 1
+      qc.idx <- nrow(x)
+    }else {
+      qc.inserts = floor(nrow(x)/QC4Lo)
+      qc.idx <- QC4Lo*(1:qc.inserts)
+    }
+    repetitions <- qc.inserts*QC4Lm
+    df <- data.frame(extract.name = "autoQC4L",
+                     extract.id = as.integer(NA), 
+                     extract.Condition = "autoQC4L", 
+                     position = unlist(getHPLCparameter()[[instrument]][4]),
+                     stringsAsFactors = FALSE)
+    res <- df[rep(1, times = repetitions), ]
+    res$idx  <-  rep(qc.idx + 0.9, each = QC4Lm)
+  }
+  
+  return(res)
+}
+
+.clean <- function(x, instrument, cleano, cleanm, clean){
+  if (cleano == 0|clean == "FALSE"){
+    res <- .emptydf()
+  } else {
+    check <- floor(nrow(x)/cleano)
+    if(check < 1){
+      qc.inserts <- 1
+      qc.idx <- nrow(x)
+    }else {
+      qc.inserts = floor(nrow(x)/cleano)
+      qc.idx <- cleano*(1:qc.inserts)
+    }
+    repetitions <- qc.inserts*cleanm
+    df <- data.frame(extract.name = "clean",
+                     extract.id = as.integer(NA), 
+                     extract.Condition = "clean", 
+                     position = unlist(getHPLCparameter()[[instrument]][6]),
+                     stringsAsFactors = FALSE)
+    res <- df[rep(1, times = repetitions), ]
+    res$idx  <-  rep(qc.idx + 0.4, each = cleanm)
+  }
+  
+  return(res)
+}
+
+.insert_qc_samples <- function(x, y, z, u, v){
+  x <- x %>% 
+    mutate(idx = seq_along(x$extract.name))
+  
+  res <- dplyr::bind_rows(x,y,z,u,v) %>% 
+    dplyr::arrange(idx)
+  
+  res[sapply(res, is.factor)] <- lapply(res[sapply(res, is.factor)], as.character)
+  cleanup.idx <- max(which(res$extract.name == x[which(x$extract.name == x[nrow(x), 1]), 1]))
+  res <- res[1:cleanup.idx, 1:4]
+  
+  return(res)
+}
+
+#queue start and end ----
+.gen.start <- function(instrument, start1, start2, start3){ #argument names!
+  if (is.na(start1)){
+    S1 <-  .emptydf()
+    S1 <- S1[, 1:4]
+  } else {
+    S1 <- data.frame(extract.name = getQCsample()[[1]][start1],
+                     extract.id = getQCsample()[[2]][start1], 
+                     extract.Condition = getQCsample()[[3]][start1], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start1]]]),
+                     stringsAsFactors = FALSE)
+  }
+  if (is.na(start2)){
+    S2 <-  .emptydf()
+    S2 <- S2[, 1:4]
+  } else {
+    S2 <- data.frame(extract.name = getQCsample()[[1]][start2],
+                     extract.id = getQCsample()[[2]][start2], 
+                     extract.Condition = getQCsample()[[3]][start2], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start2]]]),
+                     stringsAsFactors = FALSE)
+  }
+  if (is.na(start3)){
+    S3 <-  .emptydf()
+    S3 <- S3[, 1:4]
+  } else {
+    S3 <- data.frame(extract.name = getQCsample()[[1]][start3],
+                     extract.id = getQCsample()[[2]][start3], 
+                     extract.Condition = getQCsample()[[3]][start3], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start3]]]),
+                     stringsAsFactors = FALSE)
+  }
+  res <- dplyr::bind_rows(S1, S2, S3)
+  
+  return(res)
+}
+
+
+
+.gen.end <- function(instrument, end1, end2, end3){ #argument names!
+  if (is.na(end1)){
+    E1 <-  .emptydf()
+    
+  } else {
+    E1 <- data.frame(extract.name = getQCsample()[[1]][end1],
+                     extract.id = getQCsample()[[2]][end1], 
+                     extract.Condition = getQCsample()[[3]][end1], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end1]]]),
+                     stringsAsFactors = FALSE)
+  }
+  
+  if (is.na(end2)){
+    E2 <-  .emptydf()
+    
+  } else {
+    E2 <- data.frame(extract.name = getQCsample()[[1]][end2],
+                     extract.id = getQCsample()[[2]][end2], 
+                     extract.Condition = getQCsample()[[3]][end2], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end2]]]),
+                     stringsAsFactors = FALSE)
+  }
+  
+  if (is.na(end3)){
+    E3 <-  .emptydf()
+    
+  } else {
+    E3 <- data.frame(extract.name = getQCsample()[[1]][end3],
+                     extract.id = getQCsample()[[2]][end3], 
+                     extract.Condition = getQCsample()[[3]][end3], 
+                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end3]]]),
+                     stringsAsFactors = FALSE)
+  }
+  
+  df <- dplyr::bind_rows(E1, E2, E3)
+  
   return(df)
 }
+
+.clean_queue <- function(x, instrument, start1, start2, start3, end1, end2, end3){
+  Instrument = instrument
+  start1 = start1
+  start2 = start2
+  start3 = start3
+  
+  start <- .gen.start(instrument, start1, start2 , start3)
+  
+  end <- .gen.end(instrument, end1, end2 , end3)
+  
+  res <- dplyr::bind_rows(start, x, end)
+  
+  return(res)
+}
+
+#basic queue formating function ----
 
 #' .generate_template_base
 #'
@@ -101,301 +372,64 @@ test_data_large <- function(){
   return(res)
 }
 
-#' .generate_template_random
-#'
-#' @param x:the sample information (data.frame)
-#'
-#' @return the original dataframe randomly reordered (data.frame)
-#' @export
-#'
-#' @examples
-#' 
-#' data <- data.frame(extract.name = LETTERS[1:10], extract.id = 1:10, extract.Condition = letters[1:10])
-#' 
-#' .generate_template_random(data)
-#' 
+#random queue formating function ----
+
 .generate_template_random <- function(x){
-  random.index <- sample(1:nrow(x))
-  res <- x[order(random.index),]
+  res <- x[order(sample(nrow(x))), ]
   return(res)
 }
 
-#'.generate_template_random_block
-#'
-#'this function is composing blocks of samples (each block contains one randomly picked sample from each extract.Condition). The functions
-#'does not required all extract.Conditions to have the same lenght (which is not strictly correct with the "random block" design).
-#'
-#' @param x: the sample information. A column with the information of the samples extract.Conditions is madatory (data.frame)
-#'
-#' @return the initial data ordered in random blocks (each block contains one random sample from each extract.Condition) (data.frame)
-#' @export
-#'
-#' @examples
-#' 
-#' data <- data.frame(extract.name = paste("Sample", 1:10, sep = "_"), extract.id = 1:10, extract.Condition = c(rep("A",5), rep("B",5)))
-#' 
-#' .generate_template_random_block(data)
-#' 
-#' .generate_template_random_block(test_data_medium())
-#' 
+#blockrandom queue formating function ----
+
 .generate_template_random_block <- function(x){
   #TODO:
   #check if more than one condition is present. If not display a warning
   #check if all extract.Conditions are equal sized if not display a warning
   # tab <- as.vector(table(x$extract.Condition))
   #length(unique(tab)) == 1
+  #max(table(x$extract.Condition)) - min(table(x$extract.Condition))
   #TODO END
-  repeats <- length(unique(x$extract.Condition))
-  cond <- max(table(x$extract.Condition))
-  res <- .order_condition_blocks(x)
-  extract.Condition.vector <- as.vector(replicate(repeats, sprintf("%02d", c(1:cond))))
-  blockgroupindex <- which(colnames(res) == "extract.Condition")
-  res <- .equilize_groups(res, blockgroupindex, cond)
-  res$blockrandom <- extract.Condition.vector
-  res <- res[order(res$blockrandom),]
-  extract.Condition.vector.2 <- as.vector(replicate(cond, sample(1:repeats)))
-  resort <- paste(res$blockrandom, extract.Condition.vector.2, sep =".")
-  res$blockrandom2 <- resort
-  res <- res[order(res$blockrandom2), ]
-  res$blockrandom <- NULL
-  res$blockrandom2 <- NULL
-  res <- res[!is.na(res$extract.name), ]  
+  blocks <- length(unique(x$extract.Condition))
+  elements <- max(table(x$extract.Condition))
+  res <- x %>% 
+    .equal.groups
+  res <- res %>% 
+    dplyr::mutate(blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements))))) %>% 
+    dplyr::arrange(blockidx) %>% 
+    dplyr::mutate(randomidx = as.vector(replicate(elements, sample(1:blocks)))) %>% 
+    dplyr::arrange(blockidx, randomidx) %>% 
+    dplyr::select("extract.name", "extract.id", "extract.Condition") %>% 
+    dplyr::filter(!is.na(extract.id))
+  
   return(res)
 }
 
+#method evaluation queue formating function ----
 
-
-#' .generate_template_method_testing
-#'
-#' @param x: the sample information, optimally only one single sample (data.frame)
-#' @param nr.methods: the number of methods which will be tested (numeric)
-#' @param nr.replicates: how many injections for each method should be performed (numeric) 
-#' @param hplc 
-#'
-#' @return a dataframe which can be used as input for the queue formating functions
-#' @export
-#'
-#' @examples
-#' 
-#' data <- data.frame(extract.name = paste("Sample", 1:2, sep = "_"), extract.id = 1:2, extract.Condition = c("A","B"))
-#' 
-#' .method_testing(data, 1, 4)
-#' 
-#' data <- data.frame(extract.name = "Sample_1", extract.id = 1, extract.Condition = "A")
-#' 
-#' .method_testing(data, 3, 2)
-#' 
-.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3, hplc = "easylc"){
-  res <- .hplc_position_test(x = x, hplc = hplc)
+.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3, instrument = "QEXACTIVEHF_2"){
+  res <- .tray_position(x = x, instrument = instrument)
   res <- res[rep(seq_len(nrow(res)), each = nr.methods), ]
   res$extract.Condition <- paste(res$extract.Condition, paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_"), sep = "_")
   res <- res[rep(seq_len(nrow(res)), each = nr.replicates ), ]
   res <- res[order(sample(nrow(res))), ]
-  res <- res[order(sample(nrow(res))), ]
+  
   return(res)
 }
 
+#PRM queue formating function ----
 
-.eksigent <- function(){
-  pos <- (paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(sprintf("%02d", c(1:8)), times = 6), sep = ""), sep = "")) 
-  pos[1:45]
-  return(pos)
-}
-
-.waters <- function(){
-  pos.p1 <- paste(rep(1, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
-  pos.p1 <- paste0('"', pos.p1, '"')
-  pos.p1 <- pos.p1[1:45]
-  pos.p2 <- paste(rep(2, times = 46), paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = ","), sep = ":") 
-  pos.p2 <- paste0('"', pos.p2, '"')
-  pos.p2 <- pos.p2[1:45]
-  pos <- c(pos.p1, pos.p2)
-  return(pos)
-}
-
-.easylc <- function(){
-  pos <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
-  pos[1:45]
-  return(pos)
-}
-
-.hplc_position_test <- function(x, hplc = ""){
-  n <- nrow(x)
-  if (hplc == "eksigent") {
-    pos <- .eksigent()
-  } else if (hplc == "waters") {
-    pos <- .waters()
-  } else if (hplc == "easylc"){
-    pos <- .easylc()
-  } else {
-    pos <- .easylc()
-  }
-  positions.needed <- ceiling(n/46)
-  pos <- rep(pos, times = positions.needed)
-  pos <- pos[1:n]
-  x$position <- pos
-  res <- x
+.generate_template_PRM <- function(x, lists = 2, instrument = ""){
+  res <- x[order(sample(nrow(x))), ]
+  res <- .tray_position(res, instrument = instrument)
+  res <- res[rep(seq_len(nrow(res)), each = lists), ]
+  res$extract.Condition <- res$extract.Condition %>%  #attache to extract.Condition
+    paste(rep("Targets", times = nrow(res)), sep = "_") %>% 
+    paste(rep(1:lists, times = nrow(res)/lists), sep = "")
+  
   return(res)
 }
 
-#' Title
-#'
-#' @param x 
-#' @param hplc 
-#' @param method 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-.hplc_position <- function(x, hplc = "", method = ""){
-  if (method == 'testing'){
-    res <- x
-  } else{
-    n <- nrow(x)
-    if (hplc == "eksigent") {
-      pos <- .eksigent()
-    } else if (hplc == "waters") {
-      pos <- .waters()
-    } else if (hplc == "easylc"){
-      pos <- .easylc()
-    } else {
-      pos <- .easylc()
-    }
-    positions.needed <- ceiling(n/46)
-    pos <- rep(pos, times = positions.needed)
-    pos <- pos[1:n]
-    x$position <- pos
-    res <- x
-  }
-  return(res)
-}
-
-#calculate QC inserts
-
-#for QC01 only
-.qc.type.one <- function(x, qc.position, how.often, how.many){
-  n <- nrow(x)
-  qc.inserts <- floor(n/how.often)
-  if (qc.inserts == 0){
-    qc.idx <- vector()
-  } else if (how.often == 0)  {
-    qc.idx <- vector()
-  } else {
-    qc.idx <- how.often*(1:qc.inserts)
-  }   
-  repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
-  fet$position <- as.character(fet$position)
-  fet <- fet[rep(row.names(fet), repetitions), ]
-  res <- rbind(x, fet)
-  res$idx  <- c(seq_along(x$extract.name), rep(qc.idx+0.75, each = how.many))
-  res <- res[order(res$idx),]
-  res$idx <-NULL
-  return(res)
-}
-
-#for even QC01,clean
-.qc.type.two <- function(x, qc.position, clean.position, how.often, how.many){
-  n <- nrow(x)
-  qc.inserts <- floor(n/how.often)
-  if (qc.inserts == 0){
-    qc.idx <- vector()
-  } else if (how.often == 0)  {
-    qc.idx <- vector()
-  } else {
-    qc.idx <- how.often*(1:qc.inserts)
-  }  
-  repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
-  fet <- fet[rep(row.names(fet), repetitions), ]
-  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
-  clean <- clean[rep(row.names(clean), repetitions), ]
-  res <- rbind(x, fet, clean)
-  res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx + 0.25, each = how.many))
-  res <- res[order(res$idx),]
-  res$idx <-NULL
-  return(res)
-}
-#for odd QC01,clean
-.qc.type.three <- function(x, qc.position, clean.position, how.often, how.many){
-  n <- nrow(x)
-  qc.inserts <- floor(n/how.often)
-  if (qc.inserts == 0){
-    qc.idx <- vector()
-  } else if (how.often == 0)  {
-    qc.idx <- vector()
-  } else {
-    qc.idx <- how.often*(1:qc.inserts)
-  }    
-  repetitions <- qc.inserts*how.many
-  fet <- data.frame(extract.name = "autoQC01", extract.id = as.integer(NA), extract.Condition = "autoQC01", position = qc.position)
-  fet <- fet[rep(row.names(fet), repetitions), ]
-  clean <- data.frame(extract.name = "Clean", extract.id = as.integer(NA), extract.Condition = "Clean", position = clean.position)
-  clean <- clean[rep(row.names(clean), ceiling(qc.inserts/2)*how.many), ]
-  res <- rbind(x, fet, clean)
-  odd <- c(TRUE, FALSE)
-  res$idx  <- c(seq_along(x$extract.name), rep(qc.idx + 0.75, each = how.many) , rep(qc.idx[odd] + 0.25, each = how.many))
-  res <- res[order(res$idx),]
-  res$idx <-NULL
-  return(res)
-}
-
-
-#needs debuging -> only works with certain numbers of how.often
-#current version
-.insert_qc_samples <- function(x, how.often, how.many, hplc = "", qc.type = 1){
-  #TODO: assign these variables generic via the instrument hash table -> value predefined
-  how.many <- how.many
-  how.often <- how.often
-  if (hplc == "easylc"){
-    qc.position <- as.character("F8")
-    clean.position <- as.character("F6")
-  } else if ( hplc == "waters"){
-    qc.position <- '"1:F,8"'
-    clean.position <- '"1:F,6"'
-  } else {
-    qc.position <- "2F08"
-    clean.position <- "2F06"
-  }
-  if (qc.type == 1){
-    res <- .qc.type.one(x = x, qc.position = qc.position, how.often = how.often, how.many = how.many)
-  } else if (qc.type == 2){
-    res <- .qc.type.two(x, qc.position = qc.position, clean.position = clean.position, how.often = how.often, how.many = how.many)
-  } else{
-    res <- .qc.type.three(x, qc.position = qc.position, clean.position = clean.position, how.often = how.often, how.many = how.many)
-  }
-  return(res)
-}
-
-#' Title
-#'
-#' @param x 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-.clean_up_queue <- function(x, hplc = ""){
-  x[sapply(x, is.factor)] <- lapply(x[sapply(x, is.factor)], as.character)
-  cleanup.idx <- max(which(x$extract.name == x[nrow(x),1]))
-  x <- x[1:cleanup.idx,]
-  if (hplc == "easylc"){
-    qc.position <- as.character("F8")
-  } else if ( hplc == "waters"){
-    qc.position <- '"1:F,8"'
-  } else {
-    qc.position <- "2F08"
-  }
-  start <- data.frame(extract.name = rep("autoQC01",2), extract.id = rep(as.integer(NA),2), extract.Condition = rep("autoQC01",2), position = rep(qc.position,2))
-  end <- data.frame(extract.name = rep("autoQC01",1), extract.id = rep(as.integer(NA),1), extract.Condition = rep("autoQC01",1), position = rep(qc.position,1))
-  res <- rbind(start, x, end)
-  return(res)
-}
-
-#Generate the actual queue
-
-
+#generate queue ----
 
 #' Title
 #'
@@ -430,29 +464,25 @@ test_data_large <- function(){
 #' @export
 #'
 #' @examples
-.generate_name <- function(x, showcondition = TRUE){
+.generate_name <- function(x, startposition = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
-  injection.index <- sprintf("%02d", c(1:n))
+  injection.index <- sprintf("%03d", (seq_len(n)-1)+ startposition) #use start queue with input value instead of 1
   injection.name <- paste(rundate, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id,sep=''), sep = "_")
   
   injection.name <- gsub("_SNA", "", injection.name)
   
-  injection.name <- paste(injection.name, x$extract.name, sep = "_")
-  if (showcondition == TRUE){
-    injection.name <- paste(injection.name, x$extract.Condition, sep = "_")
-  } else {
-    
-  }
+  injection.name <- paste(injection.name, x$extract.name, sep = "_") %>% 
+    paste(x$extract.Condition, sep = "_")
+  
   return(injection.name)
 }
 
 
-
 #' FGCZ mass spec queue generator 
 #'
-#' @param x 
+#' @param x
 #' @param foldername 
 #' @param projectid 
 #' @param area 
@@ -472,48 +502,107 @@ test_data_large <- function(){
 #' @return a instrument configuration as \code{data.frame}.
 #' @export generate_queue
 generate_queue <- function(x, 
-                           foldername='', 
-                           projectid=1000, 
-                           area='Proteomics', 
-                           instrument='FUSION_1', 
-                           username='cpanse', 
-                           how.often=2, 
-                           how.many=1, 
+                           foldername = '', 
+                           projectid = 1000, 
+                           area = 'Proteomics', 
+                           instrument = 'FUSION_1', 
+                           username = 'cpanse', 
+                           autoQC01 = "TRUE",
+                           QC01o = 3,
+                           QC01m = 1,
+                           autoQC02 = "FALSE",
+                           QC02o = 0,
+                           QC02m = 1,
+                           autoQC4L = "FALSE",
+                           QC4Lo = 4,
+                           QC4Lm = 1,
+                           clean = "TRUE",
+                           cleano = 4,
+                           cleanm = 1, 
+                           start1 = 1,
+                           start2 = "",
+                           start3 = "",
+                           end1 = 1,
+                           end2 = "",
+                           end3 = "",
+                           lists = 1,
+                           startposition = 1,
                            nr.methods = 2, 
                            nr.replicates = 3,
-                           showcondition = FALSE,
                            qc.type = 1,
-                           hplc = '', 
-                           method='default',
-                           pathprefix="D:\\Data2San", 
-                           pathprefixsep="\\"){
-  
-  #  x$extract.Condition[is.na(x$extract.Condition)] <- "A"
+                           method = 'default',
+                           pathprefix = "D:\\Data2San", 
+                           pathprefixsep = "\\"){
   
   # generate the queue template
   if(method == 'random'){
-    res.template <- .generate_template_random(x)
+    res.template <- .generate_template_random(x = x)
   }else if (method == 'blockrandom'){
-    res.template <- .generate_template_random_block(x)
+    res.template <- .generate_template_random_block(x = x)
+  }else if (method == 'PRM'){
+    res.template <- .generate_template_PRM(x = x, lists = lists, instrument = instrument)  
   }else if (method == 'testing'){
-    res.template <- .generate_template_method_testing(x,
+    res.template <- .generate_template_method_testing(x = x,
                                                       nr.methods = nr.methods,
                                                       nr.replicates = nr.replicates,
-                                                      hplc = hplc)
+                                                      instrument = instrument)
   }else {
-    res.template <- .generate_template_base(x)
+    res.template <- .generate_template_base(x = x)
   }  
+  
   # attache HPLC plate position
-  res.position <- .hplc_position(x = res.template, method = method, hplc = hplc)
+  
+  if(method == 'PRM'){
+    res.position <- res.template
+  } else if (method == 'testing'){
+    res.position <- res.template 
+  } else {
+    res.position <- .tray_position(x = res.template, instrument = instrument )  
+  }
   
   # insert qc samples
+  
+  res.autoQC01 <- .autoQC01(x = res.position, 
+                            instrument = instrument, 
+                            QC01o = QC01o, 
+                            QC01m = QC01m,
+                            autoQC01 = autoQC01)
+  
+  res.autoQC02 <- .autoQC02(x = res.position, 
+                            instrument = instrument, 
+                            QC02o = QC02o, 
+                            QC02m = QC02m,
+                            autoQC02 = autoQC02)
+  
+  res.autoQC4L <- .autoQC4L(x = res.position, 
+                            instrument = instrument, 
+                            QC4Lo = QC4Lo, 
+                            QC4Lm = QC4Lm,
+                            autoQC4L = autoQC4L)
+  
+  
+  res.clean <- .clean(x = res.position, 
+                      instrument = instrument, 
+                      cleano = cleano, 
+                      cleanm = cleanm,
+                      clean = clean)
+  
   res.qc <- .insert_qc_samples(x = res.position,
-                               how.often = how.often,
-                               how.many = how.many,
-                               hplc = hplc,
-                               qc.type = qc.type)
-  # clean up the sample queue
-  res.queue <- .clean_up_queue(x = res.qc, hplc = hplc)
+                               y = res.autoQC01,
+                               z = res.autoQC02,
+                               u = res.autoQC4L,
+                               v = res.clean)
+  
+  # clean up the sample queue 
+  res.queue <- .clean_queue(x = res.qc, 
+                            instrument = instrument,
+                            start1 = start1,
+                            start2 = start2,
+                            start3 = start3,
+                            end1 = end1,
+                            end2 = end2,
+                            end3 = end3)
+  
   # generate folder name acc. FGCZ naming convention
   res.folder <- .generate_folder_name(x = res.queue,
                                       foldername = foldername, 
@@ -521,15 +610,20 @@ generate_queue <- function(x,
                                       instrument = instrument, 
                                       username = username,
                                       pathprefixsep = pathprefixsep)
-  # generate file name  
-  res.filename <- .generate_name(x = res.queue, showcondition = showcondition)
   
+  # generate file name  
+  res.filename <- .generate_name(x = res.queue, startposition = startposition)
   
   cbind('File Name' = res.filename,
-        'Path' = paste(pathprefix, paste('p', projectid, sep=''), res.folder, sep=pathprefixsep), 
-        'Position' = as.character(res.queue$position,
-        'Inj Vol' = 2)
+        'Path' = paste(pathprefix, paste('p', projectid, sep = ''), res.folder, sep = pathprefixsep), 
+        'Position' = as.character(res.queue$position),
+        'Inj Vol' = rep(2, times = length(res.filename)),
+        'L3 Laboratory' = rep("FGCZ", times = length(res.filename)),
+        'Sample ID' = res.queue$extract.id,
+        'Sample Name' = res.queue$extract.name,
+        'L1 Study' = rep(projectid, times = length(res.filename))
   )
+  
 }
 
 
