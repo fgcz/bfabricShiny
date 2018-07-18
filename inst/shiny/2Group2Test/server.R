@@ -8,7 +8,7 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 
 # Define server logic required to draw a histogram
 shinyServer( function(input, output, session) {
-  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 224), resoucepattern = 'zip$')
+  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 185, 224), resoucepattern = 'zip$')
   
   grp2 <- NULL
   
