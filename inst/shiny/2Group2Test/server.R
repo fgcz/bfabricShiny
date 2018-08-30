@@ -267,7 +267,7 @@ shinyServer( function(input, output, session) {
       
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
-                        bookdown::pdf_document2())
+                        bookdown::pdf_document2(),params=list(grp=grp2))
       
       incProgress(0.1, detail = paste("part", "Rendering"))
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
