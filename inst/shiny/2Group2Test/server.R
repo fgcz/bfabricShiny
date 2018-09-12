@@ -6,45 +6,41 @@ library(bfabricShiny)
 
 options(shiny.maxRequestSize = 30 * 1024^2)
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw a histogram ----
 shinyServer( function(input, output, session) {
+
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 185, 224), resoucepattern = 'zip$')
-  
   grp2 <- NULL
   
   v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL,
                                   condition = NULL,
-                                  inputresourceid = NULL)
-  
+                                  inputresourceID = NULL)
   v_download_links <- reactiveValues(filename= NULL)
   
   
   getWorkDir <- function(){
     tmpdir <- tempdir()
     workdir <- file.path(tmpdir, gsub(" |:","_",date()))
-    workdir
+    return(workdir)
   }
   
   rawFileNames <- reactive({
-    if (is.null(v_upload_file$protein)){NULL}else{
+    if (is.null(v_upload_file$protein)){
+      NULL
+    }else{
       rv <- gsub("Intensity\\.", "", grep("Intensity\\.",colnames(v_upload_file$protein), value = TRUE) )
       v_upload_file$condition <- rep(NA, length(rv))
     }
     rv
   })
   
-  updateCondition <- observeEvent(input$updateConditions,{
-    raw <- rawFileNames()
-    v_upload_file$condition[raw %in% input$Group1] <- "Group1"
-    v_upload_file$condition[raw %in% input$Group2] <- "Group2"
-  })
   
-  ### observes file upload
+  #observes file upload ----
   loadProteinGroups <- observeEvent(input$load,{
     resources <- bf$resources()
     
-    v_upload_file$inputresouceid = resources$resourceid[resources$relativepath == input$relativepath][1]
-    print (v_upload_file$inputresouceid)
+    v_upload_file$inputresourceID = resources$resourceid[resources$relativepath == input$relativepath][1]
+    print (v_upload_file$inputresourceID)
     
     filename <- file.path('/srv/www/htdocs/', input$relativepath)
     
@@ -56,6 +52,7 @@ shinyServer( function(input, output, session) {
       v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user=bf$login())
     }
   })
+  
   
   
   ## Create output button
@@ -94,7 +91,7 @@ shinyServer( function(input, output, session) {
     annotation
   })
   
-  
+  # UI - fileInformation ----
   output$fileInformation <- renderUI({
     if(is.null(v_upload_file$filenam)){
       ("Please choose and load a MaxQuant resouce zip file.")
@@ -126,8 +123,6 @@ shinyServer( function(input, output, session) {
       })
       
       v_upload_file$pint2 <- pint[protein$Peptides >= 2,]
-      
-      
       v_upload_file$conditions <- rownames(table(annotation$Condition))
       
       version <- help(package="SRMService")$info[[1]][4]
@@ -142,7 +137,7 @@ shinyServer( function(input, output, session) {
     }
   })
   
-  
+  # UI Parameter ----
   output$parameterUI <- renderUI({
     
     
@@ -153,14 +148,17 @@ shinyServer( function(input, output, session) {
       sp_title <- strsplit(input$relativepath, "/")[[1]]
       if (nrow(annotation) > 0) {
         list(
+          textInput("inGroup1", "Set Group1 Label", "Group1"),
+          textInput("inGroup2", "Set Group2 Label", "Group2"),
+          
           selectInput(
-            "Group1",
+            "selectGroup1",
             "Group1",
             choices = annotation$Raw.file,
             multiple = TRUE
           ),
           selectInput(
-            "Group2",
+            "selectGroup2",
             "Group2",
             choices = annotation$Raw.file,
             multiple = TRUE
@@ -211,11 +209,39 @@ shinyServer( function(input, output, session) {
     }
   })
   
+  observe({
+    x1 <- input$inGroup1
+    x2 <- input$inGroup2
+    # Can use character(0) to remove all choices
+    if (is.null(x1))
+      x1 <- character(0)
+    if (is.null(x2))
+      x2 <- character(0)
+    # Can also set the label and select items
+    updateSelectInput(session, "selectGroup1",
+                      label = x1
+    )
+    # Can also set the label and select items
+    updateSelectInput(session, "selectGroup2",
+                      label = x2
+    )
+    
+  })
+  
+  updateCondition <- observeEvent(input$updateConditions,{
+    raw <- rawFileNames()
+    v_upload_file$condition[raw %in% input$selectGroup1] <- input$inGroup1
+    v_upload_file$condition[raw %in% input$selectGroup2] <- input$inGroup2
+  })
+  
+  
   ## Create some summary of the loaded data
   
   progress <- function(howmuch, detail){
     incProgress(howmuch, detail = detail)
   }
+  
+  # generateReport eventReactive(input$generateReport, ----
   
   ## react on GO button
   ## this method does all the computation
@@ -230,11 +256,12 @@ shinyServer( function(input, output, session) {
       print(names(input))
       annotation <- input$fileInformation
       print("Annotation!")
-      print(annotation)
       
       cat("SELECT", input$select, "\n")
       grp2 <- SRMService::Grp2Analysis(v_upload_file$annotation,
                                        input$experimentID, 
+                                       projectID = bf$projectid(),
+                                       workunitID = bf$workunitid(),
                                        maxNA=input$maxMissing,
                                        nrPeptides=input$minPeptides,
                                        reference = input$select
@@ -243,11 +270,11 @@ shinyServer( function(input, output, session) {
       
       grp2$setMQProteinGroups(v_upload_file$protein)
       grp2$setQValueThresholds(qvalue = input$qValue , qfoldchange = input$qValueFC)
-      
       incProgress(0.1, detail = paste("part", "Set up objects"))
       
       
       workdir <- getWorkDir()
+
       #if(dir.exists(workdir)){
       #  paste(workdir)
       #}
@@ -267,7 +294,8 @@ shinyServer( function(input, output, session) {
       
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
-                        bookdown::pdf_document2(),params=list(grp=grp2))
+                        bookdown::pdf_document2(),
+                        params=list(grp=grp2))
       
       incProgress(0.1, detail = paste("part", "Rendering"))
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
@@ -281,6 +309,7 @@ shinyServer( function(input, output, session) {
   })
   
   
+  # UI downolad Report ----
   output$downloadreport <- renderUI({
     files <- generateReport()
     downloads <- c("downloadReport"="Download Report (.pdf)", "downloadData" = "Data (.xls)")
@@ -306,7 +335,7 @@ shinyServer( function(input, output, session) {
       file.copy(v_download_links$tsvTable, file)
     }
   )
-  
+  # output$downloadReport <- downloadHandler( ----
   output$downloadReport <- downloadHandler(
     filename = function() {
       paste(input$experimentID, "pdf", sep = ".")
@@ -327,7 +356,7 @@ shinyServer( function(input, output, session) {
                                     webservicepassword = bf$webservicepassword(),
                                     projectid = bf$projectid(),
                                     file_content = file_pdf_content,
-                                    inputresource = v_upload_file$inputresouceid,
+                                    inputresource = v_upload_file$inputresourceID,
                                     workunitname = input$experimentID,
                                     resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
                                     applicationid = 217)
