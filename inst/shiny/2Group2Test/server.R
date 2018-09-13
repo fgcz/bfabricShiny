@@ -153,10 +153,10 @@ shinyServer( function(input, output, session) {
             "Experiment Title Name",
             paste("MQ-report", sp_title[2], sp_title[9], sep='-')
           ),
-          
+          tags$hr(),
           textInput("inGroup1", "Set Group1 Label", "Group1"),
           textInput("inGroup2", "Set Group2 Label", "Group2"),
-          
+          tags$hr(),
           selectInput(
             "selectGroup1",
             "Group1",
@@ -361,7 +361,7 @@ shinyServer( function(input, output, session) {
                                     file_content = file_pdf_content,
                                     inputresource = v_upload_file$inputresourceID,
                                     workunitname = input$experimentID,
-                                    resourcename = paste("MaxQuant_report_", bf$workunitid(), ".pdf", sep=''),
+                                    resourcename = paste0(input$experimentID, ".pdf"),
                                     applicationid = 217)
         
         message(wuid)
@@ -376,7 +376,7 @@ shinyServer( function(input, output, session) {
                                     webservicepassword = bf$webservicepassword(),
                                     workunitid = wuid,
                                     content = file_csv_content,
-                                    name =  paste("MaxQuant_report_", bf$workunitid(), ".csv", sep='')
+                                    name =  paste0(input$experimentID, ".csv")
                                     
         )
       }### copy to b-fabric
