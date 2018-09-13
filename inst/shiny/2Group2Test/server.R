@@ -125,22 +125,22 @@ shinyServer( function(input, output, session) {
       v_upload_file$pint2 <- pint[protein$Peptides >= 2,]
       v_upload_file$conditions <- rownames(table(annotation$Condition))
       
-      version <- help(package="SRMService")$info[[1]][4]
+      version <- packageVersion("SRMService")
       ## prepare gui output
       list(renderTable(annotation),
            renderTable(table(annotation$Condition)),
            nrPeptidePlot,
            naPlot,
-           HTML(paste(v_upload_file$filenam, dim(protein)[1], dim(protein)[2],
-                      "any questions?",version
+           HTML(paste("input resource : " ,v_upload_file$filenam,
+                      "SRMService package version : ",
+                      version, "----"
                       ,sep="<br/>")))
     }
   })
   
   # UI Parameter ----
   output$parameterUI <- renderUI({
-    
-    
+
     if (is.null(v_upload_file$filenam)) {
       ("Please choose and load a MaxQuant resouce zip file.")
     } else{
@@ -148,6 +148,12 @@ shinyServer( function(input, output, session) {
       sp_title <- strsplit(input$relativepath, "/")[[1]]
       if (nrow(annotation) > 0) {
         list(
+          textInput(
+            "experimentID",
+            "Experiment Title Name",
+            paste("MQ-report", sp_title[2], sp_title[9], sep='-')
+          ),
+          
           textInput("inGroup1", "Set Group1 Label", "Group1"),
           textInput("inGroup2", "Set Group2 Label", "Group2"),
           
@@ -166,7 +172,7 @@ shinyServer( function(input, output, session) {
           actionButton("updateConditions", "Update Conditions"),
           selectInput(
             "select",
-            label = h3("Select Control"),
+            label = h3("Select Reference"),
             choices = annotation$Condition,
             selected = 1
           ),
@@ -198,11 +204,6 @@ shinyServer( function(input, output, session) {
             value = 2,
             min = 0,
             step = 0.05
-          ),
-          textInput(
-            "experimentID",
-            "Experiment Title Name",
-            paste("MQ-report", sp_title[2], sp_title[9], sep='-')
           )
         )
       }
@@ -335,6 +336,7 @@ shinyServer( function(input, output, session) {
       file.copy(v_download_links$tsvTable, file)
     }
   )
+  
   # output$downloadReport <- downloadHandler( ----
   output$downloadReport <- downloadHandler(
     filename = function() {
@@ -345,13 +347,14 @@ shinyServer( function(input, output, session) {
     content = function(file) {
       print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
       
-      ###
       {
         if(! file.exists(v_download_links$pdfReport)){
-          warning("File does not exist" , v_download_links$tsvTable)
+          warning("File does not exist" , v_download_links$pdfReport)
         }
         
-        file_pdf_content <- base64encode(readBin(v_download_links$pdfReport, "raw", file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
+        file_pdf_content <- base64encode(readBin(v_download_links$pdfReport, "raw",
+                                                 file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
+        
         wuid <- bfabric_upload_file(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     projectid = bf$projectid(),
@@ -366,7 +369,9 @@ shinyServer( function(input, output, session) {
         if(! file.exists(v_download_links$tsvTable)){
           warning("File does not exist" , v_download_links$tsvTable)
         }
-        file_csv_content <- base64encode(readBin(v_download_links$tsvTable, "raw", file.info(v_download_links$tsvTable)[1, "size"]), "csv")
+        file_csv_content <- base64encode(readBin(v_download_links$tsvTable, "raw",
+                                                 file.info(v_download_links$tsvTable)[1, "size"]), "csv")
+        
         bfabricShiny:::saveResource(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     workunitid = wuid,
