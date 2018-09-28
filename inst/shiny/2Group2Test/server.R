@@ -302,7 +302,7 @@ shinyServer( function(input, output, session) {
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
       
       ### Writing p-values
-      write.table(grp2$getResultTable(), file=file.path(workdir,"pValues.csv"), quote=FALSE, sep = "\t", col.names=NA)
+      write.table(grp2$getResultTableWithPseudo(), file=file.path(workdir,"pValues.csv"), quote=FALSE, sep = "\t", col.names=NA)
       incProgress(0.1, detail = paste("part", "report"))
       v_download_links$tsvTable <- file.path(workdir,"pValues.csv")
     })
