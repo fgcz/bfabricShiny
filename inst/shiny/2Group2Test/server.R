@@ -16,8 +16,7 @@ shinyServer( function(input, output, session) {
                                   condition = NULL,
                                   inputresourceID = NULL)
   v_download_links <- reactiveValues(filename= NULL)
-  
-  
+
   getWorkDir <- function(){
     tmpdir <- tempdir()
     workdir <- file.path(tmpdir, gsub(" |:","_",date()))
@@ -302,9 +301,9 @@ shinyServer( function(input, output, session) {
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
       
       ### Writing p-values
-      write.table(grp2$getResultTableWithPseudo(), file=file.path(workdir,"pValues.csv"), quote=FALSE, sep = "\t", col.names=NA)
+      write.table(grp2$getResultTableWithPseudo(), file=file.path(workdir,"pValues.txt"), quote=FALSE, sep = "\t", col.names=NA)
       incProgress(0.1, detail = paste("part", "report"))
-      v_download_links$tsvTable <- file.path(workdir,"pValues.csv")
+      v_download_links$tsvTable <- file.path(workdir,"pValues.txt")
     })
     return(v_download_links$filename)
   })
@@ -313,7 +312,7 @@ shinyServer( function(input, output, session) {
   # UI downolad Report ----
   output$downloadreport <- renderUI({
     files <- generateReport()
-    downloads <- c("downloadReport"="Download Report (.pdf)", "downloadData" = "Data (.xls)")
+    downloads <- c("downloadReport"="Download Report (.pdf)", "downloadData" = "Data (.txt)")
     ll <- list()
     for(i in 1:length(downloads)){
       ll[[i]]<-downloadButton(names(downloads)[i], label=downloads[i])
@@ -323,7 +322,7 @@ shinyServer( function(input, output, session) {
   
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste(input$experimentID, "xls", sep = ".")
+      paste(input$experimentID, "txt", sep = ".")
     },
     
     # This function should write data to a file given to it by
@@ -370,13 +369,13 @@ shinyServer( function(input, output, session) {
           warning("File does not exist" , v_download_links$tsvTable)
         }
         file_csv_content <- base64encode(readBin(v_download_links$tsvTable, "raw",
-                                                 file.info(v_download_links$tsvTable)[1, "size"]), "csv")
+                                                 file.info(v_download_links$tsvTable)[1, "size"]), "txt")
         
         bfabricShiny:::saveResource(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     workunitid = wuid,
                                     content = file_csv_content,
-                                    name =  paste0(input$experimentID, ".csv")
+                                    name =  paste0(input$experimentID, ".txt")
                                     
         )
       }### copy to b-fabric
