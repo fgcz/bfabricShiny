@@ -15,7 +15,7 @@ use source code from github
 #  install.packages('devtools')
 library(devtools)
 install_github("trestletech/shinyStore")
-install_git('https://github.com/cpanse/bfabricShiny', build_vignettes = TRUE, quiet = FALSE)
+install_github('cpanse/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
 ```
 
 
@@ -25,7 +25,7 @@ install_git('https://github.com/cpanse/bfabricShiny', build_vignettes = TRUE, qu
 - run
 
 ```{bash}
-bfabric_flask_sample.py 
+bfabric9_flask_sample.py 
 ```
 
 - simple json test 
