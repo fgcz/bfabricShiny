@@ -31,7 +31,7 @@ bfabric9_flask_sample.py
 - simple json test 
 
 ```{bash}
-curl http://127.0.0.1:5000/extract/2450
+curl http://127.0.0.1:5000/sample/1
 ```
 
 ### restart the shiny server
