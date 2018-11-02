@@ -11,12 +11,11 @@ library(jsonlite)
 library(httr)
 library(DT)
 
-#source("ms_queue.R")
-##
+ 
 shinyServer(function(input, output, session) {
   
   values <- reactiveValues(wuid = NULL)
-  
+  # ---- getInstruments ---- 
   getInstrument <- reactive({list(#VELOS_1='Xcalibur',
     #VELOS_2='Xcalibur',
     #G2HD_1='MassLynx',
@@ -48,14 +47,14 @@ shinyServer(function(input, output, session) {
                                         QEXACTIVEHFX_1='raw',
                                         QEXACTIVEHF_2='raw',
                                         IMSTOF_1='h5')})
-  
+  # ---- getHPLCparameter ---- 
   getHPLCparameter <- function(){list(VELOS_1 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
                                       VELOS_2 = c('eksigent', list(.eksigent()),'F08', 'F07', 'F07','F06'),
                                       G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
                                       QTRAP_1 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
                                       TSQ_1 = c('eksigent', list(.eksigent()),'F08', 'F07', 'F07','F06'),
                                       TSQ_2 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
-                                      QEXACTIVE_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+                                      QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
                                       QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
                                       FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
                                       FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),

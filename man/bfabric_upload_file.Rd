@@ -5,9 +5,9 @@
 \title{upload resouce to bfabric}
 \usage{
 bfabric_upload_file(login, webservicepassword, projectid = 1000,
-  applicationid = 217, status, description = "", inputresource = NULL,
-  workunitname = "MaxQuant result", resourcename = "MaxQuant report",
-  file_content = NULL)
+  applicationid = 217, status, description = "",
+  inputresource = NULL, workunitname = "MaxQuant result",
+  resourcename = "MaxQuant report", file_content = NULL)
 }
 \arguments{
 \item{login}{}

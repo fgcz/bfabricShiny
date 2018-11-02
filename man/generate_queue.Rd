@@ -4,14 +4,15 @@
 \alias{generate_queue}
 \title{FGCZ mass spec queue generator}
 \usage{
-generate_queue(x, foldername = "", projectid = 1000, area = "Proteomics",
-  instrument = "FUSION_1", username = "cpanse", autoQC01 = "TRUE",
-  QC01o = 3, QC01m = 1, autoQC02 = "FALSE", QC02o = 0, QC02m = 1,
-  autoQC4L = "FALSE", QC4Lo = 4, QC4Lm = 1, clean = "TRUE",
-  cleano = 4, cleanm = 1, start1 = 1, start2 = "", start3 = "",
-  end1 = 1, end2 = "", end3 = "", lists = 1, startposition = 1,
-  nr.methods = 2, nr.replicates = 3, qc.type = 1, method = "default",
-  pathprefix = "D:\\\\Data2San", pathprefixsep = "\\\\")
+generate_queue(x, foldername = "", projectid = 1000,
+  area = "Proteomics", instrument = "FUSION_1", username = "cpanse",
+  autoQC01 = "TRUE", QC01o = 3, QC01m = 1, autoQC02 = "FALSE",
+  QC02o = 0, QC02m = 1, autoQC4L = "FALSE", QC4Lo = 4, QC4Lm = 1,
+  clean = "TRUE", cleano = 4, cleanm = 1, start1 = 1,
+  start2 = "", start3 = "", end1 = 1, end2 = "", end3 = "",
+  lists = 1, startposition = 1, nr.methods = 2, nr.replicates = 3,
+  qc.type = 1, method = "default", pathprefix = "D:\\\\Data2San",
+  pathprefixsep = "\\\\")
 }
 \arguments{
 \item{foldername}{}
