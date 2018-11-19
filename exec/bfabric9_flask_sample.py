@@ -17,10 +17,31 @@ from flask.json import JSONEncoder
 from slugify import slugify
 from bfabric import bfabric
 
-"""
-enables to serialize (jsonify) bfabric wsdl objects
-"""
+import logging
+import logging.handlers
+
+def create_logger(name="bfabric9_flask", address=("fgcz-ms.uzh.ch", 514)):
+    """
+    create a logger object
+    """
+    syslog_handler = logging.handlers.SysLogHandler(address=address)
+    formatter = logging.Formatter('%(name)s %(message)s')
+    syslog_handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(20)
+    logger.addHandler(syslog_handler)
+
+
+    return logger
+
+logger = create_logger()
+
 class BfabricJSONEncoder(JSONEncoder):
+    """
+    enables to serialize (jsonify) bfabric wsdl objects
+    """
+
     def default(self, obj):
         try:
             iterable = iter(obj)
@@ -66,12 +87,16 @@ def q():
         login = content['login'][0]
         bf = bfabric.Bfabric(login=login, password=webservicepassword)
         res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
+        logger.info("'{}' login success ...".format(login))
     except:
+        logger.info("'{}' login failed ...".format(login))
         return jsonify({'status': 'jsonify failed: bfabric python module.'})
 
     try:
+        logger.info("'{}' query success ...".format(login))
         return jsonify({'res': res})
     except:
+        logger.info("'{}' query failed ...".format(login))
         return jsonify({'status': 'jsonify failed'})
 
 
