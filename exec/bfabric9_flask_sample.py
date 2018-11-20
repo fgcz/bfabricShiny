@@ -15,6 +15,8 @@ import json
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from slugify import slugify
+
+
 from bfabric import bfabric
 
 import logging
@@ -52,7 +54,17 @@ class BfabricJSONEncoder(JSONEncoder):
 
         return JSONEncoder.default(self, obj)
 
+address=("fgcz-ms.uzh.ch", 514)
+name="bfabric9_flask"
+syslog_handler = logging.handlers.SysLogHandler(address=address)
+
+# from flask.logging import default_handler
+formatter = logging.Formatter('%(name)s %(message)s')
+syslog_handler.setFormatter(formatter)
+
 app = Flask(__name__)
+# app.logger.removeHandler(default_handler)
+app.logger.addHandler(syslog_handler)
 app.json_encoder = BfabricJSONEncoder 
 bfapp = bfabric.Bfabric()
 
@@ -87,13 +99,12 @@ def q():
         login = content['login'][0]
         bf = bfabric.Bfabric(login=login, password=webservicepassword)
         res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
-        logger.info("'{}' login success ...".format(login))
+        logger.info("'{}' login success query {} ...".format(login, content['query']))
     except:
         logger.info("'{}' login failed ...".format(login))
         return jsonify({'status': 'jsonify failed: bfabric python module.'})
 
     try:
-        logger.info("'{}' query success ...".format(login))
         return jsonify({'res': res})
     except:
         logger.info("'{}' query failed ...".format(login))
