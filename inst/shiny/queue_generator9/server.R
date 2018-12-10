@@ -90,7 +90,7 @@ shinyServer(function(input, output, session) {
   
   output$project <- renderUI({
     #res.project <- c(NA, 1000, 1959, 2121)
-    numericInput('project', 'Project:', value = 1000,  min = 1000, max = 2500, width=100)
+    numericInput('project', 'Project:', value = 3000,  min = 1000, max = 3500, width=100)
   })
   
   output$instrument <- renderUI({
@@ -127,7 +127,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$end3 <- renderUI({
-    selectInput('end3', "End 3", c(select = '', autoQC01 = 1, autoQC02 = 2, autoQC4L = 3, clean = 4), multiple = FALSE, selectize = TRUE)
+    selectInput('end3', "End 3", c(select = '', autoQC01 = 1, autoQC02 = 2, autoQC4L = 3, clean = 4), selected = 3, multiple = FALSE, selectize = TRUE)
   })
   
   output$QC01m <- renderUI({

@@ -21,6 +21,8 @@ from bfabric import bfabric
 
 import logging
 import logging.handlers
+from flask.logging import default_handler
+
 
 def create_logger(name="bfabric9_flask", address=("fgcz-ms.uzh.ch", 514)):
     """
@@ -54,17 +56,18 @@ class BfabricJSONEncoder(JSONEncoder):
 
         return JSONEncoder.default(self, obj)
 
+
 address=("fgcz-ms.uzh.ch", 514)
 name="bfabric9_flask"
-syslog_handler = logging.handlers.SysLogHandler(address=address)
-
-# from flask.logging import default_handler
 formatter = logging.Formatter('%(name)s %(message)s')
+
+syslog_handler = logging.handlers.SysLogHandler(address=address)
 syslog_handler.setFormatter(formatter)
 
+
+
 app = Flask(__name__)
-# app.logger.removeHandler(default_handler)
-app.logger.addHandler(syslog_handler)
+
 app.json_encoder = BfabricJSONEncoder 
 bfapp = bfabric.Bfabric()
 

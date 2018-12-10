@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package 'bfabricShiny'}
 
+\section{Changes until version 0.9.23 (2018-12-10)}{
+  \itemize{
+	  \item set p3000 as default project for the queue generator
+  }
+}
+
 \section{Changes until version 0.9.16 (2018-06-22)}{
   \itemize{
 	  \item cosmetics on PTM marker finder application, e.g., remove source statement
