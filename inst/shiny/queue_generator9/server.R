@@ -273,7 +273,7 @@ shinyServer(function(input, output, session) {
       
     }
     
-    #generate the actual queue ----
+    # generate the actual queue data.frame ----
     
     rv <- generate_queue(x = res,
                          foldername = input$folder,
@@ -305,6 +305,7 @@ shinyServer(function(input, output, session) {
                          lists = input$targets,
                          startposition = input$startposition)
     
+    # some naming cosmetics
     rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
     rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
     rv[, 'File Name' ] <- gsub("_autoQC02_autoQC02", "_autoQC02", rv[, 'File Name' ])
