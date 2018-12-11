@@ -310,7 +310,13 @@ shinyServer(function(input, output, session) {
     rv[, 'File Name' ] <- gsub("_autoQC02_autoQC02", "_autoQC02", rv[, 'File Name' ])
     rv[, 'File Name' ] <- gsub("_autoQC4L_autoQC4L", "_autoQC4L", rv[, 'File Name' ])
     rv[, 'File Name' ] <- gsub("_clean_clean", "_clean", rv[, 'File Name' ])
+    rv[, 'File Name' ] <- gsub("_N_A$", "", rv[, 'File Name' ])
     
+    rv <- as.data.frame(rv)
+    rv$"Instrument Method" <- ""
+    rv$"Instrument Method"[grep("_autoQC01", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01"
+    rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
+    rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
     rv
     
   })
@@ -321,7 +327,7 @@ shinyServer(function(input, output, session) {
     
     if (input$sample != "" && length(input$sample) >= 1){
       
-      getBfabricContent()
+       getBfabricContent()
       
     }else{
       

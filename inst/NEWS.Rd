@@ -4,6 +4,7 @@
 \section{Changes until version 0.9.23 (2018-12-10)}{
   \itemize{
 	  \item set p3000 as default project for the queue generator
+	  \item \url{https://github.com/cpanse/bfabricShiny/issues/13} done
   }
 }
 
