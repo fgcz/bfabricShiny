@@ -1,10 +1,12 @@
 \name{NEWS}
 \title{News for Package 'bfabricShiny'}
 
-\section{Changes until version 0.9.23 (2018-12-10)}{
+\section{Changes until version 0.9.24 (2018-12-11)}{
   \itemize{
 	  \item set p3000 as default project for the queue generator
-	  \item \url{https://github.com/cpanse/bfabricShiny/issues/13} done
+	  \item resolved \url{https://github.com/cpanse/bfabricShiny/issues/13} 
+	   \item resolved \url{https://github.com/cpanse/bfabricShiny/issues/14} 
+	    \item resolved \url{https://github.com/cpanse/bfabricShiny/issues/15} 
   }
 }
 
