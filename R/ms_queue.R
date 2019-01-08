@@ -63,25 +63,28 @@ test_data_large <- function(){
 
 #Define HPLC, autoQC01, autoQC02, autoQC4L, clean ----
 #list elements are: 1) HPLC, 2) sample positions, 3) autoQC01 position, 4) autoQC02 position, 5) autoQC4L position, 6) clean position
-getHPLCparameter <- function(){list(VELOS_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-                                    VELOS_2 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-                                    G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                    QTRAP_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-                                    TSQ_1 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-                                    TSQ_2 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-                                    QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                    QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                    FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                    FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                    QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                    QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                    QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                    IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
+getHPLCparameter <- function(){
+  list(VELOS_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+       VELOS_2 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
+       G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       QTRAP_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+       TSQ_1 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
+       TSQ_2 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
+       QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+       FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
+       FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+       QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
+       IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
 
-getQCsample <- function(){list(extract.name = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
-                               extract.Condition = c(as.integer(NA), as.integer(NA), as.integer(NA), as.integer(NA)),
-                               extract.Condition = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
-                               position = c(3, 4, 5, 6))}
+getQCsample <- function(){
+  list(extract.name = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
+       extract.Condition = c(as.integer(NA), as.integer(NA), as.integer(NA), as.integer(NA)),
+       extract.Condition = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
+       position = c(3, 4, 5, 6))}
 
 #other helper functions ----
 
