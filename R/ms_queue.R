@@ -77,6 +77,7 @@ getHPLCparameter <- function(){
        #FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       QEXACTIVEHF_4 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        # LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
