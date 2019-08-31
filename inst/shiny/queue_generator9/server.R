@@ -16,57 +16,38 @@ shinyServer(function(input, output, session) {
   
   values <- reactiveValues(wuid = NULL)
   # ---- getInstruments ---- 
-  getInstrument <- reactive({list(#VELOS_1='Xcalibur',
-    #VELOS_2='Xcalibur',
-    #G2HD_1='MassLynx',
-    #QTRAP_1='Xcalibur',
-    #TSQ_1='Xcalibur',
-    #TSQ_2='Xcalibur',
-    QEXACTIVE_2='Xcalibur',
-    #QEXACTIVE_3='Xcalibur',
-    FUSION_1='Xcalibur',
-    FUSION_2='Xcalibur',
-    QEXACTIVEHF_1='Xcalibur',
-    QEXACTIVEHF_2='Xcalibur',
-    QEXACTIVEHFX_1='Xcalibur'
-    #IMSTOF_1='TOFWERK'
-  )})
+  getInstrument <- reactive({
+    list(
+      QEXACTIVE_2='Xcalibur',
+      QEXACTIVEHF_2='Xcalibur',
+      QEXACTIVEHF_4='Xcalibur',
+      QEXACTIVEHFX_1='Xcalibur',
+      FUSION_1='Xcalibur',
+      FUSION_2='Xcalibur',
+      LUMOS_1='Xcalibur'
+    )})
   
   
-  getInstrumentSuffix <- reactive({list(VELOS_1='RAW',
-                                        VELOS_2='RAW',
-                                        G2HD_1='wiff',
-                                        QTRAP_1='wiff',
-                                        TSQ_1='RAW',
-                                        TSQ_2='RAW',
-                                        QEXACTIVE_2='raw',
-                                        QEXACTIVE_3='raw',
-                                        FUSION_1='raw',
-                                        FUSION_2='raw',
-                                        QEXACTIVEHF_1='raw',
-                                        QEXACTIVEHFX_1='raw',
-                                        QEXACTIVEHF_2='raw',
-                                        IMSTOF_1='h5')})
-  # ---- getHPLCparameter ---- 
-  getHPLCparameter <- function(){list(VELOS_1 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
-                                      VELOS_2 = c('eksigent', list(.eksigent()),'F08', 'F07', 'F07','F06'),
-                                      G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                      QTRAP_1 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
-                                      TSQ_1 = c('eksigent', list(.eksigent()),'F08', 'F07', 'F07','F06'),
-                                      TSQ_2 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'),
-                                      QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                      QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                      FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                      FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-                                      QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                      QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                      QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-                                      IMSTOF_1 = c('eksigent', list(.eksigent()), 'F08', 'F07', 'F07','F06'))}
+  getInstrumentSuffix <- reactive({
+    list(VELOS_1='RAW',
+         VELOS_2='RAW',
+         G2HD_1='wiff',
+         QTRAP_1='wiff',
+         TSQ_1='RAW',
+         TSQ_2='RAW',
+         QEXACTIVE_2='raw',
+         QEXACTIVE_3='raw',
+         FUSION_1='raw',
+         FUSION_2='raw',
+         QEXACTIVEHF_1='raw',
+         QEXACTIVEHF_2='raw',
+         QEXACTIVEHF_4='raw',
+         QEXACTIVEHFX_1='raw',
+         LUMOS_1='raw',
+         IMSTOF_1='h5')})
   
-  getQCsample <- function(){list(extract.name = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
-                                 extract.Condition = c(as.character(NA), as.character(NA), as.character(NA), as.character(NA)),
-                                 extract.Condition = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
-                                 position = c(3, 4, 5, 6))}
+  
+
   #output list ----
   
   output$area <- renderUI(({
