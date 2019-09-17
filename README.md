@@ -28,7 +28,7 @@ install_github('cpanse/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
 - run
 
 ```{bash}
-bfabric9_flask_sample.py 
+python3 bfabric_flask.py 
 ```
 
 - simple json test 
