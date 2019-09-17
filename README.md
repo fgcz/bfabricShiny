@@ -23,7 +23,8 @@ install_github('cpanse/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
 
 
 # Demonstration
-## JSON - SOAP proxy using python flask
+## JSON - SOAP proxy using python 
+
 
 - run
 
@@ -188,9 +189,9 @@ The idea is to fetch a RData file stored in bfabric.
 ### Setup
 
 
-* install the python package http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python
+* install the python package https://github.com/cpanse/bfabricPy
 * install `install_github("https://github.com/cpanse/bfabricShiny")`
-* run the SOAP-REST proxy `bfabric_flask_sample.py` 
+* run the SOAP-REST proxy `python3 bfabric_flask.py` 
 * manage the key thing for housing the bfabric login/webpassword
 * run RStudio - create a new shiny app
 * in the shiny `ui.R` change
