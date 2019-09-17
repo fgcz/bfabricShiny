@@ -1,6 +1,6 @@
 # bfabricShiny
 
-REST interfaces for bfabric
+enables connecting R and bfabric using REST
 
 
 ![bfabricPy-read-R](https://user-images.githubusercontent.com/4901987/65041207-7c757c80-d956-11e9-90ca-9c3e2e0ca724.gif)
