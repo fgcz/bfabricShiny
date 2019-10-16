@@ -17,7 +17,7 @@ from flask.json import JSONEncoder
 from slugify import slugify
 
 
-from bfabric import bfabric
+import bfabric
 
 import logging
 import logging.handlers
@@ -122,7 +122,7 @@ def s():
         return jsonify({'error': 'could not get POST content.'})
 
     bf = bfabric.Bfabric()
-    print content
+    print (content)
     res = bf.save_object(endpoint=content['endpoint'][0], obj=content['query'])
 
     try:
@@ -170,7 +170,7 @@ def wsdl_extract(sampleid):
 
             try:
                 res.append({'sampleid': sampleid, 'name': slugify(x.name), 'id': x._id, 'Condition': x.condition})
-                print "condition"
+                print ("condition")
             except:
                 res.append({'sampleid': sampleid, 'name': slugify(x.name), 'id': x._id})
 
@@ -194,7 +194,7 @@ def wsdl_user(projectid):
     try:
         res =  bfapp.read_object(endpoint='user', obj={'projectid': projectid})
         res = map(lambda x:x.login, res)
-        print res
+        print (res)
         # user_ids =  map(lambda x: x._id, res[0].member)
         # rrr = map(lambda x:  bfapp.read_object(endpoint='user', obj={'id': x})[0].login, user_ids)
         return res
@@ -240,9 +240,9 @@ def compose_ms_queue_dataset(jsoncontent, workunitid, projectid):
 def add_resource():                            
     try:
         queue_content = json.loads(request.data)
-        print queue_content
+        print (queue_content)
     except:
-        print "failed: could not get POST content"
+        print ("failed: could not get POST content")
         return jsonify({'error': 'could not get POST content.'})
 
     res = bfapp.save_object('workunit', {'name': queue_content['name'],
@@ -250,11 +250,11 @@ def add_resource():
                                          'projectid': queue_content['projectid'],
                                          'applicationid': queue_content['applicationid']
                                          })
-    print res
+    print (res)
 
     workunit_id = res[0]._id
 
-    print workunit_id
+    print (workunit_id)
 
     res = bfapp.save_object('resource', {'base64': queue_content['base64'],
                                          'name': queue_content['resourcename'],
@@ -287,18 +287,18 @@ def add_dataset(projectid):
             obj['item']\
             .append({'field': map(lambda x: {'attributeposition': x + 1, 'value': queue_content[idx][x]}, range(0, len(queue_content[idx]))), 'position': idx + 1})
 
-            print obj
+            print (obj)
 
     except:
         return jsonify({'error': 'composing bfabric object failed.'})
 
     try:
         res = bfapp.save_object(endpoint='dataset', obj=obj)[0]
-        print "added dataset {} to bfabric.".format(res._id)
+        print ("added dataset {} to bfabric.".format(res._id))
         return (jsonify({'id':res._id}))
 
     except:
-        print res
+        print (res)
         return jsonify({'error': 'beaming dataset to bfabric failed.'})
 
 
@@ -331,7 +331,7 @@ def get_all_sample(projectid):
     try:
         annotationDict = {}
         for annotationId in filter(lambda x: x is not None, set(map(lambda x: x.groupingvar._id if "groupingvar" in x else None, samples))):
-            print annotationId
+            print (annotationId)
             annotation = bfapp.read_object(endpoint='annotation', obj={'id': annotationId})
             annotationDict[annotationId] = annotation[0].name
     except:
@@ -356,7 +356,7 @@ curl http://localhost:5000/zip_resource_of_workunitid/154547
 @app.route('/zip_resource_of_workunitid/<int:workunitid>', methods=['GET'])
 def get_zip_resources_of_workunit(workunitid):
     res = map(lambda x: x.relativepath, bfapp.read_object(endpoint='resource', obj={'workunitid': workunitid}))
-    print res
+    print (res)
     res = filter(lambda x: x.endswith(".zip"), res)
     return jsonify(res)
 
@@ -386,21 +386,21 @@ def query():
     except:
         return jsonify({'error': 'could not get POST content.', 'appid': appid})
 
-    print "PASSWORD CLEARTEXT", content['webservicepassword']
+    print ("PASSWORD CLEARTEXT", content['webservicepassword'])
     
     bf = bfabric.Bfabric(login=content['login'], 
       password=content['webservicepassword'], 
       webbase='http://fgcz-bfabric.uzh.ch/bfabric')
 
     for i in content.keys():
-      print "{}\t{}".format(i, content[i])
+      print ("{}\t{}".format(i, content[i]))
 
     if 'projectid' in content:
       workunits = bf.read_object(endpoint='workunit', 
         obj={'applicationid': content['applicationid'],
           'projectid': content['projectid']})
       #workunits = bf.read_object(endpoint='workunit', obj={'applicationid': 205, 'projectid': 1352})
-      print workunits
+      print (workunits)
       return jsonify({'workunits': map(lambda x: x._id, workunits)})
     #elif 'query' in content and "{}".format(content['query']) is 'project':
     else:
@@ -424,7 +424,7 @@ def add_workunit():
 
     resource_base64 = content['base64']
     #base64.b64encode(content)
-    print resource_base64 
+    print (resource_base64)
 
     #wu = bfapp.save_object(endpoint='workunit', obj={'name': rname, 'applicationid': appid, 'projectid': pid})[0]
     #res = bfapp.save_object('resource', {'base64': resource_base64,
