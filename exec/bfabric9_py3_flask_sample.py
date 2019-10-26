@@ -23,6 +23,8 @@ import logging
 import logging.handlers
 from flask.logging import default_handler
 
+bfgapp = bfabric.Bfabric()
+
 
 def create_logger(name="bfabric9_flask", address=("fgcz-ms.uzh.ch", 514)):
     """
@@ -100,13 +102,13 @@ def q():
     try:
         webservicepassword = content['webservicepassword'][0].replace("\t", "")
         login = content['login'][0]
-        bf = bfabric.Bfabric(login=login, password=webservicepassword)
 
-        # print("endpoint={}\n\tquery={}\n".format(content['endpoint'][0]), content['query'])
+        print(login)
+        print(webservicepassword)
         print(content['endpoint'][0])
         print(content['query'])
 
-        res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
+        res = bfgapp.read_object(endpoint=content['endpoint'][0], obj=content['query'], login=login, password=webservicepassword)
 
         logger.info("'{}' login success query {} ...".format(login, content['query']))
     except:
