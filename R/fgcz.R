@@ -135,7 +135,7 @@
         webservicepassword = webservicepassword,
         query = list(
           applicationid = 168, 
-          projectid = 1000
+          containerid = 1000
           )
        ), 'parameters')
        
@@ -151,7 +151,7 @@
                               webservicepassword = webservicepassword,
                               endpoint = 'workunit', 
                               query=list('applicationid' = 168, 
-                                         "projectid" = 1000))), 
+                                         "containerid" = 1000))), 
              encode = 'json')
   
   rv <- content(rv)
@@ -166,7 +166,7 @@
                               webservicepassword = webservicepassword,
                               endpoint = 'workunit', 
                               query=list('applicationid' = 168, 
-                                         "projectid" = 1000))), 
+                                         "containerid" = 1000))), 
              encode = 'json')
   
   rv <- content(rv)
@@ -285,8 +285,8 @@ query <- function(login, webservicepassword,
   rv
 }
 
-getWorkunits <- function(login, webservicepassword, projectid = NULL, applicationid = 168){
-  
+# getWorkunits(login, webservicepassword)
+getWorkunits <- function(login, webservicepassword, projectid = 64, applicationid = 224){
   workunits <- ({
     rv <- POST('http://localhost:5000/q', 
                body = toJSON(list(login = login, 
@@ -294,7 +294,7 @@ getWorkunits <- function(login, webservicepassword, projectid = NULL, applicatio
                                   endpoint = 'workunit', 
                                   query=list('applicationid' = applicationid, 
                                              'status' = 'available',
-                                             'projectid' = projectid)
+                                             'containerid' = projectid)
                ), 
                encode = 'json'))
     
@@ -307,7 +307,6 @@ getWorkunits <- function(login, webservicepassword, projectid = NULL, applicatio
     
     rv
   })
-  
   return(workunits)
 }
 
@@ -393,7 +392,7 @@ createWorkunit <-
                    webservicepassword = webservicepassword,
                    endpoint = 'workunit',
                    query = list(
-                     'projectid' = projectid,
+                     'containerid' = projectid,
                      'applicationid' = applicationid,
                      'name' = name,
                      'status' = status,
@@ -497,7 +496,7 @@ bfabric_upload_file <- function(login,
     createWorkunit(
       login = login,
       webservicepassword = webservicepassword,
-      projectid = projectid,
+      containerid = projectid,
       inputresource = inputresource,
       applicationid = applicationid,
       name = workunitname,
