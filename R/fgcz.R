@@ -190,21 +190,24 @@
 #' @param login 
 #' @param webservicepassword 
 #'
+#' @importFrom httr POST
+#' @importFrom httr content
 #' @return a vector of project ids
 #' @export getProjects
 #'
 #' 
+#' 
 getProjects <- function(login, webservicepassword) {
 
   projetcs <- ({
-    rv <- POST('http://localhost:5000/q', 
+    rv <- httr::POST('http://localhost:5000/q', 
                body=toJSON(list(login=login, 
                                 webservicepassword=webservicepassword,
                                 endpoint = 'user',
                                 query=list('login'= login))), 
                encode = 'json')
     
-    rv <- content(rv)
+    rv <- httr::content(rv)
     rv <- sapply(rv$res[[1]]$project, function(y){y$`_id`})
     sort(unlist(rv), decreasing = TRUE)
   })
@@ -228,6 +231,11 @@ getProjects <- function(login, webservicepassword) {
 #' @export query
 #'
 #' @examples
+#' 
+#' \dontrun{
+#' query(login, webservicepassword, endpoint='sample', query = list(id=206577))
+#' }
+#' 
 #' \dontrun{
 #'  RES <- query(endpoint = 'resource',
 #'     query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
@@ -260,15 +268,14 @@ getProjects <- function(login, webservicepassword) {
 #'  hex.bin(RAW)
 #' }
 #' 
-#' 
-#' 
-#' ## have fun
+#' ## Have Fun!
 query <- function(login, webservicepassword,
                   endpoint = 'workunit', 
                   query, 
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
   
+  warning("please use the read method.")
   query_result <- POST(posturl, 
                body = toJSON(list(login = login, 
                                   webservicepassword = webservicepassword,
@@ -285,8 +292,84 @@ query <- function(login, webservicepassword,
   rv
 }
 
+
+#' read method to access bfabric REST 
+#'
+#' @param endpoint the endpoint, e.g., workunit, resource, application, project.
+#' @param query the query object list
+#' @param login bfabric login
+#' @param webservicepassword bfabric password, check user details. 
+#' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
+#' @param as_data_frame if TRUE it returns a data.frame object.
+#' @return a nested list object
+#' 
+#' @importFrom httr POST 
+#' @export read
+#'
+#' @examples
+#' 
+#' \dontrun{
+#' query(login, webservicepassword, endpoint='sample', query = list(id=206577))
+#' }
+#' 
+#' \dontrun{
+#'  RES <- query(endpoint = 'resource',
+#'     query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
+#'     login, webservicepassword)
+#'     
+#'  WU.pending <- query(endpoint='workunit', 
+#'     query = list('status' = 'pending'),
+#'     login, webservicepassword)
+#'     
+#'  APP.analysis <- query(endpoint='application',
+#'     query=list('applicationtype' = 'analysis'),
+#'     login, webservicepassword)
+#'     
+#'  # a more complex example
+#'  
+#'  ## query metadata
+#'  Q <- query(login, webservicepassword,
+#'    endpoint = 'resource', 
+#'    query = list('workunitid' = 163763))
+#'  
+#'  ## stage data
+#'  uris <- sapply(Q$res, function(x){x$uris[3]})
+#'  (rawfilenames <- sapply(strsplit(unlist(uris), ":"), function(x){x[3]}))
+#'  library(rawfileQC)
+#'  library(parallel)
+#'  RAW <- do.call('rbind', 
+#'    mclapply(rawfilenames, read.raw, ssh = TRUE, mc.cores = 12))
+#'
+#'  ## have fun  
+#'  hex.bin(RAW)
+#' }
+#' 
+#' ## Have Fun!
+read <- function(login, webservicepassword,
+                  endpoint = 'workunit', 
+                  query, 
+                  posturl = 'http://localhost:5000/q',
+                  as_data_frame = FALSE){
+  
+  query_result <- POST(posturl, 
+                       body = toJSON(list(login = login, 
+                                          webservicepassword = webservicepassword,
+                                          endpoint = endpoint, 
+                                          query = query
+                       ), 
+                       encode = 'json'))
+  
+  rv <- content(query_result)
+  if(as_data_frame){
+    rv <- as.data.frame(do.call('rbind', rv$res))
+    rv <- t(apply(rv, 1,unlist))
+  }
+  rv
+}
+
+
 # getWorkunits(login, webservicepassword)
-getWorkunits <- function(login, webservicepassword, projectid = 64, applicationid = 224){
+getWorkunits <- function(login, webservicepassword, projectid = 3000, applicationid = 224){
   workunits <- ({
     rv <- POST('http://localhost:5000/q', 
                body = toJSON(list(login = login, 
@@ -508,4 +591,39 @@ bfabric_upload_file <- function(login,
   r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`, content = file_content, name = resourcename)
   
   wu[[1]]$`_id`
+}
+
+
+
+#' reads Custom Attributes of a 
+#'
+#' @param login 
+#' @param webservicepassword 
+#' @param workunitid 
+#'
+#' @return a \code{data.frame} containing columns sampleId , resourceId, and
+#' iff exisiting a merged table of the Custom Attributes.
+#' 
+#' @export readCustomAttributes
+readCustomAttributes <- function(login, webservicepassword, workunitid = 202570){
+  
+  inputResourcesIds <- unlist(read(login, webservicepassword,
+    endpoint = 'workunit', 
+      query = list(id=workunitid))[[1]][[1]]$inputresource)
+  
+  
+  inputSampleIds <-  vapply(inputResourcesIds, function(x){
+    read(login, webservicepassword, endpoint = 'resource',
+         query = list(id=x))[[1]][[1]]$sample$`_id`
+    }, FUN.VALUE = 202691)
+  
+  
+  samples <- lapply(inputSampleIds, function(x){
+    read(login, webservicepassword, endpoint = 'sample', 
+         query = list(id=x))[[1]][[1]]
+  })
+  
+  do.call('rbind', lapply(samples, as.data.frame))
+  
+  data.frame(resourceId=inputResourcesIds, sampleId=inputSampleIds)
 }

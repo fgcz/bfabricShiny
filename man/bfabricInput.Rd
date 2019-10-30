@@ -9,6 +9,9 @@ bfabricInput(id)
 \arguments{
 \item{id}{}
 }
+\value{
+tagList
+}
 \description{
 Shiny UI module
 }

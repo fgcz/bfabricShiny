@@ -27,6 +27,11 @@ a nested list object
 query bfabric
 }
 \examples{
+
+\dontrun{
+query(login, webservicepassword, endpoint='sample', query = list(id=206577))
+}
+
 \dontrun{
  RES <- query(endpoint = 'resource',
     query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
@@ -59,7 +64,5 @@ query bfabric
  hex.bin(RAW)
 }
 
-
-
-## have fun
+## Have Fun!
 }

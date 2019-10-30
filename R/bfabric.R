@@ -6,7 +6,7 @@
 #'
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
-#' @return
+#' @return tagList
 #' @export bfabricInput
 #' @examples 
 #' \dontrun{
@@ -22,7 +22,8 @@ bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   
-  privKey <- PKI.load.key(file = file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key"))
+  privKey <- PKI.load.key(file = file.path(system.file("keys",
+    package = "bfabricShiny"), "bfabricShiny.key"))
   
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey), 
@@ -99,7 +100,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   
   output$applications <- renderUI({
     applications <- application()
- 
+    
     # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
     
     if (nrow(applications) > 0){
@@ -107,10 +108,9 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
       xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep=" - ")
       
       selectInput(ns("applicationid"), "input applicationid:",
-                xxx,
-                multiple = FALSE)
+                  xxx,
+                  multiple = FALSE)
     }else{NULL}
-    
   })
   
   
@@ -162,39 +162,39 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         HTML("no resources found.")
       }else{
         tagList(
-      
-        selectInput("relativepath", "resource relativepath:", res$relativepath,
-                    multiple = resourcemultiple),
-        actionButton("load", "load selected data resource", icon("upload"))
+          
+          selectInput("relativepath", "resource relativepath:", res$relativepath,
+                      multiple = resourcemultiple),
+          actionButton("load", "load selected data resource", icon("upload"))
         )
       }
     }
   })
   
   
-
+  
   ## shinyStore; for login and password handling
   observe({
-
-#message("OBSERVE bfabricSHINY")
-
-  if ('login' %in% names(input)){
-    if (input$saveBfabricPassword <= 0){
-      # On initialization, set the value of the text editor to the current val.
-      message("saving 'login and webservicepassword' ...")
-      updateTextInput(session, "login", value=isolate(input$store)$login)
-      updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
-      updateTextInput(session, "project", value=isolate(input$project)$login)
-      return()
+    
+    #message("OBSERVE bfabricSHINY")
+    
+    if ('login' %in% names(input)){
+      if (input$saveBfabricPassword <= 0){
+        # On initialization, set the value of the text editor to the current val.
+        message("saving 'login and webservicepassword' ...")
+        updateTextInput(session, "login", value=isolate(input$store)$login)
+        updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
+        updateTextInput(session, "project", value=isolate(input$project)$login)
+        return()
+      }
+      
+      updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+      updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+      updateStore(session, "project", isolate(input$project), encrypt=pubKey)
     }
-
-    updateStore(session, "login", isolate(input$login), encrypt=pubKey)
-    updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
-    updateStore(session, "project", isolate(input$project), encrypt=pubKey)
-  }
   }
   )
-
+  
   return(list(login = reactive({input$login}), 
               webservicepassword = reactive({input$webservicepassword}),
               resources = reactive({resources()}),
