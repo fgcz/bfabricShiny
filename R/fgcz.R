@@ -436,9 +436,11 @@ getResources <- function(login, webservicepassword, workunitid){
 #' \dontrun{
 #' library(bfabricShiny)
 #' A <- getApplications(login, webservicepassword)
-#' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
+#' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}),
+#'  name = sapply(A, function(x){x$name}))
 #' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
-#' write.table(bfabricApplication, file="./inst/extdata/application.csv", row.names = FALSE)
+#' write.table(bfabricApplication, file="./inst/extdata/application.csv",
+#'   row.names = FALSE)
 #' }
 #' 
 getApplications <- function(login, webservicepassword){
@@ -588,7 +590,8 @@ bfabric_upload_file <- function(login,
     )
   
   
-  r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`, content = file_content, name = resourcename)
+  r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`,
+                    content = file_content, name = resourcename)
   
   wu[[1]]$`_id`
 }

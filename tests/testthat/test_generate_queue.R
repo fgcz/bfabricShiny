@@ -1,35 +1,78 @@
 #R
 
 
-source("compose_queue.R")
+
 require(testthat)
  
 
 #test data
-  test_data <- function(){
-    extract.name <- c("Sample_1", "Sample_2", "Sample_3", "Sample_4", "Sample_5", "Sample_6", "Sample_7", "Sample_8", "Sample_9", "Sample_10", "Sample_11", "Sample_12", "Sample_13", "Sample_14", "Sample_15", "Sample_16", "Sample_17", "Sample_18", "Sample_19", "Sample_20" )
-    extract.id <- c(1:20)
-    Condition <- c("Control", "Control", "Control", "Control", "Ampicillin", "Ampicillin", "Ampicillin", "Ampicillin", "Kanamycin", "Kanamycin", "Kanamycin", "Kanamycin", "Less", "Less", "Less", "More", "More", "More", "More", "More")
-    data.frame(extract.name, extract.id, Condition)
-  }
+  
+.test_generate_queue<- function(x, method="default"){
+  generate_queue(x,
+                      projectid = 3000,
+                      area = "Proteomics",
+                      instrument = "FUSION_2",
+                      username = "roschi",
+                      autoQC01 = "TRUE",
+                      QC01o = 4,
+                      QC01m = 1,
+                      autoQC02 = "FALSE",
+                      QC02o = 4,
+                      QC02m = 1,
+                      autoQC4L = "FALSE",
+                      QC4Lo = 4,
+                      QC4Lm = 1,
+                      clean = "FALSE",
+                      cleano = 4,
+                      cleanm = 1,
+                      start1 = 1,
+                      start2 = NA,
+                      start3 = NA,
+                      end1 = 4,
+                      end2 = 1,
+                      end3 = 3,
+                      lists = 1,
+                      startposition = 1,
+                      nr.methods = 1,
+                      nr.replicates = 1,
+                      qc.type = 1,
+                      method = method,
+                      pathprefix = "D:Data2San")
+}
 
 
-#generate_queue(x=test0_data, instrument='TSQ_2', project=1000)
 
-test_that("test input format 2 injections", {
+test_that("test default", {
 
- test0_data <- test_data()
-  ground_trues<-c(3, 6, 9, 12, 15, 18, 21, 24, 27, 30)
-  res <- generate_queue(x=test0_data, 
-  	instrument='FUSION_1', 
-	how.often=2, 
-	how.many=1, 
-	multiple = 1, 
-	project=1000)
-
-  print(res)
-
-  expect_true(sum(which(res[,3] == "F8") == ground_trues) == 10)
+ x <- bfabricShiny:::test_data()
+ 
+  res.default <- .test_generate_queue(x, 'default')
+  ground_trues <- c(NA,1,2,3,4,NA,5,6,7,8,NA,9,10,11,12,NA,13,14,15,16,NA,17,18,19,20,NA,NA,NA)
+  
+  expect_equal(as.integer(res.default[,'Sample ID'] ),  ground_trues)
+ 
+ 
 })
+
+test_that("test random", {
+  
+  x <- bfabricShiny:::test_data()
+  
+  ground_trues <- c(NA, 3, 4, 10, 1, NA, 12, 15, 2, 20, NA, 13, 18, 7, 17, NA,
+                    5, 9, 16, 14, NA, 8, 11, 6, 19, NA, NA, NA)
+  
+ 
+  set.seed(1)
+  res.random.1 <- .test_generate_queue(x, 'random')
+  expect_equal(as.integer(res.random.1[,'Sample ID'] ),  ground_trues)
+  
+  set.seed(1)
+  res.random.2 <- .test_generate_queue(x, 'random')
+  res.random.3 <- .test_generate_queue(x, 'random')
+  
+  expect_true(all.equal(res.random.1[,'Sample ID'], res.random.2[,'Sample ID']))
+  expect_true(sum(res.random.1[,'Sample ID'] != res.random.3[,'Sample ID'], na.rm = TRUE)>1) 
+})
+
 
   

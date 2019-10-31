@@ -3,21 +3,21 @@
 #
 #generate test data set ----
 
-test_data_single <- function(){
+.test_data_single <- function(){
   extract.name <- "Sample_1"
   extract.id <- "SID1"
   extract.Condition <- "Control"
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
-test_data_medium <- function(){
+.test_data_medium <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
   extract.id <- c(paste("SID", 1:20, sep = ""))
   extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
-test_data_medium_random <- function(){
+.test_data_medium_random <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
   extract.id <- c(paste("SID", 1:20, sep = ""))
   condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
@@ -25,7 +25,7 @@ test_data_medium_random <- function(){
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
-test_data_large <- function(){
+.test_data_large <- function(){
   extract.name <- c(paste("Sample", 1:80, sep = "_"))
   extract.id <- c(paste("SID", 1:80, sep = ""))
   extract.Condition <- c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20))
@@ -254,7 +254,7 @@ getQCsample <- function(){
 
 .insert_qc_samples <- function(x, y, z, u, v){
   x <- x %>% 
-    mutate(idx = seq_along(x$extract.name))
+    dplyr::mutate(idx = seq_along(x$extract.name))
   
   res <- dplyr::bind_rows(x,y,z,u,v) %>% 
     dplyr::arrange(idx)
@@ -485,6 +485,12 @@ getQCsample <- function(){
   return(injection.name)
 }
 
+test_data <- function(){
+  extract.name <- c("Sample_1", "Sample_2", "Sample_3", "Sample_4", "Sample_5", "Sample_6", "Sample_7", "Sample_8", "Sample_9", "Sample_10", "Sample_11", "Sample_12", "Sample_13", "Sample_14", "Sample_15", "Sample_16", "Sample_17", "Sample_18", "Sample_19", "Sample_20" )
+  extract.id <- c(1:20)
+  Condition <- c("Control", "Control", "Control", "Control", "Ampicillin", "Ampicillin", "Ampicillin", "Ampicillin", "Kanamycin", "Kanamycin", "Kanamycin", "Kanamycin", "Less", "Less", "Less", "More", "More", "More", "More", "More")
+  data.frame(extract.name, extract.id, Condition, stringsAsFactors = FALSE)
+}
 
 #' FGCZ mass spec queue generator 
 #'
@@ -507,6 +513,39 @@ getQCsample <- function(){
 #'
 #' @return a instrument configuration as \code{data.frame}.
 #' @export generate_queue
+#' 
+#' @examples 
+#' generate_queue(x <- bfabricShiny:::test_data(),
+#'    projectid = 3000,
+#'    area = "Proteomics",
+#'    instrument = "QEXACTIVE_2",
+#'    username = "roschi",
+#'    autoQC01 = "TRUE",
+#'    QC01o = 4,
+#'    QC01m = 1,
+#'    autoQC02 = "FALSE",
+#'    QC02o = 4,
+#'    QC02m = 1,
+#'    autoQC4L = "FALSE",
+#'    QC4Lo = 4,
+#'    QC4Lm = 1,
+#'    clean = "FALSE",
+#'    cleano = 4,
+#'    cleanm = 1,
+#'    start1 = 1,
+#'    start2 = NA,
+#'    start3 = NA,
+#'    end1 = 4,
+#'    end2 = 1,
+#'    end3 = 3,
+#'    lists = 1,
+#'    startposition = 1,
+#'    nr.methods = 1,
+#'    nr.replicates = 1,
+#'    qc.type = 1,
+#'    method = "default",
+#'    pathprefix = "D:Data2San")
+
 generate_queue <- function(x, 
                            foldername = '', 
                            projectid = 1000, 
@@ -540,6 +579,7 @@ generate_queue <- function(x,
                            pathprefix = "D:\\Data2San", 
                            pathprefixsep = "\\"){
   
+  save(x, file='/tmp/queue.RData')
   # generate the queue template
   if(method == 'random'){
     res.template <- .generate_template_random(x = x)

@@ -51,3 +51,35 @@ a instrument configuration as \code{data.frame}.
 \description{
 FGCZ mass spec queue generator
 }
+\examples{
+generate_queue(x <- bfabricShiny:::test_data(),
+   projectid = 3000,
+   area = "Proteomics",
+   instrument = "QEXACTIVE_2",
+   username = "roschi",
+   autoQC01 = "TRUE",
+   QC01o = 4,
+   QC01m = 1,
+   autoQC02 = "FALSE",
+   QC02o = 4,
+   QC02m = 1,
+   autoQC4L = "FALSE",
+   QC4Lo = 4,
+   QC4Lm = 1,
+   clean = "FALSE",
+   cleano = 4,
+   cleanm = 1,
+   start1 = 1,
+   start2 = NA,
+   start3 = NA,
+   end1 = 4,
+   end2 = 1,
+   end3 = 3,
+   lists = 1,
+   startposition = 1,
+   nr.methods = 1,
+   nr.replicates = 1,
+   qc.type = 1,
+   method = "default",
+   pathprefix = "D:Data2San")
+}
