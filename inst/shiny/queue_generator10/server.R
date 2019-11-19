@@ -70,8 +70,7 @@ shinyServer(function(input, output, session) {
   }))
   
   output$project <- renderUI({
-    #res.project <- c(NA, 1000, 1959, 2121)
-    numericInput('project', 'Project:', value = 3000,  min = 1000, max = 3500, width=100)
+    numericInput('project', 'Container:', value = 3000,  min = 1000, max = 3500, width=100)
   })
   
   output$instrument <- renderUI({
@@ -154,6 +153,7 @@ shinyServer(function(input, output, session) {
   
   # -------checkbox FGCZ naming conventions -----
   
+  # res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/",  3000, sep='')))
   getLogin <- reactive({
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "fetching user data ...")
@@ -165,7 +165,7 @@ shinyServer(function(input, output, session) {
       res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", 
                                           input$project, sep='')))
       message(paste('got', nrow(res), 'users.'))
-      return (res$user)
+      return (res$user.login)
     }
   })
   
@@ -186,9 +186,6 @@ shinyServer(function(input, output, session) {
       
       message(sampleURL)
       res <- as.data.frame(fromJSON(sampleURL))
-      
-      
-      
       message(paste('got', nrow(res), 'samples.'))
       
       return (res)
@@ -361,7 +358,7 @@ shinyServer(function(input, output, session) {
     rv <- POST("http://localhost:5000/add_resource",
                body = toJSON(list(base64=file_content,
                                   name='MS configuration',
-                                  projectid=input$project, 
+                                  containerid=input$project, 
                                   applicationid=212,
                                   workunitdescription = paste("The spreadsheet contains a ", input$instrument,
                                                               " queue configuration having ", nrow(res), " rows.\n", 

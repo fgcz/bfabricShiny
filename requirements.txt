@@ -1,0 +1,4 @@
+suds-py3
+Flask
+PyYAML
+bfabricPy
