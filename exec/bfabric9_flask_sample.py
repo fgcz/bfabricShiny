@@ -98,6 +98,8 @@ def q():
         webservicepassword = content['webservicepassword'][0].replace("\t", "")
         login = content['login'][0]
         bf = bfabric.Bfabric(login=login, password=webservicepassword)
+        print(content['endpoint'][0])
+        print(content['query'])
         res = bf.read_object(endpoint=content['endpoint'][0], obj=content['query'])
         logger.info("'{}' login success query {} ...".format(login, content['query']))
     except:
