@@ -81,6 +81,8 @@ getHPLCparameter <- function(){
        QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        # LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       LUMOS_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       EXPLORIS_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
        IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
 
 getQCsample <- function(){

@@ -20,11 +20,11 @@ shinyServer(function(input, output, session) {
     list(
       QEXACTIVE_2='Xcalibur',
       QEXACTIVEHF_2='Xcalibur',
-      QEXACTIVEHF_4='Xcalibur',
-      QEXACTIVEHFX_1='Xcalibur',
       FUSION_1='Xcalibur',
       FUSION_2='Xcalibur',
-      LUMOS_1='Xcalibur'
+      EXPLORIS_1='Xcalibur',
+      LUMOS_1='Xcalibur',
+      LUMOS_2='Xcalibur'
     )})
   
   
@@ -41,9 +41,9 @@ shinyServer(function(input, output, session) {
          FUSION_2='raw',
          QEXACTIVEHF_1='raw',
          QEXACTIVEHF_2='raw',
-         QEXACTIVEHF_4='raw',
-         QEXACTIVEHFX_1='raw',
          LUMOS_1='raw',
+         LUMOS_2='raw',
+         EXPLORIS_1='raw',
          IMSTOF_1='h5')})
   
   
