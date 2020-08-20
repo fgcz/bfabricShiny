@@ -5,21 +5,21 @@
 
 .test_data_single <- function(){
   extract.name <- "Sample_1"
-  extract.id <- "SID1"
+  extract.id <- 1
   extract.Condition <- "Control"
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
 .test_data_medium <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
-  extract.id <- c(paste("SID", 1:20, sep = ""))
+  extract.id <-  1:20
   extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
 .test_data_medium_random <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
-  extract.id <- c(paste("SID", 1:20, sep = ""))
+  extract.id <- 1:20
   condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
   extract.Condition <- condition[sample(1:20)]
   data.frame(extract.name, extract.id, extract.Condition)
@@ -27,7 +27,7 @@
 
 .test_data_large <- function(){
   extract.name <- c(paste("Sample", 1:80, sep = "_"))
-  extract.id <- c(paste("SID", 1:80, sep = ""))
+  extract.id <- 1:80
   extract.Condition <- c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20))
   data.frame(extract.name, extract.id, extract.Condition)
 }
@@ -515,6 +515,7 @@ test_data <- function(){
 #' @export generate_queue
 #'
 #' @examples
+#' generate_queue(x <- bfabricShiny:::test_data(),start2 = NA,start3 = NA)
 #' generate_queue(x <- bfabricShiny:::test_data(),
 #'    projectid = 3000,
 #'    area = "Proteomics",
@@ -545,7 +546,15 @@ test_data <- function(){
 #'    qc.type = 1,
 #'    method = "default",
 #'    pathprefix = "D:Data2San")
-
+#' generate_queue(bfabricShiny:::test_data())
+#' generate_queue(bfabricShiny:::.test_data_single())
+#' generate_queue(bfabricShiny:::.test_data_large())
+#' generate_queue(bfabricShiny:::.test_data_medium_random())
+#'
+#' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
+#' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
+#' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "blockrandom")
+#'
 generate_queue <- function(x,
                            foldername = '',
                            projectid = 1000,
@@ -565,11 +574,11 @@ generate_queue <- function(x,
                            cleano = 4,
                            cleanm = 1,
                            start1 = 1,
-                           start2 = "",
-                           start3 = "",
+                           start2 = NA,
+                           start3 = NA,
                            end1 = 1,
-                           end2 = "",
-                           end3 = "",
+                           end2 = NA,
+                           end3 = NA,
                            lists = 1,
                            startposition = 1,
                            nr.methods = 2,
