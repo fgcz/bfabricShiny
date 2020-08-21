@@ -32,6 +32,27 @@
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
+
+test_data <- function(){
+  extract.name <- c("Sample_1", "Sample_2",
+                    "Sample_3", "Sample_4",
+                    "Sample_5", "Sample_6",
+                    "Sample_7", "Sample_8",
+                    "Sample_9", "Sample_10",
+                    "Sample_11", "Sample_12",
+                    "Sample_13", "Sample_14",
+                    "Sample_15", "Sample_16",
+                    "Sample_17", "Sample_18",
+                    "Sample_19", "Sample_20" )
+  extract.id <- c(1:20)
+  Condition <- c("Control", "Control", "Control", "Control",
+                 "Ampicillin", "Ampicillin", "Ampicillin", "Ampicillin",
+                 "Kanamycin", "Kanamycin", "Kanamycin", "Kanamycin",
+                 "Less", "Less", "Less",
+                 "More", "More", "More", "More", "More")
+  data.frame(extract.name, extract.id, Condition, stringsAsFactors = FALSE)
+}
+
 #HPLC position helper functions ----
 
 .eksigent <- function(){
@@ -149,107 +170,133 @@ getQCsample <- function(){
   return(res)
 }
 
-#QC inserting functions ----
 
-.autoQC01 <- function(x, instrument, QC01o, QC01m, autoQC01){
-  if (QC01o == 0|autoQC01 == "FALSE"){
+#'
+#' @examples
+#' autoQC01 = "TRUE"
+#' QC01o = 4
+#' QC01m = 1
+#' bfabricShiny:::.autoQC01(20, "FUSION_1", QC01o, QC01m, autoQC01)
+#' bfabricShiny:::.autoQC(20)
+#' bfabricShiny:::.autoQC(20, autoQCName = "autoQC02", idxoffset = 0.8)
+.autoQC <- function(nrow_x, instrument = "FUSION_1",
+                    howoften = 4,
+                    howmany = 1,
+                    autoQCName = "autoQC01",
+                    idxoffset = 0.6,
+                    position = 3){
+  if (howoften == 0) {
     res <- .emptydf()
   } else {
-    check <- floor(nrow(x)/QC01o)
-    if(check < 1){
+    check <- floor(nrow_x / howoften)
+    if (check < 1) {
       qc.inserts <- 1
-      qc.idx <- nrow(x)
+      qc.idx <- nrow_x
     }else {
-      qc.inserts = floor(nrow(x)/QC01o)
-      qc.idx <- QC01o*(1:qc.inserts)
+      qc.inserts = floor(nrow_x/howoften)
+      qc.idx <- howoften*(1:qc.inserts)
     }
-    repetitions <- qc.inserts*QC01m
-    df <- data.frame(extract.name = "autoQC01",
+    repetitions <- qc.inserts*howmany
+    df <- data.frame(extract.name = autoQCName,
                      extract.id = as.integer(NA),
-                     extract.Condition = "autoQC01",
-                     position = unlist(getHPLCparameter()[[instrument]][3]),
+                     extract.Condition = autoQCName,
+                     position = unlist(getHPLCparameter()[[instrument]][position]),
                      idx = as.numeric(NA),
                      stringsAsFactors = FALSE)
     res <- df[rep(1, times = repetitions), ]
-    res$idx  <-  rep(qc.idx + 0.6, each = QC01m)
+    res$idx  <-  rep(qc.idx + idxoffset, each = howmany)
   }
-
   return(res)
 }
 
-.autoQC02 <- function(x, instrument, QC02o, QC02m, autoQC02){
-  if (QC02o == 0 |autoQC02 == "FALSE"){
-    res <- .emptydf()
-  } else {
-    check <- floor(nrow(x)/QC02o)
-    if(check < 1){
-      qc.inserts <- 1
-      qc.idx <- nrow(x)
-    }else {
-      qc.inserts = floor(nrow(x)/QC02o)
-      qc.idx <- QC02o*(1:qc.inserts)
-    }
-    repetitions <- qc.inserts*QC02m
-    df <- data.frame(extract.name = "autoQC02",
-                     extract.id = as.integer(NA),
-                     extract.Condition = "autoQC02",
-                     position = unlist(getHPLCparameter()[[instrument]][4]),
-                     stringsAsFactors = FALSE)
-    res <- df[rep(1, times = repetitions), ]
-    res$idx  <-  rep(qc.idx + 0.8, each = QC02m)
+#QC inserting functions ----
+#'
+#' @examples
+#' autoQC01 = "TRUE"
+#' QC01o = 3
+#' QC01m = 1
+#' bfabricShiny:::.autoQC01(20, "FUSION_1", QC01o, QC01m, autoQC01)
+#'
+#'
+.autoQC01 <- function(nrow_x, instrument, QC01o, QC01m, autoQC01){
+  if (autoQC01 == "FALSE") {
+    return(.emptydf())
+  }else{
+    res <- .autoQC(nrow_x,
+                   instrument = instrument,
+                   howoften = QC01o,
+                   howmany = QC01m,
+                   autoQCName = "autoQC01",
+                   idxoffset = 0.6,
+                   position = 3)
+    return(res)
   }
-
+}
+#'
+#' @examples
+#' autoQC02 = "TRUE"
+#' QC02o = 3
+#' QC02m = 1
+#' x <- bfabricShiny:::.autoQC02e(20, "FUSION_1", QC02o, QC02m, autoQC02)
+#' all.equal(x, xe)
+.autoQC02 <- function(nrow_x, instrument, QC02o, QC02m, autoQC02){
+  if (autoQC02 == "FALSE") {
+    return(.emptydf())
+  }else{
+    res <- .autoQC(nrow_x,
+                   instrument = instrument,
+                   howoften = QC02o,
+                   howmany = QC02m,
+                   autoQCName = "autoQC02",
+                   idxoffset = 0.8,
+                   position = 4)
+    return(res)
+  }
   return(res)
 }
-
-.autoQC4L <- function(x, instrument, QC4Lo, QC4Lm, autoQC4L){
-  if (QC4Lo == 0|autoQC4L == "FALSE"){
-    res <- .emptydf()
-  } else {
-    check <- floor(nrow(x)/QC4Lo)
-    if(check < 1){
-      qc.inserts <- 1
-      qc.idx <- nrow(x)
-    }else {
-      qc.inserts = floor(nrow(x)/QC4Lo)
-      qc.idx <- QC4Lo*(1:qc.inserts)
-    }
-    repetitions <- qc.inserts*QC4Lm
-    df <- data.frame(extract.name = "autoQC4L",
-                     extract.id = as.integer(NA),
-                     extract.Condition = "autoQC4L",
-                     position = unlist(getHPLCparameter()[[instrument]][4]),
-                     stringsAsFactors = FALSE)
-    res <- df[rep(1, times = repetitions), ]
-    res$idx  <-  rep(qc.idx + 0.9, each = QC4Lm)
+#'
+#' @examples
+#' autoQC02 = "TRUE"
+#' QC02o = 3
+#' QC02m = 1
+#' x <- bfabricShiny:::.autoQC4L(20, "FUSION_1", QC02o, QC02m, autoQC02)
+#'
+.autoQC4L <- function(nrow_x, instrument, QC4Lo, QC4Lm, autoQC4L){
+  if (autoQC4L == "FALSE") {
+    return(.emptydf())
+  }else{
+    res <- .autoQC(nrow_x,
+                   instrument = instrument,
+                   howoften = QC4Lo,
+                   howmany = QC4Lm,
+                   autoQCName = "autoQC4L",
+                   idxoffset = 0.9,
+                   position = 4)
+    return(res)
   }
-
-  return(res)
 }
 
-.clean <- function(x, instrument, cleano, cleanm, clean){
-  if (cleano == 0|clean == "FALSE"){
-    res <- .emptydf()
-  } else {
-    check <- floor(nrow(x)/cleano)
-    if(check < 1){
-      qc.inserts <- 1
-      qc.idx <- nrow(x)
-    }else {
-      qc.inserts = floor(nrow(x)/cleano)
-      qc.idx <- cleano*(1:qc.inserts)
-    }
-    repetitions <- qc.inserts*cleanm
-    df <- data.frame(extract.name = "clean",
-                     extract.id = as.integer(NA),
-                     extract.Condition = "clean",
-                     position = unlist(getHPLCparameter()[[instrument]][6]),
-                     stringsAsFactors = FALSE)
-    res <- df[rep(1, times = repetitions), ]
-    res$idx  <-  rep(qc.idx + 0.4, each = cleanm)
+#'
+#' @examples
+#' autoQC02 = "TRUE"
+#' QC02o = 3
+#' QC02m = 1
+#' x <- bfabricShiny:::.clean(20,  "FUSION_1", QC02o, QC02m, autoQC02)
+#' xe <- bfabricShiny:::.cleane(20,  "FUSION_1", QC02o, QC02m, autoQC02)
+#' all.equal(x, xe)
+.clean <- function(nrow_x, instrument, cleano, cleanm, clean){
+  if (clean == "FALSE") {
+    return(.emptydf())
+  }else{
+    res <- .autoQC(nrow_x,
+                   instrument = instrument,
+                   howoften = cleano,
+                   howmany = cleanm,
+                   autoQCName = "clean",
+                   idxoffset = 0.4,
+                   position = 6)
+    return(res)
   }
-
-  return(res)
 }
 
 .insert_qc_samples <- function(x, y, z, u, v){
@@ -386,7 +433,13 @@ getQCsample <- function(){
 }
 
 #blockrandom queue formating function ----
-
+#'
+#'@examples
+#'
+#' set.seed(3)
+#' bfabricShiny:::.generate_template_random_block(bfabricShiny:::.test_data_medium())
+#' set.seed(3)
+#' bfabricShiny:::.generate_template_random_block(bfabricShiny:::.test_data_medium_random())
 .generate_template_random_block <- function(x){
   #TODO:
   #check if more than one condition is present. If not display a warning
@@ -398,14 +451,14 @@ getQCsample <- function(){
   blocks <- length(unique(x$extract.Condition))
   elements <- max(table(x$extract.Condition))
   res <- x %>%
-    .equal.groups
+    bfabricShiny:::.equal.groups()
   res <- res %>%
     dplyr::mutate(blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements))))) %>%
     dplyr::arrange(blockidx) %>%
     dplyr::mutate(randomidx = as.vector(replicate(elements, sample(1:blocks)))) %>%
     dplyr::arrange(blockidx, randomidx) %>%
-    dplyr::select("extract.name", "extract.id", "extract.Condition") %>%
-    dplyr::filter(!is.na(extract.id))
+    dplyr::filter(!is.na(extract.id)) %>%
+    dplyr::select("extract.name", "extract.id", "extract.Condition")
 
   return(res)
 }
@@ -454,7 +507,7 @@ getQCsample <- function(){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d")
   out <- paste(username, rundate, sep = "_")
-  if (foldername != ''){
+  if (foldername != '') {
     out <- paste(out, gsub('([[:punct:]])|\\s+', '_', foldername), sep = "_")
   }
   out <- paste(area, instrument, out, sep = pathprefixsep)
@@ -473,7 +526,7 @@ getQCsample <- function(){
 .generate_name <- function(x, startposition = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
-  injection.index <- sprintf("%03d", (seq_len(n)-1)+ startposition) #use start queue with input value instead of 1
+  injection.index <- sprintf("%03d", (seq_len(n) - 1) + startposition) #use start queue with input value instead of 1
   injection.name <- paste(rundate, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id,sep=''), sep = "_")
 
@@ -485,12 +538,6 @@ getQCsample <- function(){
   return(injection.name)
 }
 
-test_data <- function(){
-  extract.name <- c("Sample_1", "Sample_2", "Sample_3", "Sample_4", "Sample_5", "Sample_6", "Sample_7", "Sample_8", "Sample_9", "Sample_10", "Sample_11", "Sample_12", "Sample_13", "Sample_14", "Sample_15", "Sample_16", "Sample_17", "Sample_18", "Sample_19", "Sample_20" )
-  extract.id <- c(1:20)
-  Condition <- c("Control", "Control", "Control", "Control", "Ampicillin", "Ampicillin", "Ampicillin", "Ampicillin", "Kanamycin", "Kanamycin", "Kanamycin", "Kanamycin", "Less", "Less", "Less", "More", "More", "More", "More", "More")
-  data.frame(extract.name, extract.id, Condition, stringsAsFactors = FALSE)
-}
 
 #' FGCZ mass spec queue generator
 #'
@@ -546,6 +593,7 @@ test_data <- function(){
 #'    qc.type = 1,
 #'    method = "default",
 #'    pathprefix = "D:Data2San")
+#' debug(generate_queue)
 #' generate_queue(bfabricShiny:::test_data())
 #' generate_queue(bfabricShiny:::.test_data_single())
 #' generate_queue(bfabricShiny:::.test_data_large())
@@ -553,7 +601,7 @@ test_data <- function(){
 #'
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
-#' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "blockrandom")
+#' generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
 #'
 generate_queue <- function(x,
                            foldername = '',
@@ -586,7 +634,8 @@ generate_queue <- function(x,
                            qc.type = 1,
                            method = 'default',
                            pathprefix = "D:\\Data2San",
-                           pathprefixsep = "\\"){
+                           pathprefixsep = "\\",
+                           DEBUG = FALSE){
   #capture arguments
   allArgs <- list(x,
                   foldername = foldername,
@@ -623,13 +672,13 @@ generate_queue <- function(x,
   )
 
   # generate the queue template
-  if(method == 'random'){
+  if (method == 'random') {
     res.template <- .generate_template_random(x = x)
-  }else if (method == 'blockrandom'){
+  } else if (method == 'blockrandom') {
     res.template <- .generate_template_random_block(x = x)
-  }else if (method == 'PRM'){
+  } else if (method == 'PRM') {
     res.template <- .generate_template_PRM(x = x, lists = lists, instrument = instrument)
-  }else if (method == 'testing'){
+  } else if (method == 'testing') {
     res.template <- .generate_template_method_testing(x = x,
                                                       nr.methods = nr.methods,
                                                       nr.replicates = nr.replicates,
@@ -650,26 +699,26 @@ generate_queue <- function(x,
 
   # insert qc samples
 
-  res.autoQC01 <- .autoQC01(x = res.position,
+  res.autoQC01 <- .autoQC01(nrow(res.position),
                             instrument = instrument,
                             QC01o = QC01o,
                             QC01m = QC01m,
                             autoQC01 = autoQC01)
 
-  res.autoQC02 <- .autoQC02(x = res.position,
+  res.autoQC02 <- .autoQC02(nrow(res.position),
                             instrument = instrument,
                             QC02o = QC02o,
                             QC02m = QC02m,
                             autoQC02 = autoQC02)
 
-  res.autoQC4L <- .autoQC4L(x = res.position,
+  res.autoQC4L <- .autoQC4L(nrow(res.position),
                             instrument = instrument,
                             QC4Lo = QC4Lo,
                             QC4Lm = QC4Lm,
                             autoQC4L = autoQC4L)
 
 
-  res.clean <- .clean(x = res.position,
+  res.clean <- .clean(nrow(res.position),
                       instrument = instrument,
                       cleano = cleano,
                       cleanm = cleanm,
@@ -702,7 +751,7 @@ generate_queue <- function(x,
   # generate file name
   res.filename <- .generate_name(x = res.queue, startposition = startposition)
 
-  res <- cbind('File Name' = res.filename,
+  rv <- cbind('File Name' = res.filename,
         'Path' = paste(pathprefix, paste('p', projectid, sep = ''), res.folder, sep = pathprefixsep),
         'Position' = as.character(res.queue$position),
         'Inj Vol' = rep(2, times = length(res.filename)),
@@ -712,7 +761,27 @@ generate_queue <- function(x,
         'L1 Study' = rep(projectid, times = length(res.filename))
   )
 
-  return(res)
+
+  # some naming cosmetics
+  rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
+  rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
+  rv[, 'File Name' ] <- gsub("_autoQC02_autoQC02", "_autoQC02", rv[, 'File Name' ])
+  rv[, 'File Name' ] <- gsub("_autoQC4L_autoQC4L", "_autoQC4L", rv[, 'File Name' ])
+  rv[, 'File Name' ] <- gsub("_clean_clean", "_clean", rv[, 'File Name' ])
+  rv[, 'File Name' ] <- gsub("_N_A$", "", rv[, 'File Name' ])
+
+  rv <- as.data.frame(rv)
+  rv$"Instrument Method" <- ""
+  rv$"Instrument Method"[grep("_autoQC01", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01"
+  rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
+  rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
+
+  if (DEBUG) {
+    rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)
+  }
+  rv <- rv[order(rv$`File Name`),]
+  View(rv)
+  return(rv)
 }
 
 
