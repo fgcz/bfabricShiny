@@ -17,6 +17,15 @@
   data.frame(extract.name, extract.id, extract.Condition)
 }
 
+.test_data_medium_container <- function(){
+  extract.name <- c(paste("Sample", 1:20, sep = "_"))
+  extract.id <-  1:20
+  extract.Condition <- c(rep("Control", 4), rep("Ampicillin", 4), rep("Kanamycin", 4), rep("Less", 3), rep("More", 5))
+  container <- rep(3000,20)
+  data.frame(extract.name, extract.id, extract.Condition, container)
+}
+
+
 .test_data_medium_random <- function(){
   extract.name <- c(paste("Sample", 1:20, sep = "_"))
   extract.id <- 1:20
@@ -104,6 +113,10 @@ getHPLCparameter <- function(){
        LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
 
+#'
+#'@examples
+#' bfabricShiny:::getQCsample()
+#'
 getQCsample <- function(){
   list(extract.name = c('autoQC01', 'autoQC02', 'autoQC4L', 'clean'),
        extract.Condition = c(as.integer(NA), as.integer(NA), as.integer(NA), as.integer(NA)),
@@ -196,7 +209,7 @@ getQCsample <- function(){
       qc.inserts = floor(nrow_x/howoften)
       qc.idx <- howoften*(1:qc.inserts)
     }
-    repetitions <- qc.inserts*howmany
+    repetitions <- qc.inserts * howmany
     df <- data.frame(extract.name = autoQCName,
                      extract.id = as.integer(NA),
                      extract.Condition = autoQCName,
@@ -313,94 +326,45 @@ getQCsample <- function(){
   return(res)
 }
 
-#queue start and end ----
-.gen.start <- function(instrument, start1, start2, start3){ #argument names!
-  if (is.na(start1)){
-    S1 <-  .emptydf()
-    S1 <- S1[, 1:4]
+#'
+#' @examples
+#' bfabricShiny:::getStartorEndLine()
+getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
+  if (is.na(method)) {
+    res <-  .emptydf()
+    res <- res[, 1:4]
   } else {
-    S1 <- data.frame(extract.name = getQCsample()[[1]][start1],
-                     extract.id = getQCsample()[[2]][start1],
-                     extract.Condition = getQCsample()[[3]][start1],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start1]]]),
-                     stringsAsFactors = FALSE)
+    res <- data.frame(extract.name = getQCsample()[[1]][method],
+                      extract.id = getQCsample()[[2]][method],
+                      extract.Condition = getQCsample()[[3]][method],
+                      position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][method]]]),
+                      stringsAsFactors = FALSE)
   }
-  if (is.na(start2)){
-    S2 <-  .emptydf()
-    S2 <- S2[, 1:4]
-  } else {
-    S2 <- data.frame(extract.name = getQCsample()[[1]][start2],
-                     extract.id = getQCsample()[[2]][start2],
-                     extract.Condition = getQCsample()[[3]][start2],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start2]]]),
-                     stringsAsFactors = FALSE)
-  }
-  if (is.na(start3)){
-    S3 <-  .emptydf()
-    S3 <- S3[, 1:4]
-  } else {
-    S3 <- data.frame(extract.name = getQCsample()[[1]][start3],
-                     extract.id = getQCsample()[[2]][start3],
-                     extract.Condition = getQCsample()[[3]][start3],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][start3]]]),
-                     stringsAsFactors = FALSE)
-  }
-  res <- dplyr::bind_rows(S1, S2, S3)
-
   return(res)
 }
 
-
-
-.gen.end <- function(instrument, end1, end2, end3){ #argument names!
-  if (is.na(end1)){
-    E1 <-  .emptydf()
-
-  } else {
-    E1 <- data.frame(extract.name = getQCsample()[[1]][end1],
-                     extract.id = getQCsample()[[2]][end1],
-                     extract.Condition = getQCsample()[[3]][end1],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end1]]]),
-                     stringsAsFactors = FALSE)
-  }
-
-  if (is.na(end2)){
-    E2 <-  .emptydf()
-
-  } else {
-    E2 <- data.frame(extract.name = getQCsample()[[1]][end2],
-                     extract.id = getQCsample()[[2]][end2],
-                     extract.Condition = getQCsample()[[3]][end2],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end2]]]),
-                     stringsAsFactors = FALSE)
-  }
-
-  if (is.na(end3)){
-    E3 <-  .emptydf()
-
-  } else {
-    E3 <- data.frame(extract.name = getQCsample()[[1]][end3],
-                     extract.id = getQCsample()[[2]][end3],
-                     extract.Condition = getQCsample()[[3]][end3],
-                     position = unlist(getHPLCparameter()[[instrument]][[getQCsample()[[4]][end3]]]),
-                     stringsAsFactors = FALSE)
-  }
-
-  df <- dplyr::bind_rows(E1, E2, E3)
-
-  return(df)
+#queue start and end ----
+#'
+#' @examples
+#' bfabricShiny:::.gen.start("LUMOS_1", start1 = 1, start2 = NA, start3 = NA)
+#'
+.gen.start.end <- function(instrument, pos1, pos2, pos3){ #argument names!
+  S1 <- getStartorEndLine(instrument, pos1)
+  S2 <- getStartorEndLine(instrument, pos2)
+  S3 <- getStartorEndLine(instrument, pos3)
+  res <- dplyr::bind_rows(S1, S2, S3)
+  return(res)
 }
 
+#'
+#'
+#' @examples
+#' .gen.start("LUMOS_1", start1, start2 , start3)
+#' bfabricShiny:::.gen.end("LUMOS_1", end1, end2 , end3)
+#'
 .clean_queue <- function(x, instrument, start1, start2, start3, end1, end2, end3){
-  Instrument = instrument
-  start1 = start1
-  start2 = start2
-  start3 = start3
-
-  start <- .gen.start(instrument, start1, start2 , start3)
-
-  end <- .gen.end(instrument, end1, end2 , end3)
-
+  start <- .gen.start.end(instrument, start1, start2 , start3)
+  end <- .gen.start.end(instrument, end1, end2 , end3)
   res <- dplyr::bind_rows(start, x, end)
 
   return(res)
@@ -523,12 +487,13 @@ getQCsample <- function(){
 #' @export
 #'
 #' @examples
-.generate_name <- function(x, startposition = 1){
+#'
+.generate_name <- function(x, startposition = 1) {
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%03d", (seq_len(n) - 1) + startposition) #use start queue with input value instead of 1
   injection.name <- paste(rundate, injection.index, sep = "_")
-  injection.name <- paste(injection.name, paste("S", x$extract.id,sep=''), sep = "_")
+  injection.name <- paste(injection.name, paste("S", x$extract.id,sep = ''), sep = "_")
 
   injection.name <- gsub("_SNA", "", injection.name)
 
@@ -602,7 +567,8 @@ getQCsample <- function(){
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
 #' generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
-#'
+#' bfabricShiny:::.test_data_medium_container()
+#' generate_queue(bfabricShiny:::.test_data_medium_container())
 generate_queue <- function(x,
                            foldername = '',
                            projectid = 1000,
@@ -689,9 +655,9 @@ generate_queue <- function(x,
 
   # attache HPLC plate position
 
-  if(method == 'PRM'){
+  if (method == 'PRM') {
     res.position <- res.template
-  } else if (method == 'testing'){
+  } else if (method == 'testing') {
     res.position <- res.template
   } else {
     res.position <- .tray_position(x = res.template, instrument = instrument )
@@ -761,7 +727,6 @@ generate_queue <- function(x,
         'L1 Study' = rep(projectid, times = length(res.filename))
   )
 
-
   # some naming cosmetics
   rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
   rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
@@ -780,7 +745,6 @@ generate_queue <- function(x,
     rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)
   }
   rv <- rv[order(rv$`File Name`),]
-  View(rv)
   return(rv)
 }
 
