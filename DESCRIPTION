@@ -3,12 +3,13 @@ Type: Package
 Title: A Shiny Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [cre, aut], Christian Panse [cre, aut]
 Maintainer: Christian Panse<cp@fgcz.ethz.ch>
-Version: 0.10.4
+Version: 0.10.5
 Description: provides access modules and functions to interact with the FGCZ's 
     bfabric system. The package contains shiny applications, e.g.,
     to allow the FGCZ user to automatically generate a certain set of queues for
     Thermo Fisher Scientific instruments. 
 Depends:
+    R (>= 3.6),
     DT,
     PKI,
     httr,
@@ -26,7 +27,8 @@ Suggest:
     protViz (>= 0.4),
     SRMService (>= 0.1),
     tidyr (>= 0.6),
-    tidyverse
+    tidyverse,
+    RCurl
 License: GPL
 LazyData: TRUE
 Collate:
