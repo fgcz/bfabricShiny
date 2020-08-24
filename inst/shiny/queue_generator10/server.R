@@ -70,7 +70,13 @@ shinyServer(function(input, output, session) {
   }))
   
   output$project <- renderUI({
-    numericInput('project', 'Container:', value = 3000,  min = 1000, max = 3500, width=100)
+    if (input$containerType == 'project'){
+      numericInput('project', 'Container:', value = 3000,  min = 1000, max = 3500, width=100)
+    }
+    else{
+      # numericInput('project', 'Container:', value = 3181,  min = 1000, max = 3500, width=100)
+      textInput('project', 'Container:', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
+    }
   })
   
   output$instrument <- renderUI({
@@ -168,31 +174,44 @@ shinyServer(function(input, output, session) {
       return (res$user.login)
     }
   })
-  
-  
+
+  #---- getSample ------
   # res <- as.data.frame(fromJSON("http://localhost:5000/sample/2066"))
-  getSample <- reactive({
-    
+  .restSample <- function(container=3181, url="http://localhost:5000/sample/"){
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = "fetching sample data ...")
+    progress$set(message = paste("fetching sample data of container",
+                                 container, "..."))
     on.exit(progress$close())
     
+    sampleURL <- paste(url, container, sep='')
     
-    if (is.null(input$project)){
-      return (NULL)
+    message(sampleURL)
+    res <- as.data.frame(fromJSON(sampleURL))
+    message(paste0('got ', nrow(res), ' samples of container ', container, "."))
+    rownames(res) <- res$samples._id
+    res[,c('samples._id', 'samples.name', 'samples.condition')]
+  }
+
+
+  getSample <- reactive({
+    if (input$containerType == 'project'){
+      
+      if (is.null(input$project)){
+        return (NULL)
+      }else{
+        res <- .restSample(input$project)
+        return (res)
+      }
+    }else if (input$containerType == 'order'){
+      containerIDs <- as.numeric(strsplit(input$project, c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"), perl = FALSE)[[1]])
+      res <- do.call('rbind', lapply(unique(containerIDs), .restSample))
+      return(res)
     }else{
-      sampleURL <- paste("http://localhost:5000/sample/", 
-                         input$project, sep='')
-      
-      message(sampleURL)
-      res <- as.data.frame(fromJSON(sampleURL))
-      message(paste('got', nrow(res), 'samples.'))
-      
-      return (res)
+      NULL
     }
   })
-  
-  
+
+
   output$sample <- renderUI({
     res <- getSample()
     
@@ -205,11 +224,15 @@ shinyServer(function(input, output, session) {
     }
   })
   output$login <- renderUI({
-    res <- getLogin()
-    if (!is.null(res)){
-      selectInput('login', 'Login:', as.character(res), multiple = FALSE)
-    }else{
-      selectInput('login', 'Login:', NULL)
+    if (input$containerType == 'project'){
+      res <- getLogin()
+      if (!is.null(res)){
+        selectInput('login', 'Login:', as.character(res), multiple = FALSE)
+      }else{
+        selectInput('login', 'Login:', NULL)
+      }}
+    else{
+      selectInput('login', 'Login:', "analytics", multiple = FALSE)
     }
   })
   

@@ -28,6 +28,16 @@ shinyUI(
                column(9,
                       #content ----
                       tags$h3("Select options for your queue:"),
+                      radioButtons(
+                        "containerType",
+                        "Type of container:",
+                        choices = list('project', 'order'),
+                        selected = 'order',
+                        inline = TRUE,
+                        width = NULL,
+                        choiceNames = NULL,
+                        choiceValues = NULL
+                      ),
                       fluidRow(
                         column(4, htmlOutput("project")),
                         column(4, htmlOutput("login")), #tags$h4("user name:")),
