@@ -11,7 +11,7 @@ library(jsonlite)
 library(httr)
 library(DT)
 
- 
+
 shinyServer(function(input, output, session) {
   
   values <- reactiveValues(wuid = NULL)
@@ -47,7 +47,7 @@ shinyServer(function(input, output, session) {
          QEXACTIVEHFX_1='raw',
          LUMOS_1='raw',
          IMSTOF_1='h5')})
-
+  
   #output list ----
   
   output$area <- renderUI(({
@@ -71,7 +71,7 @@ shinyServer(function(input, output, session) {
   
   output$project <- renderUI({
     if (input$containerType == 'project'){
-      numericInput('project', 'Container:', value = 3000,  min = 1000, max = 3500, width=100)
+      numericInput('project', 'Container:', value = 3530,  min = 1000, max = 3500, width=100)
     }
     else{
       # numericInput('project', 'Container:', value = 3181,  min = 1000, max = 3500, width=100)
@@ -174,11 +174,11 @@ shinyServer(function(input, output, session) {
       return (res$user.login)
     }
   })
-
+  
   #---- getSample ------
   # res <- as.data.frame(fromJSON("http://localhost:5000/sample/2066"))
   .restSample <- function(container=3181, url="http://localhost:5000/sample/"){
-  
+    
     if (is.numeric(container) & container>999){
       sampleURL <- paste(url, container, sep='')
       
@@ -188,64 +188,69 @@ shinyServer(function(input, output, session) {
           return (NULL)
         }
       }
-   
-    out <- tryCatch({
       
-      progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-      progress$set(message = paste("fetching sample data of container",
-                                   container, "..."))
-      on.exit(progress$close())
-      
-      
-      message(sampleURL)
-      res <- as.data.frame(fromJSON(sampleURL))
-      message(paste0('got ', nrow(res), ' samples of container ', container, "."))
-      rownames(res) <- res$samples._id
-      df <- res[,c('samples._id', 'samples.name', 'samples.condition')]
-      df$containerid=container
-      return(df)
-    }, 
-    error=function(cond) {
-      message(paste("Container", container, "does not seem to have samples:"))
-      message("Here's the original error message:")
-      message(cond)
-      # Choose a return value in case of error
-      return(NULL)
-    },
-    warning=function(cond) {
-      message(paste("REST request caused a warning for container:", container))
-      message("Here's the original warning message:")
-      message(cond)
-      return(NULL)
-    },
-    finally={
-      message(paste("Processed sample query for container:", container))
+      out <- tryCatch({
+        
+        progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+        progress$set(message = paste("fetching sample data of container",
+                                     container, "..."))
+        on.exit(progress$close())
+        
+        
+        message(sampleURL)
+        res <- as.data.frame(fromJSON(sampleURL))
+        message(paste0('got ', nrow(res), ' samples of container ', container, "."))
+        rownames(res) <- res$samples._id
+        df <- res[,c('samples._id', 'samples.name', 'samples.condition')]
+        df$containerid = container
+        return(df)
+      }, 
+      error = function(cond) {
+        message(paste("Container", container, "does not seem to have samples:"))
+        message("Here's the original error message:")
+        message(cond)
+        # Choose a return value in case of error
+        return(NULL)
+      },
+      warning=function(cond) {
+        message(paste("REST request caused a warning for container:", container))
+        message("Here's the original warning message:")
+        message(cond)
+        return(NULL)
+      },
+      finally={
+        message(paste("Processed sample query for container:", container))
+      }
+      )
+      return(out)
     }
-    )
-    return(out)
-    }
-   NULL
+    NULL
   }
   
   getSample <- reactive({
-    if (input$containerType == 'project'){
+    if (input$containerType == 'project') {
       
-      if (is.null(input$project)){
-        return (NULL)
-      }else{
+      if (is.null(input$project)) {
+        return(NULL)
+      } else {
         res <- .restSample(input$project)
-        return (res)
+        return(res)
       }
-    }else if (input$containerType == 'order'){
-      containerIDs <- as.numeric(strsplit(input$project, c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"), perl = FALSE)[[1]])
-      res <- do.call('rbind', lapply(unique(containerIDs), .restSample))
-      return(res)
+    } else if (input$containerType == 'order') {
+      if (is.null(input$project)) {
+        return(NULL)
+      } else {
+        
+        containerIDs <- as.numeric(strsplit(input$project, c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"), perl = FALSE)[[1]])
+        res <- do.call('rbind', lapply(unique(containerIDs), .restSample))
+        return(res)
+      }
     }else{
       NULL
     }
   })
-
-
+  
+  
   output$sample <- renderUI({
     res <- getSample()
     
@@ -254,10 +259,12 @@ shinyServer(function(input, output, session) {
     }else{
       idx <- rev(order(res$samples._id))
       res <- res[idx, ]
-      selectInput('sample', 'Sample:', paste0("C",res$container, "_S", res$samples._id, "-", res$samples.name), size = 40, multiple = TRUE, selectize = FALSE)
+      selectInput('sample', 'Sample:',
+                  paste0("C",res$container, "_S", res$samples._id, "-", res$samples.name),
+                  size = 40, multiple = TRUE, selectize = FALSE)
     }
   })
-
+  
   output$login <- renderUI({
     if (input$containerType == 'project'){
       res <- getLogin()
@@ -300,7 +307,7 @@ shinyServer(function(input, output, session) {
     
     #idx.filter <- (paste(res$samples._id, res$samples.name, sep="-") %in% input$sample)
     idx.filter <- (paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name) %in% input$sample)
-
+    
     print(names(res))
     res <- res[idx.filter, c("samples.name", "samples._id", "samples.condition", "containerid")]
     
@@ -322,7 +329,7 @@ shinyServer(function(input, output, session) {
       containerid <- NULL
     }
     
-    rv <- generate_queue(x = res,
+    rv <- bfabricShiny:::generate_queue_order(x = res,
                          foldername = input$folder,
                          projectid = containerid,
                          area = input$area,
@@ -352,19 +359,6 @@ shinyServer(function(input, output, session) {
                          lists = input$targets,
                          startposition = input$startposition)
     
-    # some naming cosmetics
-    rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
-    rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
-    rv[, 'File Name' ] <- gsub("_autoQC02_autoQC02", "_autoQC02", rv[, 'File Name' ])
-    rv[, 'File Name' ] <- gsub("_autoQC4L_autoQC4L", "_autoQC4L", rv[, 'File Name' ])
-    rv[, 'File Name' ] <- gsub("_clean_clean", "_clean", rv[, 'File Name' ])
-    rv[, 'File Name' ] <- gsub("_N_A$", "", rv[, 'File Name' ])
-    
-    rv <- as.data.frame(rv)
-    rv$"Instrument Method" <- ""
-    rv$"Instrument Method"[grep("_autoQC01", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01"
-    rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
-    rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
     rv
     
   })
@@ -375,7 +369,7 @@ shinyServer(function(input, output, session) {
     
     if (input$sample != "" && length(input$sample) >= 1){
       
-       getBfabricContent()
+      getBfabricContent()
       
     }else{
       
