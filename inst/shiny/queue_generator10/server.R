@@ -165,13 +165,13 @@ shinyServer(function(input, output, session) {
     progress$set(message = "fetching user data ...")
     on.exit(progress$close())
     
-    if (is.null(input$project)){
-      return (NULL)
+    if (is.null(input$project) || grepl(",", input$project)) {
+      return(NULL)
     }else{
       res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/", 
-                                          input$project, sep='')))
+                                          input$project, sep = '')))
       message(paste('got', nrow(res), 'users.'))
-      return (res$user.login)
+      return(res$user.login)
     }
   })
   
@@ -179,13 +179,13 @@ shinyServer(function(input, output, session) {
   # res <- as.data.frame(fromJSON("http://localhost:5000/sample/2066"))
   .restSample <- function(container=3181, url="http://localhost:5000/sample/"){
     
-    if (is.numeric(container) & container>999){
-      sampleURL <- paste(url, container, sep='')
+    if (is.numeric(container) & container > 999) {
+      sampleURL <- paste(url, container, sep = '')
       
-      if (require(RCurl)){
-        if (RCurl::url.exists(sampleURL) == FALSE){
+      if (require(RCurl)) {
+        if (RCurl::url.exists(sampleURL) == FALSE) {
           message(paste("URL", sampleURL, "for container", container, "does not exists."))
-          return (NULL)
+          return(NULL)
         }
       }
       
@@ -287,11 +287,11 @@ shinyServer(function(input, output, session) {
   #------------------------ getBfabricContent ----
   getBfabricContent <- reactive({
     
-    if (is.null(input$sample)){
+    if (is.null(input$sample)) {
       return(NULL)
     } 
     
-    if (length(input$sample) == 1 && input$sample == ""){
+    if (length(input$sample) == 1 && input$sample == "") {
       return (NULL)
     }
     
