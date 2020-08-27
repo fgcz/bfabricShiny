@@ -563,7 +563,7 @@ generate_queue_order <- function(x,
   
   x <- split(x, x$containerid)
   res <- list()
-  order <- if(length(x) > 1) {TRUE}else{FALSE}
+  order <- if(length(x) > 1 || is.null(projectid)) {TRUE}else{FALSE}
   for (i in 1:length(x)) {
     res[[names(x)[i]]] <- 
       generate_queue(x[[i]],
