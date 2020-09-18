@@ -43,7 +43,7 @@
   extract.Condition = c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20)),
   containerid = c(rep(7239,10), rep(3111,10)))
   return(res)
-  
+
 }
 
 #HPLC position helper functions ----
@@ -116,7 +116,7 @@ getQCsample <- function(){
                     position = character(),
                     idx = numeric(),
                     stringsAsFactors = FALSE)
-  
+
   return(res)
 }
 
@@ -130,7 +130,7 @@ getQCsample <- function(){
 #'
 #' @examples
 .tray_position <- function(x, instrument = ""){
-  
+
   pos.idx <- unlist(getHPLCparameter()[[instrument]][2])
   n <- nrow(x)
   positions.needed <- ceiling(n/46)
@@ -138,7 +138,7 @@ getQCsample <- function(){
   pos <- pos[1:n]
   x$position <- pos
   res <- x
-  
+
   return(res)
 }
 
@@ -163,7 +163,7 @@ getQCsample <- function(){
     dplyr::bind_rows(df) %>%
     dplyr::arrange(IDX)
   res <- res %>% dplyr::select("extract.name", "extract.id", "extract.Condition")
-  
+
   return(res)
 }
 
@@ -299,10 +299,10 @@ getQCsample <- function(){
 .insert_qc_samples <- function(x, y, z, u, v){
   x <- x %>%
     dplyr::mutate(idx = seq_along(x$extract.name))
-  
+
   res <- dplyr::bind_rows(x,y,z,u,v) %>%
     dplyr::arrange(idx)
-  
+
   res[sapply(res, is.factor)] <- lapply(res[sapply(res, is.factor)], as.character)
   cleanup.idx <- max(which(res$extract.name == x$extract.name[nrow(x)]))
   res <- res[1:cleanup.idx,]
@@ -349,7 +349,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   start <- .gen.start.end(instrument, start1, start2 , start3)
   end <- .gen.start.end(instrument, end1, end2 , end3)
   res <- dplyr::bind_rows(start, x, end)
-  
+
   return(res)
 }
 
@@ -406,7 +406,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
     dplyr::arrange(blockidx, randomidx) %>%
     dplyr::filter(!is.na(extract.id)) %>%
     dplyr::select("extract.name", "extract.id", "extract.Condition")
-  
+
   return(res)
 }
 
@@ -418,7 +418,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   res$extract.Condition <- paste(res$extract.Condition, paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_"), sep = "_")
   res <- res[rep(seq_len(nrow(res)), each = nr.replicates ), ]
   res <- res[order(sample(nrow(res))), ]
-  
+
   return(res)
 }
 
@@ -431,7 +431,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   res$extract.Condition <- res$extract.Condition %>%  #attache to extract.Condition
     paste(rep("Targets", times = nrow(res)), sep = "_") %>%
     paste(rep(1:lists, times = nrow(res)/lists), sep = "")
-  
+
   return(res)
 }
 
@@ -450,7 +450,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #' @export
 #'
 #' @examples
-#' 
+#'
 .generate_folder_name <- function(
   x,
   foldername,
@@ -478,19 +478,19 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #' @export
 #'
 #' @examples
-#' 
+#'
 .generate_name <- function(x, startposition = 1) {
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%03d", (seq_len(n) - 1) + startposition) #use start queue with input value instead of 1
   injection.name <- paste(rundate, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id,sep = ''), sep = "_")
-  
+
   injection.name <- gsub("_SNA", "", injection.name)
-  
+
   injection.name <- paste(injection.name, x$extract.name, sep = "_") %>%
     paste(x$extract.Condition, sep = "_")
-  
+
   return(injection.name)
 }
 
@@ -503,7 +503,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #'
 #' @examples
 #' bfabricShiny:::.generate_name_order(bfabricShiny:::.test_data_medium())
-#' 
+#'
 .generate_name_order <- function(x, startposition = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
@@ -511,12 +511,12 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   injection.name <- paste(rundate, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("p", x$containerid, sep = ''), sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id, sep = ''), sep = "_")
-  
+
   injection.name <- gsub("_SNA", "", injection.name)
-  
+
   injection.name <- paste(injection.name, x$extract.name, sep = "_") %>%
     paste(x$extract.Condition, sep = "_")
-  
+
   return(injection.name)
 }
 
@@ -560,12 +560,12 @@ generate_queue_order <- function(x,
                                  pathprefix = "D:\\Data2San",
                                  pathprefixsep = "\\",
                                  DEBUG = FALSE){
-  
+
   x <- split(x, x$containerid)
   res <- list()
   order <- if(length(x) > 1 || is.null(projectid)) {TRUE}else{FALSE}
   for (i in 1:length(x)) {
-    res[[names(x)[i]]] <- 
+    res[[names(x)[i]]] <-
       generate_queue(x[[i]],
                      foldername = foldername,
                      projectid = projectid,
@@ -718,9 +718,9 @@ generate_queue <- function(x,
   }else {
     res.template <- .generate_template_base(x = x)
   }
-  
+
   # attache HPLC plate position
-  
+
   if (method == 'PRM') {
     res.position <- res.template
   } else if (method == 'testing') {
@@ -729,37 +729,37 @@ generate_queue <- function(x,
     res.position <- .tray_position(x = res.template, instrument = instrument )
   }
   # insert qc samples
-  
+
   res.autoQC01 <- .autoQC01(nrow(res.position),
                             instrument = instrument,
                             QC01o = QC01o,
                             QC01m = QC01m,
                             autoQC01 = autoQC01)
-  
+
   res.autoQC02 <- .autoQC02(nrow(res.position),
                             instrument = instrument,
                             QC02o = QC02o,
                             QC02m = QC02m,
                             autoQC02 = autoQC02)
-  
+
   res.autoQC4L <- .autoQC4L(nrow(res.position),
                             instrument = instrument,
                             QC4Lo = QC4Lo,
                             QC4Lm = QC4Lm,
                             autoQC4L = autoQC4L)
-  
+
   res.clean <- .clean(nrow(res.position),
                       instrument = instrument,
                       cleano = cleano,
                       cleanm = cleanm,
                       clean = clean)
-  
+
   res.qc <- .insert_qc_samples(x = res.position,
                                y = res.autoQC01,
                                z = res.autoQC02,
                                u = res.autoQC4L,
                                v = res.clean)
-  
+
   # clean up the sample queue
   res.queue <- .clean_queue(x = res.qc,
                             instrument = instrument,
@@ -777,16 +777,16 @@ generate_queue <- function(x,
                                       instrument = instrument,
                                       username = username,
                                       pathprefixsep = pathprefixsep)
-  
+
   # generate file name
   if (order) {
     res.filename <- .generate_name_order(x = res.queue, startposition = startposition)
   }else{
     res.filename <- .generate_name(x = res.queue, startposition = startposition)
   }
-  
+
   orderstring <- if (order) {'orders'}else{paste('p', projectid, sep = '')}
-  
+
   rv <- cbind('File Name' = res.filename,
               'Path' = paste(pathprefix, orderstring , res.folder, sep = pathprefixsep),
               'Position' = as.character(res.queue$position),
@@ -796,7 +796,7 @@ generate_queue <- function(x,
               'Sample Name' = res.queue$extract.name,
               'L1 Study' = rep(projectid, times = length(res.filename))
   )
-  
+
   # some naming cosmetics
   rv[, 'File Name' ] <- gsub("[^-a-zA-Z0-9_]", "_", rv[, 'File Name' ])
   rv[, 'File Name' ] <- gsub("_autoQC01_autoQC01", "_autoQC01", rv[, 'File Name' ])
@@ -804,13 +804,13 @@ generate_queue <- function(x,
   rv[, 'File Name' ] <- gsub("_autoQC4L_autoQC4L", "_autoQC4L", rv[, 'File Name' ])
   rv[, 'File Name' ] <- gsub("_clean_clean", "_clean", rv[, 'File Name' ])
   rv[, 'File Name' ] <- gsub("_N_A$", "", rv[, 'File Name' ])
-  
+
   rv <- as.data.frame(rv)
   rv$"Instrument Method" <- ""
   rv$"Instrument Method"[grep("_autoQC01", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01"
   rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
   rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
-  
+
   if (DEBUG) {
     rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)
   }
@@ -826,6 +826,12 @@ generate_queue <- function(x,
 #'
 #' @export runQueue
 runQueue <- function(){
-  qgs <- system.file("shiny", "queue_generator", package = "bfabricShiny")
-  shiny::runApp(qgs, display.mode = "normal")
+  qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
+  shiny::runApp(qgs,
+                #host = getOption("shiny.host", "127.0.0.1"),
+                host = "130.60.81.134",
+                port = 1234,
+                display.mode = "normal",
+                quiet = TRUE,
+                launch.browser = FALSE)
 }
