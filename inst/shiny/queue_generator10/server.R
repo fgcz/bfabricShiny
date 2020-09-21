@@ -411,13 +411,13 @@ shinyServer(function(input, output, session) {
 
     ########################## WRITE CSV TO BFABRIC
     fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
-    print (fn)
+   message (fn)
     cat("Bracket Type=4\r\n", file = fn, append = FALSE)
     write.table(res, file = fn,
                 sep=',', row.names = FALSE,
                 append = TRUE, quote = FALSE, eol='\r\n')
 
-    print ("ALIVE")
+    message ("ALIVE")
     file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
     
     containerids <- strsplit(as.character(input$project), ",")[[1]]
