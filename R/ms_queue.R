@@ -825,6 +825,8 @@ generate_queue <- function(x,
 #' @return
 #'
 #' @export runQueue
+#' @examples
+#' bfabricShiny::runQueue()
 runQueue <- function(){
   qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
   shiny::runApp(qgs,
