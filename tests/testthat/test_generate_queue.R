@@ -44,7 +44,7 @@ require(testthat)
 
 test_that("test default", {
 
- x <- bfabricShiny:::test_data()
+ x <- bfabricShiny:::test_data_medium()
  
   res.default <- .test_generate_queue(x, 'default')
   ground_trues <- c(NA,1,2,3,4,NA,5,6,7,8,NA,9,10,11,12,NA,13,14,15,16,NA,17,18,19,20,NA,NA,NA)
@@ -56,7 +56,7 @@ test_that("test default", {
 
 test_that("test random", {
   
-  x <- bfabricShiny:::test_data()
+  x <- bfabricShiny:::test_data_medium()
   
   ground_trues <- c(NA, 3, 4, 10, 1, NA, 12, 15, 2, 20, NA, 13, 18, 7, 17, NA,
                     5, 9, 16, 14, NA, 8, 11, 6, 19, NA, NA, NA)
