@@ -47,7 +47,9 @@
 }
 
 #HPLC position helper functions ----
-
+#' method eksigent
+#' @examples
+#' bfabricShiny:::.eksigent()
 .eksigent <- function(){
   tray1 <- rep(2, times = 46) %>%
     paste(rep(LETTERS[1:6], each = 8), sep = "") %>%
@@ -88,13 +90,13 @@ getHPLCparameter <- function(){
        QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
        FUSION_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       #FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        QEXACTIVEHF_4 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       # LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
        LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       LUMOS_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
+       EXPLORIS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
        IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
 
 #'

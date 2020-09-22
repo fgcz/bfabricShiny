@@ -19,19 +19,21 @@ shinyServer(function(input, output, session) {
   getInstrument <- reactive({
     list(
       #QEXACTIVE_1='Xcalibur',
-      QEXACTIVE_2='Xcalibur',
-      QEXACTIVEHF_2='Xcalibur',
-      QEXACTIVEHF_4='Xcalibur',
-      QEXACTIVEHFX_1='Xcalibur',
-      FUSION_1='Xcalibur',
-      FUSION_2='Xcalibur',
-      LUMOS_1='Xcalibur'
+      QEXACTIVE_2 = 'Xcalibur',
+      QEXACTIVEHF_2 = 'Xcalibur',
+      QEXACTIVEHF_4 = 'Xcalibur',
+      QEXACTIVEHFX_1 = 'Xcalibur',
+      FUSION_1 = 'Xcalibur',
+      FUSION_2 =  'Xcalibur',
+      EXPLORIS_1 = 'Xcalibur',
+      LUMOS_1 = 'Xcalibur',
+      LUMOS_2 = 'Xcalibur'
     )})
 
 
   getInstrumentSuffix <- reactive({
-    list(VELOS_1='RAW',
-         VELOS_2='RAW',
+    list(VELOS_1 = 'RAW',
+         VELOS_2 = 'RAW',
          G2HD_1='wiff',
          QTRAP_1='wiff',
          TSQ_1='RAW',
@@ -45,8 +47,10 @@ shinyServer(function(input, output, session) {
          QEXACTIVEHF_2='raw',
          QEXACTIVEHF_4='raw',
          QEXACTIVEHFX_1='raw',
-         LUMOS_1='raw',
-         IMSTOF_1='h5')})
+         LUMOS_1 = 'raw',
+         LUMOS_2 = 'raw',
+         EXPLORIS_1 = 'raw',
+         IMSTOF_1 = 'h5')})
 
   #output list ----
 
@@ -332,34 +336,34 @@ shinyServer(function(input, output, session) {
     }
 
     rv <- bfabricShiny:::generate_queue_order(x = res,
-                         foldername = input$folder,
-                         projectid = containerid,
-                         area = input$area,
-                         instrument = input$instrument,
-                         username = input$login,
-                         nr.methods = as.integer(input$testmethods),
-                         nr.replicates = as.integer(input$replicates),
-                         method = as.character(input$method),
-                         autoQC01 = input$autoQC01,
-                         QC01m = input$QC01m,
-                         QC01o = input$QC01o,
-                         autoQC02 = input$autoQC02,
-                         QC02m = input$QC02m,
-                         QC02o = input$QC02o,
-                         autoQC4L = input$autoQC4L,
-                         QC4Lo = input$QC4Lo,
-                         QC4Lm = input$QC4Lm,
-                         clean = input$clean,
-                         cleanm = input$cleanm,
-                         cleano = input$cleano,
-                         start1 = as.numeric(input$start1),
-                         start2 = as.numeric(input$start2),
-                         start3 = as.numeric(input$start3),
-                         end1 = as.numeric(input$end1),
-                         end2 = as.numeric(input$end2),
-                         end3 = as.numeric(input$end3),
-                         lists = input$targets,
-                         startposition = input$startposition)
+                                              foldername = input$folder,
+                                              projectid = containerid,
+                                              area = input$area,
+                                              instrument = input$instrument,
+                                              username = input$login,
+                                              nr.methods = as.integer(input$testmethods),
+                                              nr.replicates = as.integer(input$replicates),
+                                              method = as.character(input$method),
+                                              autoQC01 = input$autoQC01,
+                                              QC01m = input$QC01m,
+                                              QC01o = input$QC01o,
+                                              autoQC02 = input$autoQC02,
+                                              QC02m = input$QC02m,
+                                              QC02o = input$QC02o,
+                                              autoQC4L = input$autoQC4L,
+                                              QC4Lo = input$QC4Lo,
+                                              QC4Lm = input$QC4Lm,
+                                              clean = input$clean,
+                                              cleanm = input$cleanm,
+                                              cleano = input$cleano,
+                                              start1 = as.numeric(input$start1),
+                                              start2 = as.numeric(input$start2),
+                                              start3 = as.numeric(input$start3),
+                                              end1 = as.numeric(input$end1),
+                                              end2 = as.numeric(input$end2),
+                                              end3 = as.numeric(input$end3),
+                                              lists = input$targets,
+                                              startposition = input$startposition)
 
     rv
 
@@ -411,15 +415,15 @@ shinyServer(function(input, output, session) {
 
     ########################## WRITE CSV TO BFABRIC
     fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
-   message (fn)
+    message(fn)
     cat("Bracket Type=4\r\n", file = fn, append = FALSE)
     write.table(res, file = fn,
                 sep=',', row.names = FALSE,
                 append = TRUE, quote = FALSE, eol='\r\n')
 
-    message ("ALIVE")
+    message("ALIVE")
     file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
-    
+
     containerids <- strsplit(as.character(input$project), ",")[[1]]
     rv <- lapply(containerids, function(containerid){
       POST("http://localhost:5000/add_resource",
