@@ -17,40 +17,13 @@ shinyServer(function(input, output, session) {
   values <- reactiveValues(wuid = NULL)
   # ---- getInstruments ----
   getInstrument <- reactive({
-    list(
-      #QEXACTIVE_1='Xcalibur',
-      QEXACTIVE_2 = 'Xcalibur',
-      QEXACTIVEHF_2 = 'Xcalibur',
-      QEXACTIVEHF_4 = 'Xcalibur',
-      QEXACTIVEHFX_1 = 'Xcalibur',
-      FUSION_1 = 'Xcalibur',
-      FUSION_2 =  'Xcalibur',
-      EXPLORIS_1 = 'Xcalibur',
-      LUMOS_1 = 'Xcalibur',
-      LUMOS_2 = 'Xcalibur'
-    )})
+    bfabricShiny:::.getInstrument()
+  })
 
 
   getInstrumentSuffix <- reactive({
-    list(VELOS_1 = 'RAW',
-         VELOS_2 = 'RAW',
-         G2HD_1='wiff',
-         QTRAP_1='wiff',
-         TSQ_1='RAW',
-         TSQ_2='RAW',
-         #QEXACTIVE_1='raw',
-         QEXACTIVE_2='raw',
-         QEXACTIVE_3='raw',
-         FUSION_1='raw',
-         FUSION_2='raw',
-         QEXACTIVEHF_1='raw',
-         QEXACTIVEHF_2='raw',
-         QEXACTIVEHF_4='raw',
-         QEXACTIVEHFX_1='raw',
-         LUMOS_1 = 'raw',
-         LUMOS_2 = 'raw',
-         EXPLORIS_1 = 'raw',
-         IMSTOF_1 = 'h5')})
+    bfabricShiny:::.getInstrumentSuffix()
+  })
 
   #output list ----
 
