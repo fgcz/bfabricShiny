@@ -46,14 +46,56 @@
 
 }
 
-#HPLC position helper functions ----
+.getInstrument <- function(){
+  list(
+  #QEXACTIVE_1='Xcalibur',
+  QEXACTIVE_2 = 'Xcalibur',
+  QEXACTIVEHF_2 = 'Xcalibur',
+  QEXACTIVEHF_4 = 'Xcalibur',
+  QEXACTIVEHFX_1 = 'Xcalibur',
+  FUSION_1 = 'Xcalibur',
+  FUSION_2 =  'Xcalibur',
+  EXPLORIS_1 = 'Xcalibur',
+  LUMOS_1 = 'Xcalibur',
+  LUMOS_2 = 'Xcalibur'
+)}
 
+.getInstrumentSuffix <- function(){
+  list(
+    VELOS_1 = 'RAW',
+    VELOS_2 = 'RAW',
+    G2HD_1 = 'wiff',
+    QTRAP_1 = 'wiff',
+    TSQ_1 = 'RAW',
+    TSQ_2 = 'RAW',
+    #QEXACTIVE_1='raw',
+    QEXACTIVE_2 = 'raw',
+    QEXACTIVE_3 = 'raw',
+    FUSION_1 = 'raw',
+    FUSION_2 = 'raw',
+    QEXACTIVEHF_1 = 'raw',
+    QEXACTIVEHF_2 = 'raw',
+    QEXACTIVEHF_4 = 'raw',
+    QEXACTIVEHFX_1 = 'raw',
+    LUMOS_1 = 'raw',
+    LUMOS_2 = 'raw',
+    EXPLORIS_1 = 'raw',
+    IMSTOF_1 = 'h5'
+  )
+}
+
+
+#HPLC position helper functions ----
+#' method eksigent
+#' @examples
+#' bfabricShiny:::.eksigent()
 .eksigent <- function(){
   tray1 <- rep(2, times = 46) %>%
     paste(rep(LETTERS[1:6], each = 8), sep = "") %>%
     paste(rep(sprintf("%02d", c(1:8)), times = 6), sep = "")
   pos <- tray1[1:45]
-  return(pos)
+  res <- c('eksigent', list(pos), '2F08', '2F07', '2F07','2F06')
+  return(res)
 }
 
 .waters <- function(){
@@ -66,36 +108,42 @@
     paste(rep(1:8, times = 6), sep = ",") %>%
     paste0('"', ., '"')
   pos <- c(tray1[1:45], tray2[1:45])
-  return(pos)
+  res <- c('waters', list(pos),  '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"' )
+  return(res)
 }
 
 .easylc <- function(){
   tray1 <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
   pos <- tray1[1:45]
-  return(pos)
+  res <- c('easylc', list(pos), 'F8', 'F7', 'F7','F6' )
+  return(res)
 }
+
+
 
 #Define HPLC, autoQC01, autoQC02, autoQC4L, clean ----
 #list elements are: 1) HPLC, 2) sample positions, 3) autoQC01 position, 4) autoQC02 position, 5) autoQC4L position, 6) clean position
 getHPLCparameter <- function(){
-  list(VELOS_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       VELOS_2 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-       G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QTRAP_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       TSQ_1 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-       TSQ_2 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       FUSION_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       #FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHF_4 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       # LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
+  list(VELOS_1 = .eksigent(),
+       VELOS_2 = .eksigent(),
+       G2HD_1 = .waters(),
+       QTRAP_1 = .eksigent(),
+       TSQ_1 = .eksigent(),
+       TSQ_2 = .eksigent(),
+       QEXACTIVE_2 = .waters(),
+       QEXACTIVE_3 = .easylc(),
+       FUSION_1 = .easylc(),
+       FUSION_2 = .waters(),
+       QEXACTIVEHF_1 = .waters(),
+       QEXACTIVEHF_2 = .waters(),
+       QEXACTIVEHF_4 = .waters(),
+       QEXACTIVEHFX_1 = .waters(),
+       LUMOS_1 = .waters(),
+       LUMOS_2 = .waters(),
+       EXPLORIS_1 = .waters(),
+       IMSTOF_1 = .eksigent())
+
+}
 
 #'
 #'@examples
@@ -825,6 +873,8 @@ generate_queue <- function(x,
 #' @return
 #'
 #' @export runQueue
+#' @examples
+#' bfabricShiny::runQueue()
 runQueue <- function(){
   qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
   shiny::runApp(qgs,
