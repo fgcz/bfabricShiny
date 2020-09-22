@@ -253,7 +253,7 @@ shinyServer(function(input, output, session) {
         selectInput('login', 'Login:', NULL)
       }}
     else{
-      selectInput('login', 'Login:', "analytics", multiple = FALSE)
+      selectInput('login', 'Login:', "analytic", multiple = FALSE)
     }
   })
 
