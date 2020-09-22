@@ -9,7 +9,7 @@ Description: provides access modules and functions to interact with the FGCZ's
     to allow the FGCZ user to automatically generate a certain set of queues for
     Thermo Fisher Scientific instruments. 
 Depends:
-    R (>= 3.6),
+    R (>= 3.5),
     DT,
     PKI,
     httr,
