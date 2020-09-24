@@ -556,8 +556,8 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%03d", (seq_len(n) - 1) + startposition) #use start queue with input value instead of 1
-  injection.name <- paste(rundate, injection.index, sep = "_")
-  injection.name <- paste(injection.name, paste("C", x$containerid, sep = ''), sep = "_")
+  injection.name <- paste(rundate, paste("C", x$containerid, sep = ''), sep = "_")
+  injection.name <- paste(injection.name, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id, sep = ''), sep = "_")
 
   injection.name <- gsub("_SNA", "", injection.name)
