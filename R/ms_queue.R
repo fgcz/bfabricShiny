@@ -562,8 +562,8 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 
   injection.name <- gsub("_SNA", "", injection.name)
 
-  injection.name <- paste(injection.name, x$extract.name, sep = "_") %>%
-    paste(x$extract.Condition, sep = "_")
+  injection.name <- paste(injection.name, x$extract.name, sep = "_") 
+  injection.name <- paste(injection.name, x$extract.Condition, sep = "_")
 
   return(injection.name)
 }
