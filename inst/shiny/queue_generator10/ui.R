@@ -32,7 +32,7 @@ shinyUI(
                         "containerType",
                         "Type of container:",
                         choices = list('project', 'order'),
-                        selected = 'order',
+                        selected = 'project',
                         inline = TRUE,
                         width = NULL,
                         choiceNames = NULL,
