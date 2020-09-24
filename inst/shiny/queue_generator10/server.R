@@ -33,7 +33,7 @@ shinyServer(function(input, output, session) {
   }))
 
   output$folder <- renderUI(({
-    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder ="enter your folder name here")
+    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder = "enter your folder name here")
   }))
 
   output$testmethods <- renderUI(({
