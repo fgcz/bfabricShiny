@@ -48,11 +48,9 @@ shinyServer(function(input, output, session) {
 
   output$project <- renderUI({
     if (input$containerType == 'project'){
-      numericInput('project', 'Container:', value = 3530,  min = 1000, max = 3500, width=100)
-    }
-    else{
-      # numericInput('project', 'Container:', value = 3181,  min = 1000, max = 3500, width=100)
-      textInput('project', 'Container:', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
+      numericInput('project', 'Container (project or order):', value = 3530,  min = 1000, max = NA, width = 400)
+    } else{
+      textInput('project', 'Containers (orders):', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
     }
   })
 
