@@ -30,8 +30,8 @@ shinyUI(
                       tags$h3("Select options for your queue:"),
                       radioButtons(
                         "containerType",
-                        "Type of container:",
-                        choices = list('project', 'order'),
+                        "Type of queue:",
+                        choices = list("single container (default)" = "project",  "multi order (for PAG use only)" = "order"),
                         selected = 'project',
                         inline = TRUE,
                         width = NULL,
