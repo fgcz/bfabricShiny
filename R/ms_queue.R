@@ -48,7 +48,6 @@
 
 .getInstrument <- function(){
   list(
-  #QEXACTIVE_1='Xcalibur',
   QEXACTIVE_2 = 'Xcalibur',
   QEXACTIVEHF_2 = 'Xcalibur',
   QEXACTIVEHF_4 = 'Xcalibur',

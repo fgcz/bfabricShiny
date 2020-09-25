@@ -55,7 +55,15 @@ shinyServer(function(input, output, session) {
   })
 
   output$instrument <- renderUI({
-    res.instrument <- names(getInstrument())
+    if (input$containerType == 'project'){
+      res.instrument <- names(getInstrument())
+    }else{
+      res.instrument <- names(list(
+        QEXACTIVE_1 = 'Xcalibur',
+        QEXACTIVE_2 = 'Xcalibur'
+        ))
+    }
+    
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
   })
 
