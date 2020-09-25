@@ -174,18 +174,20 @@ shinyServer(function(input, output, session) {
 
       out <- tryCatch({
 
-        progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-        progress$set(message = paste("fetching sample data of container",
-                                     container, "..."))
-        on.exit(progress$close())
-
-
+        if(exists("session")){
+          progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+          progress$set(message = paste("fetching sample data of container",
+                                       container, "..."))
+          on.exit(progress$close())
+        }
+        
         message(sampleURL)
         res <- as.data.frame(fromJSON(sampleURL))
         message(paste0('got ', nrow(res), ' samples of container ', container, "."))
         rownames(res) <- res$samples._id
         df <- res[,c('samples._id', 'samples.name', 'samples.condition')]
         df$containerid = container
+        df <- df[order(df$samples._id),]
         return(df)
       },
       error = function(cond) {
@@ -242,8 +244,8 @@ shinyServer(function(input, output, session) {
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
-      idx <- rev(order(res$samples._id))
-      res <- res[idx, ]
+      #idx <- rev(order(res$samples._id))
+      #res <- res[idx, ]
       selectInput('sample', 'Sample:',
                   paste0("C",res$container, "_S", res$samples._id, "-", res$samples.name),
                   size = 40, multiple = TRUE, selectize = FALSE)
