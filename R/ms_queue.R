@@ -67,7 +67,7 @@
     QTRAP_1 = 'wiff',
     TSQ_1 = 'RAW',
     TSQ_2 = 'RAW',
-    #QEXACTIVE_1='raw',
+    QEXACTIVE_1 = 'raw',
     QEXACTIVE_2 = 'raw',
     QEXACTIVE_3 = 'raw',
     FUSION_1 = 'raw',
@@ -129,6 +129,7 @@ getHPLCparameter <- function(){
        QTRAP_1 = .eksigent(),
        TSQ_1 = .eksigent(),
        TSQ_2 = .eksigent(),
+       QEXACTIVE_1 = .waters(),
        QEXACTIVE_2 = .waters(),
        QEXACTIVE_3 = .easylc(),
        FUSION_1 = .easylc(),
@@ -571,7 +572,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #'@export
 #'@examples
 #'
-#' generate_queue_order(bfabricShiny:::.test_data_medium())
+#' generate_queue_order(bfabricShiny:::c.test_data_medium())
 #' generate_queue_order(bfabricShiny:::.test_data_medium())
 #' generate_queue_order(bfabricShiny:::.test_data_order())
 generate_queue_order <- function(x,
