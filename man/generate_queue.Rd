@@ -4,46 +4,46 @@
 \alias{generate_queue}
 \title{FGCZ mass spec queue generator}
 \usage{
-generate_queue(x, foldername = "", projectid = 1000,
-  area = "Proteomics", instrument = "FUSION_1", username = "cpanse",
-  autoQC01 = "TRUE", QC01o = 3, QC01m = 1, autoQC02 = "FALSE",
-  QC02o = 0, QC02m = 1, autoQC4L = "FALSE", QC4Lo = 4, QC4Lm = 1,
-  clean = "TRUE", cleano = 4, cleanm = 1, start1 = 1,
-  start2 = "", start3 = "", end1 = 1, end2 = "", end3 = "",
-  lists = 1, startposition = 1, nr.methods = 2, nr.replicates = 3,
-  qc.type = 1, method = "default", pathprefix = "D:\\\\Data2San",
-  pathprefixsep = "\\\\")
+generate_queue(
+  x,
+  foldername = "",
+  projectid = 1000,
+  area = "Proteomics",
+  instrument = "LUMOS_2",
+  username = "cpanse",
+  autoQC01 = "TRUE",
+  QC01o = 3,
+  QC01m = 1,
+  autoQC02 = "FALSE",
+  QC02o = 0,
+  QC02m = 1,
+  autoQC4L = "FALSE",
+  QC4Lo = 4,
+  QC4Lm = 1,
+  clean = "TRUE",
+  cleano = 4,
+  cleanm = 1,
+  start1 = 1,
+  start2 = NA,
+  start3 = NA,
+  end1 = 1,
+  end2 = NA,
+  end3 = NA,
+  lists = 1,
+  startposition = 1,
+  nr.methods = 2,
+  nr.replicates = 3,
+  qc.type = 1,
+  method = "default",
+  pathprefix = "D:\\\\Data2San",
+  pathprefixsep = "\\\\",
+  DEBUG = FALSE,
+  order = TRUE,
+  startpos = list(row = 1, col = "A", plate = 1)
+)
 }
 \arguments{
-\item{foldername}{}
-
-\item{projectid}{}
-
-\item{area}{}
-
-\item{instrument}{}
-
-\item{username}{}
-
-\item{nr.methods}{}
-
-\item{nr.replicates}{}
-
-\item{qc.type}{}
-
-\item{method}{}
-
-\item{pathprefix}{}
-
 \item{pathprefixsep}{}
-
-\item{how.often}{}
-
-\item{how.many}{}
-
-\item{showcondition}{}
-
-\item{hplc}{}
 }
 \value{
 a instrument configuration as \code{data.frame}.
@@ -52,7 +52,8 @@ a instrument configuration as \code{data.frame}.
 FGCZ mass spec queue generator
 }
 \examples{
-generate_queue(x <- bfabricShiny:::test_data(),
+generate_queue(x <- bfabricShiny:::.test_data_medium(),start2 = NA,start3 = NA)
+generate_queue(x <- bfabricShiny:::.test_data_medium(),
    projectid = 3000,
    area = "Proteomics",
    instrument = "QEXACTIVE_2",
@@ -82,4 +83,16 @@ generate_queue(x <- bfabricShiny:::test_data(),
    qc.type = 1,
    method = "default",
    pathprefix = "D:Data2San")
+generate_queue(bfabricShiny:::.test_data_medium() , order=TRUE)
+generate_queue(bfabricShiny:::.test_data_medium() , order=FALSE)
+generate_queue(bfabricShiny:::.test_data_single())
+generate_queue(bfabricShiny:::.test_data_large())
+generate_queue(bfabricShiny:::.test_data_medium_random())
+
+generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
+generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
+generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
+bfabricShiny:::.test_data_medium()
+generate_queue(bfabricShiny:::.test_data_medium())
+
 }

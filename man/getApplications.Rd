@@ -11,6 +11,9 @@ getApplications(login, webservicepassword)
 
 \item{webservicepassword}{}
 }
+\value{
+
+}
 \description{
 getApplications
 }

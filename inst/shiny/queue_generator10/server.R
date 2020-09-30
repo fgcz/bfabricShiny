@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
         QEXACTIVE_2 = 'Xcalibur'
         ))
     }
-    
+
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
   })
 
@@ -180,7 +180,7 @@ shinyServer(function(input, output, session) {
                                        container, "..."))
           on.exit(progress$close())
         }
-        
+
         message(sampleURL)
         res <- as.data.frame(fromJSON(sampleURL))
         message(paste0('got ', nrow(res), ' samples of container ', container, "."))
@@ -222,10 +222,9 @@ shinyServer(function(input, output, session) {
         return(res)
       }
     } else if (input$containerType == 'order') {
-      if (is.null(input$project)) {
+      if (is.null(input$project) | is.numeric(input$project)) {
         return(NULL)
       } else {
-
         containerIDs <- as.numeric(strsplit(input$project,
                                             c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"),
                                             perl = FALSE)[[1]])
@@ -279,7 +278,7 @@ shinyServer(function(input, output, session) {
     }
 
     if (length(input$sample) == 1 && input$sample == "") {
-      return (NULL)
+      return(NULL)
     }
 
     values$wuid <- NULL
@@ -289,30 +288,25 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
 
     res <- getSample()
-
+    if(is.null(res)){
+      return(NULL)
+    }
     res[, "instrument"] <- input$instrument
 
-    #idx.filter <- (paste(res$samples._id, res$samples.name, sep="-") %in% input$sample)
     idx.filter <- (paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name) %in% input$sample)
-
-    print(names(res))
     res <- res[idx.filter, c("samples.name", "samples._id", "samples.condition", "containerid")]
 
     # TODO(cp): replace extract by sample
     names(res) <- c("extract.name", "extract.id", "extract.Condition", "containerid")
 
-    if(any(is.na(res$extract.Condition))){
-
+    # TODO check if needed
+    if (any(is.na(res$extract.Condition))) {
       res$extract.Condition[is.na(res$extract.Condition)] <- "A"
-
-    } else{
-
     }
-
     # generate the actual queue data.frame ----
 
     containerid <- input$project
-    if(input$containerType == 'order'){
+    if (input$containerType == 'order') {
       containerid <- NULL
     }
 
@@ -399,8 +393,8 @@ shinyServer(function(input, output, session) {
     message(fn)
     cat("Bracket Type=4\r\n", file = fn, append = FALSE)
     write.table(res, file = fn,
-                sep=',', row.names = FALSE,
-                append = TRUE, quote = FALSE, eol='\r\n')
+                sep = ',', row.names = FALSE,
+                append = TRUE, quote = FALSE, eol = '\r\n')
 
     message("ALIVE")
     file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
