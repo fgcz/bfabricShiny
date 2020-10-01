@@ -465,7 +465,7 @@ getApplications <- function(login, webservicepassword){
 createWorkunit <-
   function(login,
            webservicepassword,
-           projectid,
+           containerid,
            applicationid,
            inputresource,
            status = 'available',
@@ -479,7 +479,7 @@ createWorkunit <-
                    webservicepassword = webservicepassword,
                    endpoint = 'workunit',
                    query = list(
-                     'containerid' = projectid,
+                     'containerid' = containerid,
                      'applicationid' = applicationid,
                      'name' = name,
                      'status' = status,
