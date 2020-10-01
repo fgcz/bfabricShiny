@@ -257,7 +257,7 @@ shinyServer(function(input, output, session) {
       if (!is.null(res)){
         selectInput('login', 'Login:', as.character(res), multiple = FALSE)
       }else{
-        selectInput('login', 'Login:', NULL)
+        selectInput('login', 'Login:', "analytic")
       }}
     else{
       selectInput('login', 'Login:', "analytic", multiple = FALSE)
@@ -402,10 +402,10 @@ shinyServer(function(input, output, session) {
     containerids <- strsplit(as.character(input$project), ",")[[1]]
     rv <- lapply(containerids, function(containerid){
       POST("http://localhost:5000/add_resource",
-           body = toJSON(list(base64=file_content,
-                              name='MS configuration',
-                              containerid=containerid,
-                              applicationid=212,
+           body = toJSON(list(base64 = file_content,
+                              name = 'MS configuration',
+                              containerid = containerid,
+                              applicationid = 212,
                               workunitdescription = paste("The spreadsheet contains a ", input$instrument,
                                                           " queue configuration having ", nrow(res), " rows.\n",
                                                           "The parameters are:\n",
