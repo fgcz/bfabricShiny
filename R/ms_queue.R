@@ -858,7 +858,7 @@ generate_queue <- function(x,
                            startpos = list(row = 1, col = "A", plate = 1)
                            ){
   # generate the queue template
-  if (method == 'default'){
+  if (method == 'default') {
     res.template <- .generate_template_base(x = x)
   }
   else if (method == 'random') {
@@ -878,6 +878,9 @@ generate_queue <- function(x,
 
   if (!method %in% c('PRM', 'testing')) {
     res.position <- .tray_position(queue = res.template, startpos = startpos, instrument = instrument )
+    nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
+  } else {
+    res.position <- res.template
     nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
   }
 
