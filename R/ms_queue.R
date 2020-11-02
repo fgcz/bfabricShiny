@@ -988,7 +988,7 @@ runQueue <- function(ipadress= "172.23.255.1"){
   qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
   shiny::runApp(qgs,
                 #host = getOption("shiny.host", "127.0.0.1"),
-                host = ipadress #"130.60.81.134",
+                host = ipadress, #"130.60.81.134",
                 port = 1234,
                 display.mode = "normal",
                 quiet = TRUE,
