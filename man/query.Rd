@@ -4,8 +4,14 @@
 \alias{query}
 \title{query bfabric}
 \usage{
-query(login, webservicepassword, endpoint = "workunit", query,
-  posturl = "http://localhost:5000/q", as_data_frame = FALSE)
+query(
+  login,
+  webservicepassword,
+  endpoint = "workunit",
+  query,
+  posturl = "http://localhost:5000/q",
+  as_data_frame = FALSE
+)
 }
 \arguments{
 \item{login}{bfabric login}

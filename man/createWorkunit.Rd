@@ -4,8 +4,16 @@
 \alias{createWorkunit}
 \title{inputresource' = list(inputresource),}
 \usage{
-createWorkunit(login, webservicepassword, projectid, applicationid,
-  inputresource, status = "available", description = "", name)
+createWorkunit(
+  login,
+  webservicepassword,
+  projectid,
+  applicationid,
+  inputresource,
+  status = "available",
+  description = "",
+  name
+)
 }
 \description{
 inputresource' = list(inputresource),

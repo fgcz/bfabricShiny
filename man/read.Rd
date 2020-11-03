@@ -4,8 +4,14 @@
 \alias{read}
 \title{read method to access bfabric REST}
 \usage{
-read(login, webservicepassword, endpoint = "workunit", query,
-  posturl = "http://localhost:5000/q", as_data_frame = FALSE)
+read(
+  login,
+  webservicepassword,
+  endpoint = "workunit",
+  query,
+  posturl = "http://localhost:5000/q",
+  as_data_frame = FALSE
+)
 }
 \arguments{
 \item{login}{bfabric login}

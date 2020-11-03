@@ -33,7 +33,7 @@ shinyServer(function(input, output, session) {
   }))
 
   output$folder <- renderUI(({
-    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder ="enter your folder name here")
+    textInput('folder', 'Data Folder Name:', "", width = NULL, placeholder = "enter your folder name here")
   }))
 
   output$testmethods <- renderUI(({
@@ -48,16 +48,22 @@ shinyServer(function(input, output, session) {
 
   output$project <- renderUI({
     if (input$containerType == 'project'){
-      numericInput('project', 'Container:', value = 3530,  min = 1000, max = 3500, width=100)
-    }
-    else{
-      # numericInput('project', 'Container:', value = 3181,  min = 1000, max = 3500, width=100)
-      textInput('project', 'Container:', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
+      numericInput('project', 'Container (project or order):', value = 3530,  min = 1000, max = NA, width = 400)
+    } else{
+      textInput('project', 'Containers (orders):', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
     }
   })
 
   output$instrument <- renderUI({
-    res.instrument <- names(getInstrument())
+    if (input$containerType == 'project'){
+      res.instrument <- names(getInstrument())
+    }else{
+      res.instrument <- names(list(
+        QEXACTIVE_1 = 'Xcalibur',
+        QEXACTIVE_2 = 'Xcalibur'
+        ))
+    }
+
     selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
   })
 
@@ -168,11 +174,12 @@ shinyServer(function(input, output, session) {
 
       out <- tryCatch({
 
-        progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-        progress$set(message = paste("fetching sample data of container",
-                                     container, "..."))
-        on.exit(progress$close())
-
+        if(exists("session")){
+          progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+          progress$set(message = paste("fetching sample data of container",
+                                       container, "..."))
+          on.exit(progress$close())
+        }
 
         message(sampleURL)
         res <- as.data.frame(fromJSON(sampleURL))
@@ -180,6 +187,7 @@ shinyServer(function(input, output, session) {
         rownames(res) <- res$samples._id
         df <- res[,c('samples._id', 'samples.name', 'samples.condition')]
         df$containerid = container
+        df <- df[order(df$samples._id),]
         return(df)
       },
       error = function(cond) {
@@ -214,10 +222,9 @@ shinyServer(function(input, output, session) {
         return(res)
       }
     } else if (input$containerType == 'order') {
-      if (is.null(input$project)) {
+      if (is.null(input$project) | is.numeric(input$project)) {
         return(NULL)
       } else {
-
         containerIDs <- as.numeric(strsplit(input$project,
                                             c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"),
                                             perl = FALSE)[[1]])
@@ -236,8 +243,8 @@ shinyServer(function(input, output, session) {
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
-      idx <- rev(order(res$samples._id))
-      res <- res[idx, ]
+      #idx <- rev(order(res$samples._id))
+      #res <- res[idx, ]
       selectInput('sample', 'Sample:',
                   paste0("C",res$container, "_S", res$samples._id, "-", res$samples.name),
                   size = 40, multiple = TRUE, selectize = FALSE)
@@ -250,10 +257,10 @@ shinyServer(function(input, output, session) {
       if (!is.null(res)){
         selectInput('login', 'Login:', as.character(res), multiple = FALSE)
       }else{
-        selectInput('login', 'Login:', NULL)
+        selectInput('login', 'Login:', "analytic")
       }}
     else{
-      selectInput('login', 'Login:', "analytics", multiple = FALSE)
+      selectInput('login', 'Login:', "analytic", multiple = FALSE)
     }
   })
 
@@ -271,7 +278,7 @@ shinyServer(function(input, output, session) {
     }
 
     if (length(input$sample) == 1 && input$sample == "") {
-      return (NULL)
+      return(NULL)
     }
 
     values$wuid <- NULL
@@ -281,30 +288,25 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
 
     res <- getSample()
-
+    if(is.null(res)){
+      return(NULL)
+    }
     res[, "instrument"] <- input$instrument
 
-    #idx.filter <- (paste(res$samples._id, res$samples.name, sep="-") %in% input$sample)
     idx.filter <- (paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name) %in% input$sample)
-
-    print(names(res))
     res <- res[idx.filter, c("samples.name", "samples._id", "samples.condition", "containerid")]
 
     # TODO(cp): replace extract by sample
     names(res) <- c("extract.name", "extract.id", "extract.Condition", "containerid")
 
-    if(any(is.na(res$extract.Condition))){
-
+    # TODO check if needed
+    if (any(is.na(res$extract.Condition))) {
       res$extract.Condition[is.na(res$extract.Condition)] <- "A"
-
-    } else{
-
     }
-
     # generate the actual queue data.frame ----
 
     containerid <- input$project
-    if(input$containerType == 'order'){
+    if (input$containerType == 'order') {
       containerid <- NULL
     }
 
@@ -391,8 +393,8 @@ shinyServer(function(input, output, session) {
     message(fn)
     cat("Bracket Type=4\r\n", file = fn, append = FALSE)
     write.table(res, file = fn,
-                sep=',', row.names = FALSE,
-                append = TRUE, quote = FALSE, eol='\r\n')
+                sep = ',', row.names = FALSE,
+                append = TRUE, quote = FALSE, eol = '\r\n')
 
     message("ALIVE")
     file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
@@ -400,10 +402,10 @@ shinyServer(function(input, output, session) {
     containerids <- strsplit(as.character(input$project), ",")[[1]]
     rv <- lapply(containerids, function(containerid){
       POST("http://localhost:5000/add_resource",
-           body = toJSON(list(base64=file_content,
-                              name='MS configuration',
-                              containerid=containerid,
-                              applicationid=212,
+           body = toJSON(list(base64 = file_content,
+                              name = 'MS configuration',
+                              containerid = containerid,
+                              applicationid = 212,
                               workunitdescription = paste("The spreadsheet contains a ", input$instrument,
                                                           " queue configuration having ", nrow(res), " rows.\n",
                                                           "The parameters are:\n",
