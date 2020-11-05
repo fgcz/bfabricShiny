@@ -4,13 +4,22 @@
 \alias{.tray_position}
 \title{Title}
 \usage{
-.tray_position(x, instrument = "")
+.tray_position(
+  queue,
+  startpos = list(row = 1, col = "A", plate = 1),
+  instrument = ""
+)
 }
 \arguments{
-\item{x}{}
-
 \item{instrument}{}
+}
+\value{
+
 }
 \description{
 Title
+}
+\examples{
+bfabricShiny::.tray_position(bfabricShiny:::.test_data_medium(), instrument="LUMOS_2")
+
 }

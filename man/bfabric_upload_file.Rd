@@ -4,10 +4,18 @@
 \alias{bfabric_upload_file}
 \title{upload resouce to bfabric}
 \usage{
-bfabric_upload_file(login, webservicepassword, projectid = 1000,
-  applicationid = 217, status, description = "",
-  inputresource = NULL, workunitname = "MaxQuant result",
-  resourcename = "MaxQuant report", file_content = NULL)
+bfabric_upload_file(
+  login,
+  webservicepassword,
+  projectid = 1000,
+  applicationid = 217,
+  status,
+  description = "",
+  inputresource = NULL,
+  workunitname = "MaxQuant result",
+  resourcename = "MaxQuant report",
+  file_content = NULL
+)
 }
 \arguments{
 \item{login}{}
@@ -25,6 +33,9 @@ bfabric_upload_file(login, webservicepassword, projectid = 1000,
 \item{resourcename}{}
 
 \item{file_content}{}
+}
+\value{
+
 }
 \description{
 upload resouce to bfabric

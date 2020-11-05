@@ -38,24 +38,113 @@
 #'.test_data_order()
 .test_data_order <- function(){
   res <- data.frame(
-  extract.name =  c(paste("Sample", 1:10, sep = "_"),paste("XYZ", 1:10, sep = "_") ),
-  extract.id = c(1:10,41:50),
-  extract.Condition = c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20)),
-  containerid = c(rep(7239,10), rep(3111,10)))
+    extract.name =  c(paste("Sample", 1:10, sep = "_"),paste("XYZ", 1:10, sep = "_") ),
+    extract.id = c(1:10,41:50),
+    extract.Condition = c(rep("Control", 16), rep("Ampicillin", 16), rep("Kanamycin", 16), rep("Less", 12), rep("More", 20)),
+    containerid = c(rep(7239,10), rep(3111,10)))
   return(res)
 
 }
 
-#HPLC position helper functions ----
+.getInstrument <- function(){
+  list(
+    QEXACTIVE_2 = 'Xcalibur',
+    QEXACTIVEHF_2 = 'Xcalibur',
+    QEXACTIVEHF_4 = 'Xcalibur',
+    QEXACTIVEHFX_1 = 'Xcalibur',
+    FUSION_1 = 'Xcalibur',
+    FUSION_2 =  'Xcalibur',
+    EXPLORIS_1 = 'Xcalibur',
+    LUMOS_1 = 'Xcalibur',
+    LUMOS_2 = 'Xcalibur'
+  )}
 
-.eksigent <- function(){
-  tray1 <- rep(2, times = 46) %>%
-    paste(rep(LETTERS[1:6], each = 8), sep = "") %>%
-    paste(rep(sprintf("%02d", c(1:8)), times = 6), sep = "")
-  pos <- tray1[1:45]
-  return(pos)
+# file Extensions -----
+.getInstrumentSuffix <- function(){
+  list(
+    VELOS_1 = 'RAW',
+    VELOS_2 = 'RAW',
+    G2HD_1 = 'wiff',
+    QTRAP_1 = 'wiff',
+    TSQ_1 = 'RAW',
+    TSQ_2 = 'RAW',
+    QEXACTIVE_1 = 'raw',
+    QEXACTIVE_2 = 'raw',
+    QEXACTIVE_3 = 'raw',
+    FUSION_1 = 'raw',
+    FUSION_2 = 'raw',
+    QEXACTIVEHF_1 = 'raw',
+    QEXACTIVEHF_2 = 'raw',
+    QEXACTIVEHF_4 = 'raw',
+    QEXACTIVEHFX_1 = 'raw',
+    LUMOS_1 = 'raw',
+    LUMOS_2 = 'raw',
+    EXPLORIS_1 = 'raw',
+    IMSTOF_1 = 'h5'
+  )
 }
 
+
+# Tray creation ----
+#'
+#' @examples
+#' get_tray()
+get_tray_2_48_plates <- function(start.row = 1
+                     , start.col = 'A'
+                     , start.plate = 1){
+  makeid = paste(start.plate, start.col, start.row, sep = "~" )
+  plate <- data.frame(
+    cols = rep(LETTERS[1:6], each = 8),
+    rows = rep(c(1:8), times = 6))
+  plate1 <- plate
+  plate2 <- plate
+  plate1$plate <- 1
+  plate2$plate <- 2
+  tray <- rbind(plate1[1:45,], plate2[1:45,])
+
+  tray <- tidyr::unite(tray, id, c("plate", "cols", "rows"), sep="~" , remove=FALSE)
+  start <- which(makeid == tray$id)
+  tray <- tray[start:nrow(tray),]
+  return(tray)
+}
+
+#'
+#' @examples
+#' bfabricShiny:::get_tray_2_48_plates_nextpos(12)
+#'
+get_tray_2_48_plates_nextpos <- function(n, startpos = list(row = 1, col = "A", plate = 1)){
+  positions <- get_tray_2_48_plates(start.row = 1, start.col = "A", start.plate = 1)
+  end.pos <- positions[n+1,]
+  return(end.pos)
+}
+
+
+#'
+#' @examples
+#'
+#' all.equal(get_tray_waters(),bfabricShiny:::.waters())
+#' bfabricShiny:::get_tray_waters(3, 'A', 1)
+get_tray_waters <- function(start.row = 1
+                            , start.col = 'A'
+                            , start.plate = 1){
+  tray <- get_tray_2_48_plates(
+    start.row = start.row
+    , start.col = start.col
+    , start.plate = start.plate)
+  tray <- dplyr::mutate(tray,pos = sprintf("\"%01d:%s,%01d\"",
+                                           plate,
+                                           cols,
+                                           rows))
+  res <- c('waters', list(tray$pos),  '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"' )
+  return(res)
+}
+
+#' method eksigent
+#' @examples
+#' r <- bfabricShiny:::.waters()
+#' r
+#' all.equal(r[[2]][1:5] , c("\"1:A,1\"", "\"1:A,2\"", "\"1:A,3\"", "\"1:A,4\"", "\"1:A,5\""))
+#'
 .waters <- function(){
   tray1 <- rep(1, times = 46) %>%
     paste(rep(LETTERS[1:6], each = 8), sep = ":") %>%
@@ -66,36 +155,63 @@
     paste(rep(1:8, times = 6), sep = ",") %>%
     paste0('"', ., '"')
   pos <- c(tray1[1:45], tray2[1:45])
-  return(pos)
+  res <- c('waters', list(pos),  '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"' )
+  return(res)
 }
 
+
+#'
+#' @examples
+#' bfabricShiny:::.eksigent()
+.eksigent <- function(){
+  tray1 <- rep(2, times = 46) %>%
+    paste(rep(LETTERS[1:6], each = 8), sep = "") %>%
+    paste(rep(sprintf("%02d", c(1:8)), times = 6), sep = "")
+  pos <- tray1[1:45]
+  res <- c('eksigent', list(pos), '2F08', '2F07', '2F07','2F06')
+  return(res)
+}
+
+
+#' method eksigent
+#' @examples
+#' bfabricShiny:::.easylc()
 .easylc <- function(){
   tray1 <- paste(rep(LETTERS[1:6], each = 8), rep(1:8, times = 6), sep = "")
   pos <- tray1[1:45]
-  return(pos)
+  res <- c('easylc', list(pos), 'F8', 'F7', 'F7','F6' )
+  return(res)
 }
 
-#Define HPLC, autoQC01, autoQC02, autoQC4L, clean ----
-#list elements are: 1) HPLC, 2) sample positions, 3) autoQC01 position, 4) autoQC02 position, 5) autoQC4L position, 6) clean position
-getHPLCparameter <- function(){
-  list(VELOS_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       VELOS_2 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-       G2HD_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QTRAP_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       TSQ_1 = c('eksigent', list(.eksigent()),'2F08', '2F07', '2F07','2F06'),
-       TSQ_2 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'),
-       QEXACTIVE_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVE_3 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       FUSION_1 = c('easylc',list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       FUSION_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       #FUSION_2 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       QEXACTIVEHF_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHF_2 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHF_4 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       QEXACTIVEHFX_1 = c('waters',list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       # LUMOS_1 = c('easylc', list(.easylc()), 'F8', 'F7', 'F7','F6'),
-       LUMOS_1 = c('waters', list(.waters()), '"1:F,8"', '"1:F,7"', '"1:F,7"', '"1:F,6"'),
-       IMSTOF_1 = c('eksigent', list(.eksigent()), '2F08', '2F07', '2F07','2F06'))}
+
+
+#' Define HPLC, autoQC01, autoQC02, autoQC4L, clean ----
+#' list elements are: 1) HPLC, 2) sample positions, 3) autoQC01 position, 4) autoQC02 position, 5) autoQC4L position, 6) clean position
+#' @examples
+#'
+#' bfabricShiny:::getHPLCparameter()[["LUMOS_2"]]
+#' bfabricShiny:::getHPLCparameter(3,"D",2)[["LUMOS_2"]]
+getHPLCparameter <- function(row = 1, col ="A", plate = 1){
+  list(VELOS_1 = .eksigent(),
+       VELOS_2 = .eksigent(),
+       G2HD_1 = .waters(),
+       QTRAP_1 = .eksigent(),
+       TSQ_1 = .eksigent(),
+       TSQ_2 = .eksigent(),
+       QEXACTIVE_1 = get_tray_waters(row, col, plate),
+       QEXACTIVE_2 = get_tray_waters(row, col, plate),
+       QEXACTIVE_3 = .easylc(),
+       FUSION_1 = .easylc(),
+       FUSION_2 = get_tray_waters(),
+       QEXACTIVEHF_1 = get_tray_waters(row, col, plate),
+       QEXACTIVEHF_2 = get_tray_waters(row, col, plate),
+       QEXACTIVEHF_4 = get_tray_waters(row, col, plate),
+       QEXACTIVEHFX_1 = get_tray_waters(row, col, plate),
+       LUMOS_1 = get_tray_waters(row, col, plate),
+       LUMOS_2 = get_tray_waters(row, col, plate),
+       EXPLORIS_1 = get_tray_waters(row, col, plate),
+       IMSTOF_1 = .eksigent())
+}
 
 #'
 #'@examples
@@ -129,18 +245,24 @@ getQCsample <- function(){
 #' @export
 #'
 #' @examples
-.tray_position <- function(x, instrument = ""){
-
-  pos.idx <- unlist(getHPLCparameter()[[instrument]][2])
-  n <- nrow(x)
+#' bfabricShiny::.tray_position(bfabricShiny:::.test_data_medium(), instrument="LUMOS_2")
+#' bfabricShiny::.tray_position(bfabricShiny:::.test_data_medium(),
+#' startpos = list(row = 4, col = "A", plate = 1),
+#'  instrument="LUMOS_2")
+.tray_position <- function(queue,
+                           startpos = list(row = 1, col = "A", plate = 1),
+                           instrument = ""){
+  pos.idx <- getHPLCparameter(startpos$row, startpos$col, startpos$plate)[[instrument]][[2]]
+  n <- nrow(queue)
   positions.needed <- ceiling(n/46)
   pos <- rep(pos.idx, times = positions.needed)
   pos <- pos[1:n]
-  x$position <- pos
-  res <- x
+  queue$position <- pos
+  res <- queue
 
   return(res)
 }
+
 
 .equal.groups <- function(x){
   empty.line <- data.frame(extract.name = "NA", extract.id = as.integer(NA))
@@ -153,7 +275,7 @@ getQCsample <- function(){
   df <- empty.line[rep(row.names(empty.line), dplyr::n_distinct(x$extract.Condition)), ] %>%
     dplyr::mutate(extract.Condition = unique(x$extract.Condition)) %>%
     dplyr::arrange(extract.Condition) %>%
-    dplyr::mutate(IDX = 1:length(y)+ 0.1) %>%
+    dplyr::mutate(IDX = 1:length(y) + 0.1) %>%
     dplyr::mutate(z = lines.needed)
   df <- df[rep(seq_len(nrow(df)), df$z), 1:4]
   res <- x %>%
@@ -365,17 +487,13 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #' @examples
 #'
 .generate_template_base <- function(x){
-  res <- x
-  #  res$extract.name = as.factor(res$extract.name)
-  #  res$extract.id = as.integer(res$extract.id)
-  #  res$extract.Condition = as.factor(res$extract.Condition)
-  return(res)
+  return(x)
 }
 
 #random queue formating function ----
 
 .generate_template_random <- function(x){
-  res <- x[order(sample(nrow(x))), ]
+  res <- x[sample(nrow(x)), ]
   return(res)
 }
 
@@ -399,23 +517,40 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   elements <- max(table(x$extract.Condition))
   res <- x %>%
     bfabricShiny:::.equal.groups()
-  res <- res %>%
-    dplyr::mutate(blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements))))) %>%
-    dplyr::arrange(blockidx) %>%
-    dplyr::mutate(randomidx = as.vector(replicate(elements, sample(1:blocks)))) %>%
-    dplyr::arrange(blockidx, randomidx) %>%
-    dplyr::filter(!is.na(extract.id)) %>%
-    dplyr::select("extract.name", "extract.id", "extract.Condition")
+  res <- dplyr::mutate(res, blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements)))))
+  res <- dplyr::arrange(res, blockidx)
+  res <-   dplyr::mutate(res, randomidx = as.vector(replicate(elements, sample(1:blocks))))
+  res <-   dplyr::arrange(res, blockidx, randomidx)
+  res <- dplyr::filter(res, !is.na(extract.id))
+  res <- dplyr::select(res, "extract.name", "extract.id", "extract.Condition")
 
   return(res)
 }
 
 #method evaluation queue formating function ----
-
-.generate_template_method_testing <- function(x, nr.methods = 2, nr.replicates = 3, instrument = "QEXACTIVEHF_2"){
-  res <- .tray_position(x = x, instrument = instrument)
+#'
+#' @examples
+#'
+#' sampleData <- bfabricShiny:::.test_data_medium()
+#' que <- bfabricShiny:::.generate_template_method_testing(sampleData)
+#' dim(que)
+#' stopifnot(all(dim(que) == c(120,5)))
+#' que %>% arrange(position)
+.generate_template_method_testing <- function(x,
+                                              nr.methods = 2,
+                                              nr.replicates = 3,
+                                              startpos = list(row = 1, col = "A", plate = 1),
+                                              instrument = "QEXACTIVEHF_2")
+{
+  res <- .tray_position(queue = x, startpos = startpos, instrument = instrument)
   res <- res[rep(seq_len(nrow(res)), each = nr.methods), ]
-  res$extract.Condition <- paste(res$extract.Condition, paste(rep("Method", times = nr.methods), 1:nr.methods, sep = "_"), sep = "_")
+
+  nMethod <- rep("Method", times = nr.methods)
+  nMethodNr <- paste(nMethod, 1:nr.methods, sep = "_")
+  res$extract.Condition <- paste(res$extract.Condition,
+                                 nMethodNr, sep = "_")
+
+
   res <- res[rep(seq_len(nrow(res)), each = nr.replicates ), ]
   res <- res[order(sample(nrow(res))), ]
 
@@ -423,10 +558,21 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 }
 
 #PRM queue formating function ----
+#'
+#' @examples
+#'
+#' sampleData <- bfabricShiny::.test_data_large()
+#' que <- bfabricShiny::.generate_template_PRM(sampleData)
+#' stopifnot(all(dim(que) == c(160,4)))
+#'
+#'
+.generate_template_PRM <- function(x,
+                                   lists = 2,
+                                   startpos = list(row = 1, col = "A", plate = 1),
+                                   instrument = "LUMOS_2"){
+  res <- x[sample(nrow(x)), ]
+  res <- .tray_position(res, startpos = startpos, instrument = instrument)
 
-.generate_template_PRM <- function(x, lists = 2, instrument = ""){
-  res <- x[order(sample(nrow(x))), ]
-  res <- .tray_position(res, instrument = instrument)
   res <- res[rep(seq_len(nrow(res)), each = lists), ]
   res$extract.Condition <- res$extract.Condition %>%  #attache to extract.Condition
     paste(rep("Targets", times = nrow(res)), sep = "_") %>%
@@ -508,14 +654,12 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
   injection.index <- sprintf("%03d", (seq_len(n) - 1) + startposition) #use start queue with input value instead of 1
-  injection.name <- paste(rundate, injection.index, sep = "_")
-  injection.name <- paste(injection.name, paste("p", x$containerid, sep = ''), sep = "_")
+  injection.name <- paste(rundate, paste("C", x$containerid, sep = ''), sep = "_")
+  injection.name <- paste(injection.name, injection.index, sep = "_")
   injection.name <- paste(injection.name, paste("S", x$extract.id, sep = ''), sep = "_")
-
   injection.name <- gsub("_SNA", "", injection.name)
-
-  injection.name <- paste(injection.name, x$extract.name, sep = "_") %>%
-    paste(x$extract.Condition, sep = "_")
+  injection.name <- paste(injection.name, x$extract.name, sep = "_")
+  injection.name <- paste(injection.name, x$extract.Condition, sep = "_")
 
   return(injection.name)
 }
@@ -531,7 +675,7 @@ generate_queue_order <- function(x,
                                  foldername = '',
                                  projectid = 1000,
                                  area = 'Proteomics',
-                                 instrument = 'FUSION_1',
+                                 instrument = 'LUMOS_2',
                                  username = 'cpanse',
                                  autoQC01 = "TRUE",
                                  QC01o = 3,
@@ -559,14 +703,18 @@ generate_queue_order <- function(x,
                                  method = 'default',
                                  pathprefix = "D:\\Data2San",
                                  pathprefixsep = "\\",
-                                 DEBUG = FALSE){
+                                 DEBUG = FALSE,
+                                 startpos = list(row = 1, col = "A", plate = 1)){
 
-  x <- split(x, x$containerid)
-  res <- list()
-  order <- if(length(x) > 1 || is.null(projectid)) {TRUE}else{FALSE}
-  for (i in 1:length(x)) {
-    res[[names(x)[i]]] <-
-      generate_queue(x[[i]],
+  samples_list <- split(x, x$containerid)
+  res_queues <- list()
+
+  order <- if (length(samples_list) > 1 || is.null(projectid)) {TRUE}else{FALSE}
+
+
+  for (i in 1:length(samples_list)) {
+    res <-
+      generate_queue(samples_list[[i]],
                      foldername = foldername,
                      projectid = projectid,
                      area = area,
@@ -598,9 +746,12 @@ generate_queue_order <- function(x,
                      method = method,
                      pathprefix = pathprefix,
                      pathprefixsep = pathprefixsep,
-                     order = order)
+                     order = order,
+                     startpos = startpos)
+    startpos <- list(row = res$nextpos$rows, col = res$nextpos$cols, plate = res$nextpos$plate)
+    res_queues[[names(samples_list)[i]]] <- res$rv
   }
-  res <- dplyr::bind_rows(res)
+  res <- dplyr::bind_rows(res_queues)
   return(res)
 }
 
@@ -627,8 +778,8 @@ generate_queue_order <- function(x,
 #' @export generate_queue
 #'
 #' @examples
-#' generate_queue(x <- bfabricShiny:::test_data_medium(),start2 = NA,start3 = NA)
-#' generate_queue(x <- bfabricShiny:::test_data_medium(),
+#' generate_queue(x <- bfabricShiny:::.test_data_medium(),start2 = NA,start3 = NA)
+#' generate_queue(x <- bfabricShiny:::.test_data_medium(),
 #'    projectid = 3000,
 #'    area = "Proteomics",
 #'    instrument = "QEXACTIVE_2",
@@ -658,8 +809,8 @@ generate_queue_order <- function(x,
 #'    qc.type = 1,
 #'    method = "default",
 #'    pathprefix = "D:Data2San")
-#' generate_queue(bfabricShiny:::test_data_medium() , order=TRUE)
-#' generate_queue(bfabricShiny:::test_data_medium() , order=FALSE)
+#' generate_queue(bfabricShiny:::.test_data_single() , order=TRUE, startpos = list(row=3, col="A", plate=2))
+#' generate_queue(bfabricShiny:::.test_data_medium() , order=FALSE)
 #' generate_queue(bfabricShiny:::.test_data_single())
 #' generate_queue(bfabricShiny:::.test_data_large())
 #' generate_queue(bfabricShiny:::.test_data_medium_random())
@@ -667,13 +818,14 @@ generate_queue_order <- function(x,
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
 #' generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
-#' bfabricShiny:::.test_data_medium_container()
-#' generate_queue(bfabricShiny:::.test_data_medium_container())
+#' bfabricShiny:::.test_data_medium()
+#' generate_queue(bfabricShiny:::.test_data_medium())
+#'
 generate_queue <- function(x,
                            foldername = '',
                            projectid = 1000,
                            area = 'Proteomics',
-                           instrument = 'FUSION_1',
+                           instrument = 'LUMOS_2',
                            username = 'cpanse',
                            autoQC01 = "TRUE",
                            QC01o = 3,
@@ -702,9 +854,14 @@ generate_queue <- function(x,
                            pathprefix = "D:\\Data2San",
                            pathprefixsep = "\\",
                            DEBUG = FALSE,
-                           order = TRUE){
+                           order = TRUE,
+                           startpos = list(row = 1, col = "A", plate = 1)
+                           ){
   # generate the queue template
-  if (method == 'random') {
+  if (method == 'default') {
+    res.template <- .generate_template_base(x = x)
+  }
+  else if (method == 'random') {
     res.template <- .generate_template_random(x = x)
   } else if (method == 'blockrandom') {
     res.template <- .generate_template_random_block(x = x)
@@ -715,19 +872,19 @@ generate_queue <- function(x,
                                                       nr.methods = nr.methods,
                                                       nr.replicates = nr.replicates,
                                                       instrument = instrument)
-  }else {
-    res.template <- .generate_template_base(x = x)
+  }else{
+    stop("wrong method selected :", method)
   }
 
-  # attache HPLC plate position
-
-  if (method == 'PRM') {
-    res.position <- res.template
-  } else if (method == 'testing') {
-    res.position <- res.template
+  if (!method %in% c('PRM', 'testing')) {
+    res.position <- .tray_position(queue = res.template, startpos = startpos, instrument = instrument )
+    nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
   } else {
-    res.position <- .tray_position(x = res.template, instrument = instrument )
+    res.position <- res.template
+    nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
   }
+
+
   # insert qc samples
 
   res.autoQC01 <- .autoQC01(nrow(res.position),
@@ -815,7 +972,7 @@ generate_queue <- function(x,
     rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)
   }
   rv <- rv[order(rv$`File Name`),]
-  return(rv)
+  return(list(rv = rv, nextpos = nextpos))
 }
 
 
@@ -825,11 +982,13 @@ generate_queue <- function(x,
 #' @return
 #'
 #' @export runQueue
-runQueue <- function(){
+#' @examples
+#' #bfabricShiny::runQueue()
+runQueue <- function(ipadress= "172.23.255.1"){
   qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
   shiny::runApp(qgs,
                 #host = getOption("shiny.host", "127.0.0.1"),
-                host = "130.60.81.134",
+                host = ipadress, #"130.60.81.134",
                 port = 1234,
                 display.mode = "normal",
                 quiet = TRUE,

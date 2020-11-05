@@ -4,23 +4,24 @@
 \alias{.generate_folder_name}
 \title{Title}
 \usage{
-.generate_folder_name(x, foldername, area = "Proteomics",
-  instrument = "FUSION_1", username = "bfabricusername",
-  pathprefixsep = "/")
+.generate_folder_name(
+  x,
+  foldername,
+  area = "Proteomics",
+  instrument = "FUSION_1",
+  username = "bfabricusername",
+  pathprefixsep = "/"
+)
 }
 \arguments{
-\item{x}{}
-
-\item{foldername}{}
-
-\item{area}{}
-
-\item{instrument}{}
-
-\item{username}{}
-
 \item{pathprefixsep}{}
+}
+\value{
+
 }
 \description{
 Title
+}
+\examples{
+
 }
