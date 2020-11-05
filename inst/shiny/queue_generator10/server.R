@@ -422,6 +422,7 @@ shinyServer(function(input, output, session) {
     
     containerids <- strsplit(as.character(input$project), ",")[[1]]
     rv <- lapply(containerids, function(containerid){
+	    message(paste("containerid = ", containerid))
       POST("http://localhost:5000/add_resource",
            body = toJSON(list(base64=file_content,
                               name='MS configuration',
