@@ -1,5 +1,3 @@
-#R
-
 #' Shiny UI module
 #'
 #' @param id
@@ -24,7 +22,7 @@ bfabricInput <- function(id) {
   ns <- NS(id)
 
   privKey <- PKI.load.key(file = file.path(system.file("keys",
-    package = "bfabricShiny"), "bfabricShiny.key"))
+                                                       package = "bfabricShiny"), "bfabricShiny.key"))
 
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
@@ -66,8 +64,8 @@ bfabricInput <- function(id) {
 bfabric <- function(input, output, session, applicationid, resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
 
-  pubKey <- PKI.load.key(file=file.path(system.file("keys",
-                                                    package = "bfabricShiny"), "bfabricShiny.key.pub"))
+  pubKey <- PKI.load.key(file = file.path(system.file("keys",
+                                                      package = "bfabricShiny"), "bfabricShiny.key.pub"))
 
 
   #value <- reactiveValues(resourceid = NA)
@@ -127,11 +125,11 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
                         applicationid = id)
 
     if (is.null(res)){
-      return (NULL)
+      return(NULL)
     }else if (length(res) == 0){
-      return (NULL)
+      return(NULL)
     }else{
-        selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
+      selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
     }
   })
 
@@ -154,7 +152,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
   output$resources <- renderUI({
 
     if (length(input$workunit) == 0){
-      print ("no resources yet.")
+      print("no resources yet.")
     }else{
       workunitid = strsplit(input$workunit, " - ")[[1]][1]
       res <- resources()
@@ -163,11 +161,18 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         HTML("no resources found.")
       }else{
         tagList(
-
-          selectInput("relativepath", "resource relativepath:", res$relativepath,
+          selectInput(inputId = "relativepath",
+                      label = "resource relativepath:",
+                      choices = res$relativepath,
                       multiple = resourcemultiple),
-          actionButton("load", "load selected data resource", icon("upload"))
+          actionButton("load", "load selected data resource", icon("upload")),
+          tags$style(    type = 'text/css',
+                         ".selectize-input { word-wrap : break-word;}
+                          .selectize-input { word-break: break-word;}
+                          .selectize-dropdown {word-wrap : break-word;} "
+          )
         )
+
       }
     }
   })
