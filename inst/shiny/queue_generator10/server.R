@@ -55,12 +55,13 @@ shinyServer(function(input, output, session) {
   })
 
   output$instrument <- renderUI({
-    if (input$containerType == 'project'){
+    if (input$containerType == 'project') {
       res.instrument <- names(getInstrument())
     }else{
       res.instrument <- names(list(
         QEXACTIVE_1 = 'Xcalibur',
-        QEXACTIVE_2 = 'Xcalibur'
+        QEXACTIVE_2 = 'Xcalibur',
+        LUMOS_2 = "Xcalibur"
         ))
     }
 
@@ -197,13 +198,13 @@ shinyServer(function(input, output, session) {
         # Choose a return value in case of error
         return(NULL)
       },
-      warning=function(cond) {
+      warning = function(cond) {
         message(paste("REST request caused a warning for container:", container))
         message("Here's the original warning message:")
         message(cond)
         return(NULL)
       },
-      finally={
+      finally = {
         message(paste("Processed sample query for container:", container))
       }
       )
