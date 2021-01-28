@@ -27,6 +27,12 @@ shinyUI(
                # Main panel: options ----     
                column(9,
                       #content ----
+                      tags$h3("Select System:"),
+                      fluidRow(
+                        column(4, htmlOutput("instrumentControlSoftware")),
+                        column(4, htmlOutput("lcConfiguration"))
+                      ),
+                      tags$h3("Select LC vendor:"),
                       tags$h3("Select options for your queue:"),
                       radioButtons(
                         "containerType",

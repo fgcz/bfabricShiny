@@ -27,6 +27,25 @@ shinyServer(function(input, output, session) {
 
   #output list ----
 
+  output$instrumentControlSoftware <- renderUI(({
+    instrumentControlSoftware <- c("XCalibur", "Hysstar")
+    selectInput('instrumentControlSoftware', 'instrument control software:',
+                instrumentControlSoftware,
+                multiple = FALSE, selected = instrumentControlSoftware[1])
+  }))
+
+  output$lcConfiguration <- renderUI(({
+
+    if (is.null(input$instrumentControlSoftware)) return (NULL)
+
+    lcConfiguration  <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP6x96")
+
+    if (input$instrumentControlSoftware == "XCalibur"){
+      lcConfiguration <- c("M-CLASS48_48")
+    }
+    selectInput('lcSystem', 'LC-system:', lcConfiguration , multiple = FALSE, selected = lcConfiguration[1])
+  }))
+
   output$area <- renderUI(({
     res.area <- c("Proteomics", "Metabolomics")
     selectInput('area', 'Area:', res.area, multiple = FALSE, selected = res.area[1])
