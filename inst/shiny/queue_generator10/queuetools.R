@@ -12,14 +12,14 @@ library(magrittr)
 .isBlockRandomFeasibible <- function(S, x){
 	if (nrow(S) < 1) return (FALSE)
 
-	min(table(S[,names(S)  == x])) == max(table(S[,names(S)  == x]))
+	min(table(S[, names(S) == x])) == max(table(S[, names(S) == x]))
 }
 
-.blockRandom <- function(S = iris, x = "Species"){
-	# sanity check
-	if (isFALSE(.isBlockRandomFeasibible(S, x))) return(NULL)
+.blockRandom <- function(S = iris, x = "Species", check=TRUE){
+	# sanity check - all groups have same number of treatments
+	if (check && isFALSE(.isBlockRandomFeasibible(S, x))) return(NULL)
 
-	n <- min(table(S[,names(S)  == x]))
+	n <- max(table(S[, names(S) == x]))
 
 	# split into groups
 	rv <- lapply(unique(S[, x]),
@@ -27,7 +27,17 @@ library(magrittr)
 
 	# compose blockrandom data.frame
 	m <- length(rv)
-	do.call('rbind', lapply(1:n, function(i){do.call('rbind', lapply(1:m, function(j){rv[[j]][i,]}))[sample(m),]}))
+	base::Reduce(rbind, lapply(1:n,
+	    function(i){base::Reduce(rbind, lapply(1:m, 
+	        function(j){
+	            if (i<=nrow(rv[[j]]))
+	                rv[[j]][i,]
+	            else{
+	                z <- rv[[j]][1,]
+	                z[1,] <- NA
+	                z[1,]
+	            }
+	            }))[sample(m),]}))
 }
 
 
