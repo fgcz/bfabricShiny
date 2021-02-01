@@ -12,6 +12,8 @@ library(httr)
 library(DT)
 
 
+source("queuetools.R", local = FALSE)
+
 shinyServer(function(input, output, session) {
 
   values <- reactiveValues(wuid = NULL)
@@ -28,22 +30,25 @@ shinyServer(function(input, output, session) {
   #output list ----
 
   output$instrumentControlSoftware <- renderUI(({
-    instrumentControlSoftware <- c("XCalibur", "Hysstar")
+    instrumentControlSoftware <- c("XCalibur", "HyStar")
     selectInput('instrumentControlSoftware', 'instrument control software:',
                 instrumentControlSoftware,
                 multiple = FALSE, selected = instrumentControlSoftware[1])
   }))
 
   output$lcConfiguration <- renderUI(({
-
-    if (is.null(input$instrumentControlSoftware)) return (NULL)
-
-    lcConfiguration  <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP6x96")
-
-    if (input$instrumentControlSoftware == "XCalibur"){
-      lcConfiguration <- c("M-CLASS48_48")
+    if (!is.null(input$instrumentControlSoftware)){
+      lcConfiguration  <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP6x96")
+      
+      if (input$instrumentControlSoftware == "XCalibur"){
+        lcConfiguration <- c("M-CLASS48_48")
+      }
+      else if (input$instrumentControlSoftware == "HyStar"){
+        lcConfiguration <- c("nanoElute54_54")
+      }
+      
+      selectInput('lcSystem', 'LC-system:', lcConfiguration , multiple = FALSE, selected = lcConfiguration[1])
     }
-    selectInput('lcSystem', 'LC-system:', lcConfiguration , multiple = FALSE, selected = lcConfiguration[1])
   }))
 
   output$area <- renderUI(({
@@ -74,17 +79,24 @@ shinyServer(function(input, output, session) {
   })
 
   output$instrument <- renderUI({
-    if (input$containerType == 'project') {
-      res.instrument <- names(getInstrument())
-    }else{
-      res.instrument <- names(list(
-        QEXACTIVE_1 = 'Xcalibur',
-        QEXACTIVE_2 = 'Xcalibur',
-        LUMOS_2 = "Xcalibur"
+    if(!is.null(input$containerType) && !is.null(input$instrumentControlSoftware)){
+      
+      if (input$containerType == 'project') {
+        res.instrument <- names(getInstrument())
+      }else{
+        res.instrument <- names(list(
+          QEXACTIVE_1 = 'Xcalibur',
+          QEXACTIVE_2 = 'Xcalibur',
+          LUMOS_2 = "Xcalibur"
         ))
-    }
+      }
 
-    selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
+      if (input$instrumentControlSoftware == "HyStar"){
+        res.instrument <- names(list(TIMSTOF_1 = input$instrumentControlSoftware))
+      }
+
+      selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
+    }
   })
 
   output$method <- renderUI(({
@@ -329,40 +341,71 @@ shinyServer(function(input, output, session) {
     if (input$containerType == 'order') {
       containerid <- NULL
     }
+    
+    if (input$instrumentControlSoftware == "XCalibur"){
+      rv <- bfabricShiny:::generate_queue_order(x = res,
+                                                foldername = input$folder,
+                                                projectid = containerid,
+                                                area = input$area,
+                                                instrument = input$instrument,
+                                                username = input$login,
+                                                nr.methods = as.integer(input$testmethods),
+                                                nr.replicates = as.integer(input$replicates),
+                                                method = as.character(input$method),
+                                                autoQC01 = input$autoQC01,
+                                                QC01m = input$QC01m,
+                                                QC01o = input$QC01o,
+                                                autoQC02 = input$autoQC02,
+                                                QC02m = input$QC02m,
+                                                QC02o = input$QC02o,
+                                                autoQC4L = input$autoQC4L,
+                                                QC4Lo = input$QC4Lo,
+                                                QC4Lm = input$QC4Lm,
+                                                clean = input$clean,
+                                                cleanm = input$cleanm,
+                                                cleano = input$cleano,
+                                                start1 = as.numeric(input$start1),
+                                                start2 = as.numeric(input$start2),
+                                                start3 = as.numeric(input$start3),
+                                                end1 = as.numeric(input$end1),
+                                                end2 = as.numeric(input$end2),
+                                                end3 = as.numeric(input$end3),
+                                                lists = input$targets,
+                                                startposition = input$startposition)
+      return(rv)
+    }else{
+      # if(input$instrumentControlSoftware == "HyStar" && input$lcConfiguration == "nanoElute54_54"){
+      message(input$start3)
+      note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
+      rv <- data.frame(container_id = res$containerid,
+                       sample_id = res$extract.id, 
+                       sample_name = res$extract.name,
+                       sample_condition = res$extract.Condition) %>%
+        .blockRandom(x = "sample_condition") %>% 
+        .mapPlatePositionNanoElute %>%  
+        .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
+                         howoften = input$cleano,
+                         howmany = input$cleanm,
+                         volume = 4) %>% 
+        .insertStandards(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
+                         howoften = input$QC01o,
+                         howmany = input$QC01m) %>% 
+        .insertStandards(stdName = "autoQC04", stdPosX='54', stdPosY='1', plate = 2, 
+                         howoften = input$QC4Lo,
+                         howmany = input$QC4Lm,
+                         begin=("3" %in% input$start3),
+                         end=("3" %in% input$end3)) %>% 
+        .formatHyStar(dataPath = paste0("D:\\Data2San\\p3657\\",
+                                        input$area, "\\",
+                                        input$instrument, "\\",
+                                        input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"))
 
-    rv <- bfabricShiny:::generate_queue_order(x = res,
-                                              foldername = input$folder,
-                                              projectid = containerid,
-                                              area = input$area,
-                                              instrument = input$instrument,
-                                              username = input$login,
-                                              nr.methods = as.integer(input$testmethods),
-                                              nr.replicates = as.integer(input$replicates),
-                                              method = as.character(input$method),
-                                              autoQC01 = input$autoQC01,
-                                              QC01m = input$QC01m,
-                                              QC01o = input$QC01o,
-                                              autoQC02 = input$autoQC02,
-                                              QC02m = input$QC02m,
-                                              QC02o = input$QC02o,
-                                              autoQC4L = input$autoQC4L,
-                                              QC4Lo = input$QC4Lo,
-                                              QC4Lm = input$QC4Lm,
-                                              clean = input$clean,
-                                              cleanm = input$cleanm,
-                                              cleano = input$cleano,
-                                              start1 = as.numeric(input$start1),
-                                              start2 = as.numeric(input$start2),
-                                              start3 = as.numeric(input$start3),
-                                              end1 = as.numeric(input$end1),
-                                              end2 = as.numeric(input$end2),
-                                              end3 = as.numeric(input$end3),
-                                              lists = input$targets,
-                                              startposition = input$startposition)
-
-    rv
-
-  })
+      #rv <- .blockRandom(rv, x = "sample_condition")
+      
+      return(rv)
+    }
+    NULL
+})
 
 
   #----- DT::renderDataTable ----
@@ -404,9 +447,7 @@ shinyServer(function(input, output, session) {
     progress$set(message = "upload configuration to bfabric")
     on.exit(progress$close())
 
-
     res <- getBfabricContent()
-
 
     ########################## WRITE CSV TO BFABRIC
     fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]

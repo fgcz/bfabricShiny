@@ -103,6 +103,7 @@ library(magrittr)
 
 .formatHyStar <- function(S, dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\"){
     
+    
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
     S$"Vial" <- paste0( "Slot", S$plate,":",S$x)
     S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )

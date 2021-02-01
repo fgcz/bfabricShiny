@@ -608,6 +608,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d")
   out <- paste(username, rundate, sep = "_")
+  
   if (foldername != '') {
     out <- paste(out, gsub('([[:punct:]])|\\s+', '_', foldername), sep = "_")
   }
