@@ -9,7 +9,11 @@ options(shiny.maxRequestSize = 30 * 1024^2)
 # Define server logic required to draw a histogram ----
 shinyServer( function(input, output, session) {
 
-  bf <- callModule(bfabric, "bfabric8",  applicationid = c(168, 185, 224), resoucepattern = 'zip$')
+  bf <- callModule(bfabric,
+                   "bfabric8",
+                   applicationid = c(168, 185, 224, 286),
+                   resoucepattern = 'zip$',
+                   resourcemultiple = TRUE)
   grp2 <- NULL
 
   v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL,
@@ -42,6 +46,9 @@ shinyServer( function(input, output, session) {
     print(v_upload_file$inputresourceID)
 
     filename <- file.path('/srv/www/htdocs/', input$relativepath)
+    # for debugging on my windows machine.
+    # filename <- file.path('Y:', input$relativepath)
+
     print(input$relativepath)
 
     v_upload_file$filenam <- filename
@@ -102,7 +109,7 @@ shinyServer( function(input, output, session) {
 
       ## number of peptides plot ####
       nrPep <- cumsum(rev(table(protein$Peptides)))
-      nrPeptidePlot<-renderPlot(barplot(nrPep[(length(nrPep)-5):length(nrPep)],
+      nrPeptidePlot <- renderPlot(barplot(nrPep[(length(nrPep)-5):length(nrPep)],
                                         ylim=c(0, length(protein$Peptides)),
                                         xlab='nr of proteins with at least # peptides'))
 
@@ -296,7 +303,7 @@ shinyServer( function(input, output, session) {
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
                         bookdown::pdf_document2(),
-                        params=list(grp=grp2))
+                        params = list(grp = grp2))
 
       incProgress(0.1, detail = paste("part", "Rendering"))
       v_download_links$pdfReport <- file.path(workdir, "Grp2Analysis.pdf")
