@@ -33,21 +33,23 @@ shinyServer(function(input, output, session) {
     instrumentControlSoftware <- c("XCalibur", "HyStar")
     selectInput('instrumentControlSoftware', 'instrument control software:',
                 instrumentControlSoftware,
-                multiple = FALSE, selected = instrumentControlSoftware[1])
+                multiple = FALSE,
+                selected = instrumentControlSoftware[1])
   }))
 
-  output$lcConfiguration <- renderUI(({
+  output$lcSystem <- renderUI(({
+    lcSystem <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP1x12x8")
     if (!is.null(input$instrumentControlSoftware)){
-      lcConfiguration  <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP6x96")
-      
       if (input$instrumentControlSoftware == "XCalibur"){
-        lcConfiguration <- c("M-CLASS48_48")
+        lcSystem <- c("M-CLASS48_48")
       }
       else if (input$instrumentControlSoftware == "HyStar"){
-        lcConfiguration <- c("nanoElute54_54")
+        lcSystem <- c("nanoElute54_54", "EVOSEP1x12x8")
       }
-      
-      selectInput('lcSystem', 'LC-system:', lcConfiguration , multiple = FALSE, selected = lcConfiguration[1])
+      selectInput('lcSystem', 'LC-system:',
+                  lcSystem ,
+                  multiple = FALSE,
+                  selected = lcSystem[1])
     }
   }))
 
@@ -305,6 +307,8 @@ shinyServer(function(input, output, session) {
   #------------------------ getBfabricContent ----
   getBfabricContent <- reactive({
 
+    message(paste("DEBUG", input$instrumentControlSoftware, input$lcSystem))
+    
     if (is.null(input$sample)) {
       return(NULL)
     }
@@ -373,37 +377,64 @@ shinyServer(function(input, output, session) {
                                                 lists = input$targets,
                                                 startposition = input$startposition)
       return(rv)
-    }else{
-      # if(input$instrumentControlSoftware == "HyStar" && input$lcConfiguration == "nanoElute54_54"){
-      message(input$start3)
+    }else if (input$instrumentControlSoftware == "HyStar"){
       note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
-      rv <- data.frame(container_id = res$containerid,
-                       sample_id = res$extract.id, 
-                       sample_name = res$extract.name,
-                       sample_condition = res$extract.Condition) %>%
-        .blockRandom(x = "sample_condition") %>% 
-        .mapPlatePositionNanoElute %>%  
-        .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
-                         howoften = input$cleano,
-                         howmany = input$cleanm,
-                         volume = 4) %>% 
-        .insertStandards(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
-                         howoften = input$QC01o,
-                         howmany = input$QC01m) %>% 
-        .insertStandards(stdName = "autoQC04", stdPosX='54', stdPosY='1', plate = 2, 
-                         howoften = input$QC4Lo,
-                         howmany = input$QC4Lm,
-                         begin=("3" %in% input$start3),
-                         end=("3" %in% input$end3)) %>% 
-        .formatHyStar(dataPath = paste0("D:\\Data2San\\p3657\\",
-                                        input$area, "\\",
-                                        input$instrument, "\\",
-                                        input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"))
-
-      #rv <- .blockRandom(rv, x = "sample_condition")
-      
-      return(rv)
-    }
+      if (input$lcSystem == "EVOSEP1x12x8"){
+        rv <- data.frame(container_id = res$containerid,
+                         sample_id = res$extract.id, 
+                         sample_name = res$extract.name,
+                         sample_condition = res$extract.Condition) %>%
+          .blockRandom(x = "sample_condition") %>% 
+          .insertStandardsEVOSEP(stdName = "washing", 
+                           howoften = input$cleano,
+                           howmany = input$cleanm,
+                           volume = 4) %>% 
+          .insertStandardsEVOSEP(stdName = "autoQC01", 
+                           howoften = input$QC01o,
+                           howmany = input$QC01m) %>% 
+          .insertStandardsEVOSEP(stdName = "autoQC04", 
+                           howoften = input$QC4Lo,
+                           howmany = input$QC4Lm,
+                           begin=("3" %in% input$start3),
+                           end=("3" %in% input$end3), volume = 2) %>% 
+          .mapPlatePositionEVOSEP(volume = 1) %>%
+          .formatEVOSEPHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+                                                input$area, "\\",
+                                                input$instrument, "\\",
+                                                input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\")) 
+          return(rv)
+        
+      }else{
+        
+        message(input$start3)
+        
+        rv <- data.frame(container_id = res$containerid,
+                         sample_id = res$extract.id, 
+                         sample_name = res$extract.name,
+                         sample_condition = res$extract.Condition) %>%
+          .blockRandom(x = "sample_condition") %>% 
+          .mapPlatePositionNanoElute %>%  
+          .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
+                           howoften = input$cleano,
+                           howmany = input$cleanm,
+                           volume = 4) %>% 
+          .insertStandards(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
+                           howoften = input$QC01o,
+                           howmany = input$QC01m) %>% 
+          .insertStandards(stdName = "autoQC04", stdPosX='54', stdPosY='1', plate = 2, 
+                           howoften = input$QC4Lo,
+                           howmany = input$QC4Lm,
+                           begin=("3" %in% input$start3),
+                           end=("3" %in% input$end3)) %>% 
+          .formatNanoEluteHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+                                          input$area, "\\",
+                                          input$instrument, "\\",
+                                          input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"))
+        
+        #rv <- .blockRandom(rv, x = "sample_condition")
+        
+        return(rv)
+      }}
     NULL
 })
 
@@ -448,45 +479,52 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
 
     res <- getBfabricContent()
-
-    ########################## WRITE CSV TO BFABRIC
-    fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
-    message(fn)
-    cat("Bracket Type=4\r\n", file = fn, append = FALSE)
-    write.table(res, file = fn,
-                sep = ',', row.names = FALSE,
-                append = TRUE, quote = FALSE, eol = '\r\n')
-
-    message("ALIVE")
-    file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
-
-    containerids <- strsplit(as.character(input$project), ",")[[1]]
-    rv <- lapply(containerids, function(containerid){
-	    message(paste("containerid = ", containerid))
-      POST("http://localhost:5000/add_resource",
-           body = toJSON(list(base64 = file_content,
-                              name = 'MS configuration',
-                              containerid = containerid,
-                              applicationid = 212,
-                              workunitdescription = paste("The spreadsheet contains a ", input$instrument,
-                                                          " queue configuration having ", nrow(res), " rows.\n",
-                                                          "The parameters are:\n",
-                                                          "\thow.often: ", as.integer(input$howoften), "\n",
-                                                          "\thow.many:  ", as.integer(input$howmany), "\n",
-                                                          "\tnr.methods:",  as.integer(input$testmethods), "\n",
-                                                          "\tnr.replicates:", as.integer(input$replicates), "\n",
-                                                          "\tshowcondition: ",  input$showcondition, "\n",
-                                                          "\tqc.type: ", as.integer(input$qctype), "\n",
-                                                          "\tmethod: ",  as.character(input$method),
-                                                          "\nThe resource was generated by using the R package bfabricShiny version ",
-                                                          packageVersion('bfabricShiny'), ".\n", sep=''),
-                              resourcename = getResourcename())
-           ))})
-
-
-    wuid <-  (content(rv[[1]])$workunit_id)
-    values$wuid <- wuid
-    ########################## WRITE CSV TO BFABRIC
+    
+    if (input$instrumentControlSoftware == "XCalibur"){
+      ########################## WRITE CSV TO BFABRIC
+      fn <- tempfile()#pattern = "file", tmpdir = tempdir(), fileext = ".csv")[1]
+      message(fn)
+      cat("Bracket Type=4\r\n", file = fn, append = FALSE)
+      write.table(res, file = fn,
+                  sep = ',', row.names = FALSE,
+                  append = TRUE, quote = FALSE, eol = '\r\n')
+      
+      message("ALIVE")
+      file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
+      
+      containerids <- strsplit(as.character(input$project), ",")[[1]]
+      rv <- lapply(containerids, function(containerid){
+        message(paste("containerid = ", containerid))
+        POST("http://localhost:5000/add_resource",
+             body = toJSON(list(base64 = file_content,
+                                name = 'MS configuration',
+                                containerid = containerid,
+                                applicationid = 212,
+                                workunitdescription = paste("The spreadsheet contains a ", input$instrument,
+                                                            " queue configuration having ", nrow(res), " rows.\n",
+                                                            "The parameters are:\n",
+                                                            "\thow.often: ", as.integer(input$howoften), "\n",
+                                                            "\thow.many:  ", as.integer(input$howmany), "\n",
+                                                            "\tnr.methods:",  as.integer(input$testmethods), "\n",
+                                                            "\tnr.replicates:", as.integer(input$replicates), "\n",
+                                                            "\tshowcondition: ",  input$showcondition, "\n",
+                                                            "\tqc.type: ", as.integer(input$qctype), "\n",
+                                                            "\tmethod: ",  as.character(input$method),
+                                                            "\nThe resource was generated by using the R package bfabricShiny version ",
+                                                            packageVersion('bfabricShiny'), ".\n", sep=''),
+                                resourcename = getResourcename())
+             ))})
+      
+      
+      wuid <-  (content(rv[[1]])$workunit_id)
+      values$wuid <- wuid
+      ########################## WRITE CSV TO BFABRIC
+    } else{
+    message("writexl to /tmp/gueue_generator.xls")
+      res <- getBfabricContent()
+      tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
+    }
+    
   }
   )
 
