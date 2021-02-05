@@ -456,22 +456,42 @@ shinyServer(function(input, output, session) {
 
   output$download <- renderUI({
     res <- getBfabricContent()
-
+    
     if (is.null(res)){
       HTML("Download not possible yet.")
-
-    }else if (!is.null(values$wuid)){
-      # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
-      actionButton("download",
-                   paste("bfabric download workunit", values$wuid),
-                   onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
-                                   values$wuid, "', '_blank')", sep=''))
-    }else{
-      actionButton('generate', 'Download configuration')
+      
+    }else {
+      if (input$instrumentControlSoftware == "XCalibur"){
+        if (!is.null(values$wuid)){
+          # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
+          actionButton("download",
+                       paste("bfabric download workunit", values$wuid),
+                       onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                                       values$wuid, "', '_blank')", sep=''))
+        }else{
+          actionButton('generate', 'Download configuration')
+        }
+        
+      }else{
+        downloadButton('downloadCSV', 'Download HyStar configuration as csv file (testing)')
+      }
     }
-
   })
 
+  
+  output$downloadCSV <- downloadHandler(
+    filename = paste("C",input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.csv", sep = ""),
+    content = function(file) {
+      write.table(getBfabricContent(),
+                  file = file,
+                  sep = ',',
+                  row.names = FALSE,
+                  append = FALSE,
+                  quote = FALSE,
+                  eol = '\r\n')
+    }
+  )
+  
   #------------------- bfabricUpload --------
   bfabricUpload <- observeEvent(input$generate, {
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -520,9 +540,9 @@ shinyServer(function(input, output, session) {
       values$wuid <- wuid
       ########################## WRITE CSV TO BFABRIC
     } else{
-    message("writexl to /tmp/gueue_generator.xls")
-      res <- getBfabricContent()
-      tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
+    #message("writexl to /tmp/gueue_generator.xls")
+      #res <- getBfabricContent()
+      #tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
     }
     
   }
