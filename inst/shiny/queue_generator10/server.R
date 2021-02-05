@@ -102,14 +102,14 @@ shinyServer(function(input, output, session) {
   })
 
   output$method <- renderUI(({
+    if (is.null(input$instrumentControlSoftware)){return(NULL)}
     if (input$instrumentControlSoftware == "XCalibur"){
-    selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'PRM', 'testing'), multiple = FALSE, selected = 'default')
+      selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'PRM', 'testing'),
+                  multiple = FALSE, selected = 'default')
     }else{
       selectInput('method', 'Queue Method:', c('default', 'blockrandom'), multiple = FALSE, selected = 'blockrandom')
-      
     }
-      
-      }))
+  }))
 
   output$showcondition <- renderUI(({
     checkboxInput('showcondition', 'Insert condition into sample name:', value = FALSE)
