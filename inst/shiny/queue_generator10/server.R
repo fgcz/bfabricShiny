@@ -391,6 +391,7 @@ shinyServer(function(input, output, session) {
                        sample_condition = res$extract.Condition)
       
       if (input$method == 'blockrandom'){
+        set.seed(1)
         inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
       }
       
