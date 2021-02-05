@@ -170,6 +170,7 @@
 function(S,
          dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\",
          ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat',
+         Method_Set="",
          FUN=function(x, y, plate){paste0( "Slot", plate,":", x)}){
     
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
@@ -184,7 +185,7 @@ function(S,
     }
     S$"Volume [µl]" <- S$volume
     S$"Data Path" <- dataPath
-    S$"Method Set" <- NA
+    S$"Method Set" <- Method_Set
     
     S$"Sample ID"[S$type != 'sample'] <- S$type[S$type != 'sample']
     S$"Sample ID" <- paste(format(Sys.Date(), format = "%Y%m%d"), injection.index, S$"Sample ID", sep='_')
