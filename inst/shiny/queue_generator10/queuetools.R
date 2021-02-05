@@ -162,39 +162,16 @@
     output
 }
 
-.formatHyStar <- function(S, dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\"){
-
-    injection.index <- sprintf("%03d", seq(1, nrow(S)))
-    S$"Vial" <- paste0( "Slot", S$plate,":",S$x)
-    S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )
-    
-    if ("sample_condition" %in% names(S))
-        S$"Sample Comment" <- S$"sample_condition"
-    else
-        S$"Sample Comment" <- ""
-    
-    S$
-    #library(magrittr)
-    
-    S$"Volume [µl]" <- S$volume
-    S$"Data Path" <- dataPath
-    S$"Method Set" <- NA
-    
-    S$"Sample ID"[S$type != 'sample'] <- S$type[S$type != 'sample']
-    S$"Sample ID" <- paste(format(Sys.Date(), format = "%Y%m%d"), injection.index, S$"Sample ID", sep='_')
-    
-    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set")]
-    rownames(rv) <- 1:nrow(rv)
-    rv
-}
 
 
-.formatNanoEluteHyStar <- 
+.formatHyStar <- 
 function(S,
          dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\",
-         ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat'){
+         ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat', FUN=function(x, y, plate){paste0( "Slot", plate,":", x)}){
+    
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
-    S$"Vial" <- paste0( "Slot", S$plate,":",S$x)
+    S$"Vial" <- FUN(plate=S$plate, x=S$x, y=S$y)
+    
     S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )
 
     if ("sample_condition" %in% names(S)){
@@ -221,34 +198,6 @@ function(S,
 }
 
 
-.formatEVOSEPHyStar <- function(S, dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\", methodSet="D:\\Data2San\\autoQC\nanoElute\\autoQC4L.m"){
-    
-    injection.index <- sprintf("%03d", seq(1, nrow(S)))
-    S$"Vial" <- paste0("S", S$plate,"-",S$x,S$y)
-    S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )
-    
-    if ("sample_condition" %in% names(S)){
-        S$"Sample Comment" <- S$"sample_condition"
-    }else{
-        S$"Sample Comment" <- ""
-    }
-        
-
-    S$"Volume [µl]" <- S$volume
-    S$"Data Path" <- dataPath
-    S$"Method Set" <- methodSet
-    
-    S$"Sample ID"[S$type != 'sample'] <- S$type[S$type != 'sample']
-    S$"Sample ID" <- paste(format(Sys.Date(), format = "%Y%m%d"), injection.index, S$"Sample ID", sep='_')
-    
-    idx <- which(is.na(S$sample_condition))
-    S$"Sample Comment" <- as.character(S$"Sample Comment")
-    S$"Sample Comment"[idx] <- S$type[idx]
-    
-    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set")]
-    rownames(rv) <- 1:nrow(rv)
-    rv
-}
 
 testthat::expect_false(.isBlockRandomFeasibible(iris[c(1:3,51:54,101:104), ], x="Species"))
 testthat::expect_true(.isBlockRandomFeasibible(iris[c(1:4,51:54,101:104), ], x="Species"))
