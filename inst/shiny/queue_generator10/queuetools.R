@@ -163,11 +163,14 @@
 }
 
 
+.EVOSEP_Vial <- function(x,y,plate){paste0("S",plate,"-", y, x)}
+.nanoElute_Vial <- function(x, y, plate){paste0( "Slot", plate,":", x)}
 
 .formatHyStar <- 
 function(S,
          dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\",
-         ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat', FUN=function(x, y, plate){paste0( "Slot", plate,":", x)}){
+         ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat',
+         FUN=function(x, y, plate){paste0( "Slot", plate,":", x)}){
     
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
     S$"Vial" <- FUN(plate=S$plate, x=S$x, y=S$y)
