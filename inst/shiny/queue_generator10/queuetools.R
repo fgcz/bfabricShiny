@@ -189,26 +189,33 @@
 }
 
 
-.formatNanoEluteHyStar <- function(S, dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\"){
-
+.formatNanoEluteHyStar <- 
+function(S,
+         dataPath="D:\\Data2San\\p3657\\Proteomics\\TIMSTOF_1\\cpanse_20210129\\",
+         ACQEnd_Execute='C:\\FGCZ\\Biobeamer\\biobeamer.bat'){
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
     S$"Vial" <- paste0( "Slot", S$plate,":",S$x)
     S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )
 
-    if ("sample_condition" %in% names(S))
+    if ("sample_condition" %in% names(S)){
         S$"Sample Comment" <- S$"sample_condition"
-    else
+    }else{
         S$"Sample Comment" <- ""
-
-    
+    }
     S$"Volume [µl]" <- S$volume
     S$"Data Path" <- dataPath
     S$"Method Set" <- NA
     
     S$"Sample ID"[S$type != 'sample'] <- S$type[S$type != 'sample']
     S$"Sample ID" <- paste(format(Sys.Date(), format = "%Y%m%d"), injection.index, S$"Sample ID", sep='_')
+    S$"ACQEnd Execute" <- ACQEnd_Execute
 
-    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set")]
+    idx <- which(is.na(S$sample_condition))
+    S$"Sample Comment" <- as.character(S$"Sample Comment")
+    S$"Sample Comment"[idx] <- S$type[idx]
+    
+    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set", "ACQEnd Execute")]
+    
     rownames(rv) <- 1:nrow(rv)
     rv
 }
@@ -234,8 +241,9 @@
     S$"Sample ID"[S$type != 'sample'] <- S$type[S$type != 'sample']
     S$"Sample ID" <- paste(format(Sys.Date(), format = "%Y%m%d"), injection.index, S$"Sample ID", sep='_')
     
-    #idx <- is.na(S$"Sample Comment")
-    #S$"Sample Comment"[idx] <- S$type[idx]
+    idx <- which(is.na(S$sample_condition))
+    S$"Sample Comment" <- as.character(S$"Sample Comment")
+    S$"Sample Comment"[idx] <- S$type[idx]
     
     rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set")]
     rownames(rv) <- 1:nrow(rv)
