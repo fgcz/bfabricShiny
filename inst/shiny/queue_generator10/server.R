@@ -385,12 +385,17 @@ shinyServer(function(input, output, session) {
       return(rv)
     }else if (input$instrumentControlSoftware == "HyStar"){
       note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
+      inputSampleTable <- data.frame(container_id = res$containerid,
+                       sample_id = res$extract.id, 
+                       sample_name = res$extract.name,
+                       sample_condition = res$extract.Condition)
+      
+      if (input$method == 'blockrandom'){
+        inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
+      }
+      
       if (input$lcSystem == "EVOSEP1x12x8"){
-        rv <- data.frame(container_id = res$containerid,
-                         sample_id = res$extract.id, 
-                         sample_name = res$extract.name,
-                         sample_condition = res$extract.Condition) %>%
-          .blockRandom(x = "sample_condition") %>% 
+         rv <- inputSampleTable %>%
           .insertStandardsEVOSEP(stdName = "washing", 
                            howoften = input$cleano,
                            howmany = input$cleanm,
@@ -411,14 +416,7 @@ shinyServer(function(input, output, session) {
           return(rv)
         
       }else{
-        
-        message(input$start3)
-        
-        rv <- data.frame(container_id = res$containerid,
-                         sample_id = res$extract.id, 
-                         sample_name = res$extract.name,
-                         sample_condition = res$extract.Condition) %>%
-          .blockRandom(x = "sample_condition") %>% 
+        rv <- inputSampleTable %>%
           .mapPlatePositionNanoElute %>%  
           .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
                            howoften = input$cleano,
