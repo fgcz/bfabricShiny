@@ -409,10 +409,12 @@ shinyServer(function(input, output, session) {
                            begin=("3" %in% input$start3),
                            end=("3" %in% input$end3), volume = 2) %>% 
           .mapPlatePositionEVOSEP(volume = 1) %>%
-          .formatEVOSEPHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                                 input$area, "\\",
                                                 input$instrument, "\\",
-                                                input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\")) 
+                                                input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
+                        Method_Set="D:\\Methods\\autoQC\\evosep.m",
+                        FUN=function(x,y,plate){paste0("S",plate,"-", y, x)}) 
           return(rv)
         
       }else{
@@ -430,10 +432,12 @@ shinyServer(function(input, output, session) {
                            howmany = input$QC4Lm,
                            begin=("3" %in% input$start3),
                            end=("3" %in% input$end3)) %>% 
-          .formatNanoEluteHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                           input$area, "\\",
                                           input$instrument, "\\",
-                                          input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"))
+                                          input$login,"_", format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
+                        Method_Set="D:\\Methods\\autoQC\\nanoElute\autoQC4L.m",
+                        FUN=function(x, y, plate){paste0( "Slot", plate,":", x)})
         
         #rv <- .blockRandom(rv, x = "sample_condition")
         
@@ -477,7 +481,7 @@ shinyServer(function(input, output, session) {
         }
         
       }else{
-        downloadButton('downloadCSV', 'Download HyStar configuration as csv file (testing)')
+        downloadButton('downloadCSV', 'Download HyStar configuration as csv file (experimental)')
       }
     }
   })
