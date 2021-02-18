@@ -183,7 +183,7 @@ function(S,
     }else{
         S$"Sample Comment" <- ""
     }
-    S$"Volume [µl]" <- S$volume
+    S$"Volume" <- S$volume
     S$"Data Path" <- dataPath
     S$"Method Set" <- Method_Set
     
@@ -195,7 +195,7 @@ function(S,
     S$"Sample Comment" <- as.character(S$"Sample Comment")
     S$"Sample Comment"[idx] <- S$type[idx]
     
-    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume [µl]", "Data Path", "Method Set", "ACQEnd Execute")]
+    rv <- S[, c("Vial", "Sample ID", "Sample Comment", "Volume", "Data Path", "Method Set", "ACQEnd Execute")]
     
     rownames(rv) <- 1:nrow(rv)
     rv

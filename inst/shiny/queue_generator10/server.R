@@ -10,6 +10,7 @@ library(tidyverse)
 library(jsonlite)
 library(httr)
 library(DT)
+library(XML)
 
 
 source("queuetools.R", local = FALSE)
@@ -395,6 +396,7 @@ shinyServer(function(input, output, session) {
         inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
       }
       
+      ## TODO method files only for clean|autoQC4L|autoQC01
       if (input$lcSystem == "EVOSEP1x12x8"){
          rv <- inputSampleTable %>%
           .insertStandardsEVOSEP(stdName = "washing", 
@@ -414,7 +416,7 @@ shinyServer(function(input, output, session) {
                                                 input$area, "\\",
                                                 input$instrument, "\\",
                                                 input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
-                        Method_Set="D:\\Methods\\autoQC\\evosep.m",
+                        Method_Set="D:\\Methods\\autoQC\\evosepOne\\autoQC4L.m",
                         FUN=function(x,y,plate){paste0("S",plate,"-", y, x)}) 
           return(rv)
         
@@ -482,22 +484,19 @@ shinyServer(function(input, output, session) {
         }
         
       }else{
-        downloadButton('downloadCSV', 'Download HyStar configuration as csv file (experimental)')
+        downloadButton('downloadHyStarXML', 'Download HyStar configuration xml file (experimental)')
       }
     }
   })
 
   
-  output$downloadCSV <- downloadHandler(
-    filename = paste("C",input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.csv", sep = ""),
+  output$downloadHyStarXML <- downloadHandler(
+    filename = paste("C", input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.xml", sep = ""),
     content = function(file) {
-      write.table(getBfabricContent(),
-                  file = file,
-                  sep = ',',
-                  row.names = FALSE,
-                  append = FALSE,
-                  quote = FALSE,
-                  eol = '\r\n')
+      xml <- xmlTree()
+      xml$addTag("SampleTable")
+      dump <- lapply(1:nrow(getBfabricContent()), FUN=function(i) xml$addTag("Sample", close=TRUE, attrs=getBfabricContent()[i,]))
+      saveXML(xml$value(), file=file, encoding="utf-8")
     }
   )
   
