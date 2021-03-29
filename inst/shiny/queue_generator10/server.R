@@ -10,6 +10,7 @@ library(tidyverse)
 library(jsonlite)
 library(httr)
 library(DT)
+library(XML)
 
 
 source("queuetools.R", local = FALSE)
@@ -102,7 +103,13 @@ shinyServer(function(input, output, session) {
   })
 
   output$method <- renderUI(({
-    selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'PRM', 'testing'), multiple = FALSE, selected = 'default')
+    if (is.null(input$instrumentControlSoftware)){return(NULL)}
+    if (input$instrumentControlSoftware == "XCalibur"){
+      selectInput('method', 'Queue Method:', c('default', 'random', 'blockrandom', 'PRM', 'testing'),
+                  multiple = FALSE, selected = 'default')
+    }else{
+      selectInput('method', 'Queue Method:', c('default', 'blockrandom'), multiple = FALSE, selected = 'blockrandom')
+    }
   }))
 
   output$showcondition <- renderUI(({
@@ -379,12 +386,19 @@ shinyServer(function(input, output, session) {
       return(rv)
     }else if (input$instrumentControlSoftware == "HyStar"){
       note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
+      inputSampleTable <- data.frame(container_id = res$containerid,
+                       sample_id = res$extract.id, 
+                       sample_name = res$extract.name,
+                       sample_condition = res$extract.Condition)
+      
+      if (input$method == 'blockrandom'){
+        set.seed(1)
+        inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
+      }
+      
+      ## TODO method files only for clean|autoQC4L|autoQC01
       if (input$lcSystem == "EVOSEP1x12x8"){
-        rv <- data.frame(container_id = res$containerid,
-                         sample_id = res$extract.id, 
-                         sample_name = res$extract.name,
-                         sample_condition = res$extract.Condition) %>%
-          .blockRandom(x = "sample_condition") %>% 
+         rv <- inputSampleTable %>%
           .insertStandardsEVOSEP(stdName = "washing", 
                            howoften = input$cleano,
                            howmany = input$cleanm,
@@ -398,21 +412,16 @@ shinyServer(function(input, output, session) {
                            begin=("3" %in% input$start3),
                            end=("3" %in% input$end3), volume = 2) %>% 
           .mapPlatePositionEVOSEP(volume = 1) %>%
-          .formatEVOSEPHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                                 input$area, "\\",
                                                 input$instrument, "\\",
-                                                input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\")) 
+                                                input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
+                        Method_Set="D:\\Methods\\autoQC\\evosepOne\\autoQC4L.m",
+                        FUN=function(x,y,plate){paste0("S",plate,"-", y, x)}) 
           return(rv)
         
       }else{
-        
-        message(input$start3)
-        
-        rv <- data.frame(container_id = res$containerid,
-                         sample_id = res$extract.id, 
-                         sample_name = res$extract.name,
-                         sample_condition = res$extract.Condition) %>%
-          .blockRandom(x = "sample_condition") %>% 
+        rv <- inputSampleTable %>%
           .mapPlatePositionNanoElute %>%  
           .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
                            howoften = input$cleano,
@@ -426,10 +435,12 @@ shinyServer(function(input, output, session) {
                            howmany = input$QC4Lm,
                            begin=("3" %in% input$start3),
                            end=("3" %in% input$end3)) %>% 
-          .formatNanoEluteHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                           input$area, "\\",
                                           input$instrument, "\\",
-                                          input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"))
+                                          input$login,"_", format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
+                        Method_Set="D:\\Methods\\autoQC\\nanoElute\autoQC4L.m",
+                        FUN=function(x, y, plate){paste0( "Slot", plate,":", x)})
         
         #rv <- .blockRandom(rv, x = "sample_condition")
         
@@ -456,22 +467,39 @@ shinyServer(function(input, output, session) {
 
   output$download <- renderUI({
     res <- getBfabricContent()
-
+    
     if (is.null(res)){
       HTML("Download not possible yet.")
-
-    }else if (!is.null(values$wuid)){
-      # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
-      actionButton("download",
-                   paste("bfabric download workunit", values$wuid),
-                   onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
-                                   values$wuid, "', '_blank')", sep=''))
-    }else{
-      actionButton('generate', 'Download configuration')
+      
+    }else {
+      if (input$instrumentControlSoftware == "XCalibur"){
+        if (!is.null(values$wuid)){
+          # https://fgcz-bfabric-test.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
+          actionButton("download",
+                       paste("bfabric download workunit", values$wuid),
+                       onclick = paste("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                                       values$wuid, "', '_blank')", sep=''))
+        }else{
+          actionButton('generate', 'Download configuration')
+        }
+        
+      }else{
+        downloadButton('downloadHyStarXML', 'Download HyStar configuration xml file (experimental)')
+      }
     }
-
   })
 
+  
+  output$downloadHyStarXML <- downloadHandler(
+    filename = paste("C", input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.xml", sep = ""),
+    content = function(file) {
+      xml <- xmlTree()
+      xml$addTag("SampleTable")
+      dump <- lapply(1:nrow(getBfabricContent()), FUN=function(i) xml$addTag("Sample", close=TRUE, attrs=getBfabricContent()[i,]))
+      saveXML(xml$value(), file=file, encoding="utf-8")
+    }
+  )
+  
   #------------------- bfabricUpload --------
   bfabricUpload <- observeEvent(input$generate, {
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -520,9 +548,9 @@ shinyServer(function(input, output, session) {
       values$wuid <- wuid
       ########################## WRITE CSV TO BFABRIC
     } else{
-    message("writexl to /tmp/gueue_generator.xls")
-      res <- getBfabricContent()
-      tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
+    #message("writexl to /tmp/gueue_generator.xls")
+      #res <- getBfabricContent()
+      #tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
     }
     
   }

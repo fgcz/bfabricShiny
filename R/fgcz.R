@@ -209,9 +209,10 @@ getProjects <- function(login, webservicepassword) {
 
     rv <- httr::content(rv)
     rv_p <- sapply(rv$res[[1]]$project, function(y){y$`_id`})
+    rv_cp <- sapply(rv$res[[1]]$coachedproject, function(y){y$`_id`})
     rv_o <- sapply(rv$res[[1]]$order, function(y){y$`_id`})
 
-    sort(c(unlist(rv_p),unlist(rv_o)), decreasing = TRUE)
+    sort(c(unlist(rv_p), unlist(rv_cp), unlist(rv_o)), decreasing = TRUE)
   })
 
 

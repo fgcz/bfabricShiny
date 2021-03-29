@@ -206,11 +206,17 @@ shinyServer( function(input, output, session) {
             step = 0.01
           ),
           numericInput(
-            "qValueFC",
-            "q value foldchange",
+            "FCthreshold",
+            "foldchange threshold",
             value = 2,
             min = 0,
             step = 0.05
+          ),
+          selectInput(
+            inputId = "normalization",
+            label = "Intensity Normalization Method",
+            choices = c("robustscale", "none"),
+            selected = 1
           )
         )
       }
@@ -272,12 +278,13 @@ shinyServer( function(input, output, session) {
                                        workunitID = bf$workunitid(),
                                        maxNA = input$maxMissing,
                                        nrPeptides = input$minPeptides,
-                                       reference = input$select
+                                       reference = input$select,
+                                       normalizationMethod = input$normalization
       )
 
 
       grp2$setMQProteinGroups(v_upload_file$protein)
-      grp2$setQValueThresholds(qvalue = input$qValue , qfoldchange = input$qValueFC)
+      grp2$setQValueThresholds(qvalue = input$qValue , qfoldchange = input$FCthreshold)
       incProgress(0.1, detail = paste("part", "Set up objects"))
 
 
@@ -323,7 +330,7 @@ shinyServer( function(input, output, session) {
     downloads <- c("downloadReport"="Download Report (.pdf)", "downloadData" = "Data (.txt)")
     ll <- list()
     for(i in 1:length(downloads)){
-      ll[[i]]<-downloadButton(names(downloads)[i], label=downloads[i])
+      ll[[i]] <- downloadButton(names(downloads)[i], label=downloads[i])
     }
     return(ll)
   })
