@@ -1,4 +1,3 @@
-ins
 # This is the server logic for a Shiny web application.
 # You can find out more about building applications with Shiny here:
 #
@@ -406,7 +405,7 @@ shinyServer(function(input, output, session) {
           .insertStandardsEVOSEP(stdName = "autoQC01", 
                            howoften = input$QC01o,
                            howmany = input$QC01m) %>% 
-          .insertStandardsEVOSEP(stdName = "autoQC04", 
+          .insertStandardsEVOSEP(stdName = "autoQC4L", 
                            howoften = input$QC4Lo,
                            howmany = input$QC4Lm,
                            begin=("3" %in% input$start3),
@@ -430,7 +429,7 @@ shinyServer(function(input, output, session) {
           .insertStandards(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
                            howoften = input$QC01o,
                            howmany = input$QC01m) %>% 
-          .insertStandards(stdName = "autoQC04", stdPosX='54', stdPosY='1', plate = 2, 
+          .insertStandards(stdName = "autoQC4L", stdPosX='54', stdPosY='1', plate = 2, 
                            howoften = input$QC4Lo,
                            howmany = input$QC4Lm,
                            begin=("3" %in% input$start3),
@@ -439,7 +438,7 @@ shinyServer(function(input, output, session) {
                                           input$area, "\\",
                                           input$instrument, "\\",
                                           input$login,"_", format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
-                        Method_Set="D:\\Methods\\autoQC\\nanoElute\autoQC4L.m",
+                        Method_Set="D:\\Methods\\autoQC\\nanoElute\\autoQC4L.m",
                         FUN=function(x, y, plate){paste0( "Slot", plate,":", x)})
         
         #rv <- .blockRandom(rv, x = "sample_condition")
@@ -491,11 +490,25 @@ shinyServer(function(input, output, session) {
 
   
   output$downloadHyStarXML <- downloadHandler(
+   
     filename = paste("C", input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.xml", sep = ""),
     content = function(file) {
+      rv <- getBfabricContent()
+      #message("saving bfabric content ...")
+      #save(rv, file="/tmp/bfabricContent.RData")
+      #message("[DONE]")
+      queue <- dplyr::as_tibble(rv)
+      rv <- queue %>%
+        dplyr::rename(SampleID = 'Sample ID') %>%
+        dplyr::rename(SampleComment = 'Sample Comment') %>%
+        dplyr::rename(ACQEND_EXECUTE = 'ACQEnd Execute') %>%
+        dplyr::rename(SuperMethod = 'Method Set') %>%
+        dplyr::rename(Position = 'Vial') %>%
+        dplyr::rename(DataPath = 'Data Path')
+      
       xml <- xmlTree()
       xml$addTag("SampleTable")
-      dump <- lapply(1:nrow(getBfabricContent()), FUN=function(i) xml$addTag("Sample", close=TRUE, attrs=getBfabricContent()[i,]))
+      dump <- lapply(1:nrow(rv), FUN=function(i) xml$addTag("Sample", close=TRUE, attrs=rv[i,]))
       saveXML(xml$value(), file=file, encoding="utf-8")
     }
   )
