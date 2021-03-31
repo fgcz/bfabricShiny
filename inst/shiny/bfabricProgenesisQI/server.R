@@ -43,7 +43,7 @@ shinyServer(function(input, output, session) {
     }
     message(cmd)
 
-    p389Devel::preprocessQIIdent(p389Devel::readIdentFile(pipe(cmd), sep=';'))
+    preprocessQIIdent(readIdentFile(pipe(cmd), sep=';'))
   })
 
   get_measurements <- reactive({
@@ -110,7 +110,7 @@ shinyServer(function(input, output, session) {
       )
 
       # TODO(cp): TESTING
-      QI_Data <- p389Devel::prepareQIDATA(QI_Data)
+      QI_Data_prepared <- p389Devel::prepareQIDATA(QI_Data)
 
       # for debugging
       (values$pdf <-  file.path(tempdir(), "made4-BGA1.pdf"))
@@ -123,7 +123,7 @@ shinyServer(function(input, output, session) {
       progress$set(message = "write quantitative data to bfabric ... ", detail= "using rmarkdown", value = 0.2)
 
       (fn <- tempfile(pattern = "file-", tmpdir = tempdir(), fileext = ".csv"))
-      write.table(QI_Data$Int_ID,
+      write.table(QI_Data_prepared$Int_ID,
                   file = fn,
                   sep='\t',
                   row.names = FALSE,
@@ -133,7 +133,7 @@ shinyServer(function(input, output, session) {
       file_txt_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
 
       description <- ""
-      if(length(unique(QI_Data$Annotation$Condition)) <= 1){
+      if(length(unique(QI_Data_prepared$Annotation$Condition)) <= 1){
         description <- "No valid group information to conduct a report."
         progress$set(message = description, detail= "using rmarkdown", value = 0.1)
       }
@@ -153,22 +153,26 @@ shinyServer(function(input, output, session) {
                                   applicationid = 227)
       values$wuid <- wuid
 
-      if(length(unique(QI_Data$Annotation$Condition)) > 1){
+      if(length(unique(QI_Data_prepared$Annotation$Condition)) > 1){
         progress$set(message = "render PDF document", detail= "using rmarkdown", value = 0.5)
         markdownFile <- RMD_p389_BGA(workdir = tempdir())
 
-        message("XXXXXXXXXXXXXXX",markdownFile)
-        message(file.path(tempdir(),markdownFile))
-        message(dir(tempdir()))
+        message("XXXXXXXXXXXXXXX :",markdownFile)
+        message("File path ", file.path(tempdir(),markdownFile))
+        message("Whats in tempdir ",dir(tempdir()))
+        message("dim QI_Data_prepared$Int_ID", dim(QI_Data_prepared$Int_ID))
+        message("", QI_Data_prepared$Annotation$Condition)
 
-        bga_res_id <- runBGA(QI_Data$Int_ID, QI_Data$Annotation$Condition )
-        bga_res_all <- runBGA(QI_Data$Int_ID_All,QI_Data$Annotation$Condition )
+        bga_res_id <- p389Devel::runBGA(QI_Data_prepared$Int_ID, QI_Data_prepared$Annotation$Condition )
+        bga_res_all <- p389Devel::runBGA(QI_Data_prepared$Int_ID_All, QI_Data_prepared$Annotation$Condition )
 
 
         rmarkdown::render(file.path(tempdir(),markdownFile),
                           output_file = values$pdf,
                           output_format = "pdf_document",
-                          params=list(bga_res_id = bga_res_id, bga_res_all = bga_res_all, resourceid = QI_Data$resourceid), envir = new.env())
+                          params=list(bga_res_id = bga_res_id,
+                                      bga_res_all = bga_res_all,
+                                      resourceid = QI_Data$resourceid), envir = new.env())
 
         message(values$pdf)
         file_pdf_content <- base64encode(readBin(values$pdf, "raw",
