@@ -82,7 +82,23 @@
     S
 }
 
-.insertStandardsEVOSEP <- function(S, howoften = 4, howmany = 2, begin=FALSE, end=FALSE, stdName = "autoQC01", volume = 1){
+.insertStandardsLoop <- function(input, howoften=1, howmany=1)
+{ 
+    output <- data.frame()
+    # yes - for readability of the code we have a foor loop!
+    for (i in 1:nrow(input)){
+        output <- rbind(output, input[i, ])
+        if (howoften > 0 && i %% howoften == 0 && howmany > 0){
+            for (j in seq(1, howmany)){
+                tmp <- rep(NA, ncol(input))
+                output <- rbind(output, tmp)
+            }
+        }
+    }
+    output
+}
+
+.insertStandardsEVOSEP <- function(S, howoften = 1, howmany = 1, begin=FALSE, end=FALSE, stdName = "autoQC01", volume = 1){
     input <- S
     if (! 'type' %in% names(input))
         input$type <- "sample"
@@ -91,18 +107,8 @@
     if (! 'volume' %in% names(input))
         input$volume <- NA
     
-    output <- data.frame()
+    output <- .insertStandardsLoop(input, howoften, howmany)
     
-    # yes - for readability of the code we have a foor loop!
-    for (i in 1:nrow(input)){
-        if (howoften > 0 && i %% howoften == 0){
-            for (j in seq(1, howmany)){
-                tmp <- rep(NA, ncol(input))
-                output <- rbind(output, tmp)
-            }
-        }
-        output <- rbind(output, input[i, ])
-    }
     if (begin){
         tmp <- rep(NA, ncol(input))
         output <- rbind(tmp, output)
@@ -120,7 +126,7 @@
 
 
 # we iterate row by row through the data.frame and insert the autoQC vials
-.insertStandards <- function(S, howoften = 4, howmany = 2, begin=FALSE, end=FALSE, stdName = "autoQC01", stdPosX='8', stdPosY='F', plate=1, volume=1){
+.insertStandards <- function(S, howoften = 4, howmany = 1, begin=FALSE, end=FALSE, stdName = "autoQC01", stdPosX='8', stdPosY='F', plate=1, volume=1){
     input <- S
   
     
@@ -129,19 +135,8 @@
     
     output <- data.frame()
     
-    # yes - for readability of the code we have a foor loop!
-    for (i in 1:nrow(input)){
-         
-        if (howoften > 0 && i %% howoften == 0){
-            
-            for (j in seq(1, howmany)){
-                tmp <- rep(NA, ncol(input))
-                output <- rbind(output, tmp)
-            }
-        }
-
-        output <- rbind(output, input[i, ])
-    }
+    output <- .insertStandardsLoop(input, howoften, howmany)
+    
     if (begin){
         tmp <- rep(NA, ncol(input))
         output <- rbind(tmp, output)
@@ -157,8 +152,6 @@
     output$y[is.na(output$y )] <- stdPosY
     output$volume[output$type == stdName] <- volume
     output$plate[output$type == stdName] <- plate
-
-
     output
 }
 
@@ -201,7 +194,21 @@ function(S,
     rv
 }
 
-
+.sanityCheck <- function(S = iris[c(1:4, 51:54, 101:104), ]){
+    
+    inputSampleTable <- data.frame(container_id = rep(3000, nrow(S)),
+                                   sample_id = as.integer(row.names(S)) + 10000, 
+                                   sample_name = paste0(S[,1], S[,2], S[,3], S[,4]),
+                                   sample_condition = S$Species)
+    
+    
+    set.seed(1)
+    inputSampleTable %>%
+    .blockRandom(x = "sample_condition", check=FALSE) %>% 
+        .insertStandardsEVOSEP(stdName = "washing", howoften = 1, howmany = 1, volume = 4) %>%
+    .insertStandardsEVOSEP(stdName = "AAA", howoften = 1, howmany = 1, volume = 4)
+                        
+}
 
 testthat::expect_false(.isBlockRandomFeasibible(iris[c(1:3,51:54,101:104), ], x="Species"))
 testthat::expect_true(.isBlockRandomFeasibible(iris[c(1:4,51:54,101:104), ], x="Species"))
