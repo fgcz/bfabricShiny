@@ -163,8 +163,8 @@ shinyServer(function(input, output, session) {
         message("dim QI_Data_prepared$Int_ID", dim(QI_Data_prepared$Int_ID))
         message("", QI_Data_prepared$Annotation$Condition)
 
-        bga_res_id <- p389Devel::runBGA(QI_Data_prepared$Int_ID, QI_Data_prepared$Annotation$Condition )
-        bga_res_all <- p389Devel::runBGA(QI_Data_prepared$Int_ID_All, QI_Data_prepared$Annotation$Condition )
+        bga_res_id <- p389Devel::runBGA(QI_Data_prepared$Int_ID, QI_Data_prepared$Annotation )
+        bga_res_all <- p389Devel::runBGA(QI_Data_prepared$Int_ID_All, QI_Data_prepared$Annotation )
 
 
         rmarkdown::render(file.path(tempdir(),markdownFile),
@@ -172,7 +172,8 @@ shinyServer(function(input, output, session) {
                           output_format = "pdf_document",
                           params=list(bga_res_id = bga_res_id,
                                       bga_res_all = bga_res_all,
-                                      resourceid = QI_Data$resourceid), envir = new.env())
+                                      resourceid = QI_Data$resourceid),
+                          envir = new.env())
 
         message(values$pdf)
         file_pdf_content <- base64encode(readBin(values$pdf, "raw",
