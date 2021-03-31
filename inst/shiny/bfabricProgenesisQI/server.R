@@ -168,7 +168,7 @@ shinyServer(function(input, output, session) {
         rmarkdown::render(file.path(tempdir(),markdownFile),
                           output_file = values$pdf,
                           output_format = "pdf_document",
-                          params=list(bga_res_id = bga_res_id, bga_res_all = bga_res_all), envir = new.env())
+                          params=list(bga_res_id = bga_res_id, bga_res_all = bga_res_all, resourceid = QI_Data$resourceid), envir = new.env())
 
         message(values$pdf)
         file_pdf_content <- base64encode(readBin(values$pdf, "raw",
