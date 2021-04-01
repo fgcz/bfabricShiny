@@ -386,6 +386,11 @@ shinyServer(function(input, output, session) {
     }else if (input$instrumentControlSoftware == "HyStar"){
       message("DEBUG")
       message(paste(names(input), collapse = ", "))
+      #print(as_tibble(as.data.frame(input)))
+      #save(input, file='/tmp/input.RData')
+     # list_of_inputs <- reactiveValuesToList(input)
+     #  print(list_of_inputs)
+      
       note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
       inputSampleTable <- data.frame(container_id = res$containerid,
                        sample_id = res$extract.id, 
@@ -396,22 +401,30 @@ shinyServer(function(input, output, session) {
         set.seed(1)
         inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
       }
-      
+      print("DEBUG")
+      print(input$autoQC4L)
       ## TODO method files only for clean|autoQC4L|autoQC01
       if (input$lcSystem == "EVOSEP1x12x8"){
          rv <- inputSampleTable %>%
           .insertStandardsEVOSEP(stdName = "washing", 
+                           between=input$clean,
                            howoften = input$cleano,
                            howmany = input$cleanm,
-                           volume = 4) %>% 
-          .insertStandardsEVOSEP(stdName = "autoQC01", 
+                           volume = 4,
+                           begin = "4" %in% c(input$start1,input$start2, input$start3),
+                           end = "4" %in% c(input$end1,input$end2, input$end3)) %>% 
+          .insertStandardsEVOSEP(stdName = "autoQC01",
+                           between=input$autoQC01,
                            howoften = input$QC01o,
-                           howmany = input$QC01m) %>% 
-          .insertStandardsEVOSEP(stdName = "autoQC4L", 
+                           howmany = input$QC01m,
+                           begin = "1" %in% c(input$start1,input$start2, input$start3),
+                           end = "1" %in% c(input$end1,input$end2, input$end3)) %>% 
+          .insertStandardsEVOSEP(stdName = "autoQC4L",
+                           between=input$autoQC4L,
                            howoften = input$QC4Lo,
                            howmany = input$QC4Lm,
-                           begin=("3" %in% input$start3),
-                           end=("3" %in% input$end3), volume = 2) %>% 
+                           begin = "3" %in% c(input$start1,input$start2, input$start3),
+                           end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) %>% 
           .mapPlatePositionEVOSEP(volume = 1) %>%
           .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                                 input$area, "\\",
@@ -426,17 +439,24 @@ shinyServer(function(input, output, session) {
         rv <- inputSampleTable %>%
           .mapPlatePositionNanoElute %>%  
           .insertStandardsNanoElute(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
-                           howoften = input$cleano,
-                           howmany = input$cleanm,
-                           volume = 4) %>% 
+                            between=input$clean,
+                            howoften = input$cleano,
+                            howmany = input$cleanm,
+                            volume = 4,
+                            begin = "4" %in% c(input$start1,input$start2, input$start3),
+                            end = "4" %in% c(input$end1,input$end2, input$end3)) %>% 
           .insertStandardsNanoElute(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
-                           howoften = input$QC01o,
-                           howmany = input$QC01m) %>% 
+                                    between=input$autoQC01,
+                                    howoften = input$QC01o,
+                                    howmany = input$QC01m,
+                                    begin = "1" %in% c(input$start1,input$start2, input$start3),
+                                    end = "1" %in% c(input$end1,input$end2, input$end3)) %>% 
           .insertStandardsNanoElute(stdName = "autoQC4L", stdPosX='54', stdPosY='1', plate = 2, 
-                           howoften = input$QC4Lo,
-                           howmany = input$QC4Lm,
-                           begin=("3" %in% input$start3),
-                           end=("3" %in% input$end3)) %>% 
+                                    between=input$autoQC4L,
+                                    howoften = input$QC4Lo,
+                                    howmany = input$QC4Lm,
+                                    begin = "3" %in% c(input$start1,input$start2, input$start3),
+                                    end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) %>% 
           .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
                                           input$area, "\\",
                                           input$instrument, "\\",

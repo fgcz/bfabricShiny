@@ -82,18 +82,24 @@
     S
 }
 
-.insertStandardsLoop <- function(input, howoften=1, howmany=1, begin = FALSE, end = FALSE)
+.insertStandardsLoop <- function(input, howoften = 1, howmany = 1, begin = FALSE, end = FALSE, between=TRUE)
 { 
     output <- data.frame()
-    # yes - for readability of the code we have a foor loop!
-    for (i in 1:nrow(input)){
+    
+    if (isTRUE(between)){
+      # yes - for readability of the code we have a foor loop!
+      for (i in 1:nrow(input)){
         output <- rbind(output, input[i, ])
         if (howoften > 0 && i %% howoften == 0 && howmany > 0){
-            for (j in seq(1, howmany)){
-                tmp <- rep(NA, ncol(input))
-                output <- rbind(output, tmp)
-            }
+          for (j in seq(1, howmany)){
+            tmp <- rep(NA, ncol(input))
+            output <- rbind(output, tmp)
+          }
         }
+      }
+    }else{
+      # no inserts inbeween runs
+      output <- input
     }
     
     if (begin){
@@ -109,7 +115,7 @@
     output
 }
 
-.insertStandardsEVOSEP <- function(S, howoften = 1, howmany = 1, begin=FALSE, end=FALSE, stdName = "autoQC01", volume = 1){
+.insertStandardsEVOSEP <- function(S, stdName = "autoQC01", volume = 1, ...){
     input <- S
     if (! 'type' %in% names(input))
         input$type <- "sample"
@@ -118,7 +124,7 @@
     if (! 'volume' %in% names(input))
         input$volume <- NA
     
-    output <- .insertStandardsLoop(input, howoften=howoften, howmany = howmany, begin=begin, end=end)
+    output <- .insertStandardsLoop(input, ...)
 
     output$type[is.na(output$type )] <- stdName
     output$volume[output$type == stdName] <- volume
@@ -127,15 +133,14 @@
 
 
 # we iterate row by row through the data.frame and insert the autoQC vials
-.insertStandardsNanoElute <- function(S, howoften = 4, howmany = 1, begin=FALSE,
-    end=FALSE, stdName = "autoQC01", stdPosX='8', stdPosY='F', plate=1, volume=1){
+.insertStandardsNanoElute <- function(S, stdName = "autoQC01", stdPosX='8', stdPosY='F', plate=1, volume=1, ...){
 
     input <- S
 
     if (! 'type' %in% names(input))
         input$type <- "sample"
     
-    output <- .insertStandardsLoop(input, howoften=howoften, howmany = howmany, begin=begin, end=end)
+    output <- .insertStandardsLoop(input, ...)
     
     output$type[is.na(output$type )] <- stdName
     output$x[is.na(output$x )] <- stdPosX
