@@ -384,6 +384,8 @@ shinyServer(function(input, output, session) {
                                                 startposition = input$startposition)
       return(rv)
     }else if (input$instrumentControlSoftware == "HyStar"){
+      message("DEBUG")
+      message(paste(names(input), collapse = ", "))
       note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
       inputSampleTable <- data.frame(container_id = res$containerid,
                        sample_id = res$extract.id, 
@@ -420,16 +422,17 @@ shinyServer(function(input, output, session) {
           return(rv)
         
       }else{
+        ## nanoElute
         rv <- inputSampleTable %>%
           .mapPlatePositionNanoElute %>%  
-          .insertStandards(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
+          .insertStandardsNanoElute(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
                            howoften = input$cleano,
                            howmany = input$cleanm,
                            volume = 4) %>% 
-          .insertStandards(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
+          .insertStandardsNanoElute(stdName = "autoQC01", stdPosX='53', stdPosY='1', plate = 2,
                            howoften = input$QC01o,
                            howmany = input$QC01m) %>% 
-          .insertStandards(stdName = "autoQC4L", stdPosX='54', stdPosY='1', plate = 2, 
+          .insertStandardsNanoElute(stdName = "autoQC4L", stdPosX='54', stdPosY='1', plate = 2, 
                            howoften = input$QC4Lo,
                            howmany = input$QC4Lm,
                            begin=("3" %in% input$start3),
