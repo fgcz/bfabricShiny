@@ -382,6 +382,11 @@ shinyServer(function(input, output, session) {
                                                 end3 = as.numeric(input$end3),
                                                 lists = input$targets,
                                                 startposition = input$startposition)
+      
+      # TODO(cp): add an addidtional parameter
+      idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_1", rv['Path'])
+      rv[idx, 'Inj Vol'] <- 1
+     
       return(rv)
     }else if (input$instrumentControlSoftware == "HyStar"){
       message("DEBUG")
