@@ -194,7 +194,7 @@
 #' @return a vector of project ids
 #' @export getProjects
 getProjects <- function(login, webservicepassword) {
-  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   projetcs <- ({
     rv <- httr::POST('http://localhost:5000/q',
                body = toJSON(list(login = login,
@@ -350,7 +350,7 @@ read <- function(login = NULL, webservicepassword = NULL,
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
 
-  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   
   query_result <- POST(posturl,
                        body = toJSON(list(login = login,
@@ -371,7 +371,7 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 # getWorkunits(login, webservicepassword)
 getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, applicationid = 224){
-  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   
    workunits <- ({
     rv <- POST('http://localhost:5000/q',
@@ -404,11 +404,11 @@ getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, 
 #'
 #' @export
 #' @return a vector of resource ids
-getResources <- function(login=NULL, webservicepassword=NULL, workunitid){
+getResources <- function(login=NULL, webservicepassword=NULL, workunitid=NULL){
   
-  stopifnot(isTRUE(is.null(login)),
-            isTRUE(is.null(webservicepassword)),
-            isTRUE(is.null(workunitid)))
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(workunitid)))
   
 
   resources <- ({
@@ -509,7 +509,7 @@ createWorkunit <-
 #' @return
 #' @export
 save <- function(login, webservicepassword, endpoint = 'workunit', query){
-  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   rv <- POST('http://localhost:5000/s',
              body = toJSON(
                list(
