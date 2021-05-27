@@ -27,10 +27,13 @@ jobs:
         uses: r-lib/actions/setup-r@v1
         with:
           r-version: ${{ matrix.r-version }}
+      - name: Install some Debian packages
+        run: sudo apt-get install -y  curl
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck", "rmarkdown"))
-          remotes::install_deps(dependencies = TRUE); install.packages('devtools'); devtools::install_github("trestletech/shinyStore");install.packages('PKI')
+          pkgs <- c('testthat', 'knitr', 'shiny', 'protViz', 'roxygen2', 'rcmdcheck', 'rmarkdown', 'devtools', 'PKI', 'devtools')
+          pkgs[!pkgs %in% installed.packages()] |> install.packages()
+          remotes::install_deps(dependencies = TRUE); devtools::install_github("trestletech/shinyStore");
         shell: Rscript {0}
       - name: Check
         run: rcmdcheck::rcmdcheck(build_args = "", args = "", error_on = "error", check_dir = "/tmp/bfabricShiny.Rcheck")
