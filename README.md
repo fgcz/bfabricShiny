@@ -1,3 +1,5 @@
+![](https://github.com/fgcz/bfabricShiny/workflows/R-CMD-check-bfabricShiny/badge.svg)
+
 # bfabricShiny
 
 enables connecting R and bfabric using REST

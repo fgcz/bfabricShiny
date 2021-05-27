@@ -2,7 +2,7 @@ Package: bfabricShiny
 Type: Package
 Title: A Shiny Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [aut], Christian Panse [cre, aut]
-Maintainer: Christian Panse<cp@fgcz.ethz.ch>
+Maintainer: Christian Panse <cp@fgcz.ethz.ch>
 Version: 0.10.25
 Description: provides access modules and functions to interact with the FGCZ's 
     bfabric system. The package contains shiny applications, e.g.,
