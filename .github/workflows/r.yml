@@ -11,9 +11,9 @@ env:
     ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 on:
   push:
-    branches: [ master ]
+    branches: [ bfabric10_c ]
   pull_request:
-    branches: [ master ]
+    branches: [ bfabric10_c ]
 
 jobs:
   build:
