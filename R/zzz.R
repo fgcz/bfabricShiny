@@ -1,5 +1,6 @@
 #R
 
+#' @importFrom utils packageVersion
 .onAttach <- function(lib, pkg){
 	if(interactive()){
 		version <- packageVersion('bfabricShiny')

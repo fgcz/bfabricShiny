@@ -43,7 +43,37 @@ generate_queue(
 )
 }
 \arguments{
-\item{pathprefixsep}{}
+\item{x}{x}
+
+\item{foldername}{forder name}
+
+\item{projectid}{foldername}
+
+\item{area}{Proteomics or Metabolomics}
+
+\item{instrument}{LTQFT_1}
+
+\item{username}{cpanse}
+
+\item{nr.methods}{1}
+
+\item{nr.replicates}{1}
+
+\item{qc.type}{TODO}
+
+\item{method}{random}
+
+\item{pathprefix}{D:Data2San}
+
+\item{pathprefixsep}{'/'}
+
+\item{how.often}{1}
+
+\item{how.many}{1}
+
+\item{showcondition}{TODO}
+
+\item{hplc}{TODO}
 }
 \value{
 a instrument configuration as \code{data.frame}.

@@ -10,12 +10,14 @@
   return(res)
 }
 
+#' @importFrom utils read.csv
 .unzip <- function(zipfile=NULL, file=NULL){
   cmd <- paste('unzip -p ', zipfile, file)
   content <- read.csv(pipe(cmd), sep='\t', stringsAsFactors = FALSE, header = TRUE)
   content
 }
 
+#' @importFrom utils read.csv
 .ssh_unzip <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', zipfile = .workunit2resource(), file = 'proteinGroups.txt'){
 
   cmd <- paste('unzip -p ', zipfile, file)
@@ -35,7 +37,7 @@
 ##'
 ##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
-##' @importFrom XML xmlNode
+##' @importFrom XML xmlNode append.xmlNode xmlAttrs xmlAttrs<-
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 .listToXml <- function(item, tag) {
   # just a textnode, or empty node with attributes

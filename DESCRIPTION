@@ -9,30 +9,28 @@ Description: provides access modules and functions to interact with the FGCZ's
     to allow the FGCZ user to automatically generate a certain set of queues for
     Thermo Fisher Scientific instruments. 
 Depends:
-    R (>= 4.1),
-    DT,
+    R (>= 4.1)
+Imports:
     PKI,
+    dplyr (>= 0.7),
     httr,
     jsonlite (>= 1.4),
     magrittr,
     shiny (>= 1.0),
     shinyStore (>= 0.1),
     tidyr (>= 0.6),
-    xml2 (>= 1.1),
     XML
 Suggest: 
-    dplyr (>= 0.7),
+    DT,
     ggplot2 (>= 2.2),
     rmarkdown,
     roxygen2,
     testthat,
-    BiocStyle
-    protViz (>= 0.4),
-    SRMService (>= 0.1),
     tidyverse,
-    RCurl
+    RCurl,
+    xml2 (>= 1.1)
 License: GPL-3 + file LICENSE
-LazyData: TRUE
+LazyData: FALSE
 Collate:
     bfabric.R
     ms_queue.R

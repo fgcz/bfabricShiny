@@ -2,6 +2,8 @@
 ## shiny::runApp("inst/shiny/2Group2Test",port=1234, host="130.60.81.134")
 ## shiny::runApp('C:/Users/wolski/prog/SRMService/inst/shiny/2Group2Test', port = 1234, host=)
 
+stopifnot(require(SRMService))
+
 library(bfabricShiny)
 
 options(shiny.maxRequestSize = 30 * 1024^2)

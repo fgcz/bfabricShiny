@@ -33,9 +33,7 @@
   data.frame(extract.name, extract.id, extract.Condition,containerid = rep(7320,20))
 }
 
-#'
-#'@examples
-#'.test_data_order()
+
 .test_data_order <- function(){
   res <- data.frame(
     extract.name =  c(paste("Sample", 1:10, sep = "_"),paste("XYZ", 1:10, sep = "_") ),
@@ -480,7 +478,6 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #' @param x: the sample information (data.frame)
 #'
 #' @return the original dataframe (data.frame)
-#' @export
 #'
 #' @examples
 #'
@@ -514,7 +511,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   blocks <- length(unique(x$extract.Condition))
   elements <- max(table(x$extract.Condition))
   res <- x %>%
-    bfabricShiny:::.equal.groups()
+    .equal.groups()
   res <- dplyr::mutate(res, blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements)))))
   res <- dplyr::arrange(res, blockidx)
   res <-   dplyr::mutate(res, randomidx = as.vector(replicate(elements, sample(1:blocks))))
@@ -581,20 +578,6 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 
 #generate queue ----
 
-#' Title
-#'
-#' @param x
-#' @param foldername
-#' @param area
-#' @param instrument
-#' @param username
-#' @param pathprefixsep
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
 .generate_folder_name <- function(
   x,
   foldername,
@@ -615,15 +598,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   return(out)
 }
 
-#' .generate_name
-#'
-#' @param x
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
+
 .generate_name <- function(x, startposition = 1) {
   n <- nrow(x)
   rundate <- format(Sys.Date(), format = "%Y%m%d") #produce the date in YYYYMMDD format
@@ -639,12 +614,11 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   return(injection.name)
 }
 
-#' .generate_name
+#' .generate_name_order
 #'
-#' @param x
+#' @param x queue configuration
 #'
-#' @return
-#' @export
+#' @return queue configuration
 #'
 #' @examples
 #' bfabricShiny:::.generate_name_order(bfabricShiny:::.test_data_medium())
@@ -664,7 +638,6 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 }
 
 #'
-#'@export
 #'@examples
 #'
 #' generate_queue_order(bfabricShiny:::.test_data_medium())
@@ -756,25 +729,27 @@ generate_queue_order <- function(x,
 
 #' FGCZ mass spec queue generator
 #'
-#' @param x
-#' @param foldername
-#' @param projectid
-#' @param area
-#' @param instrument
-#' @param username
-#' @param how.often
-#' @param how.many
-#' @param nr.methods
-#' @param nr.replicates
-#' @param showcondition
-#' @param qc.type
-#' @param hplc
-#' @param method
-#' @param pathprefix
-#' @param pathprefixsep
+#' @param x x 
+#' @param foldername forder name
+#' @param projectid foldername
+#' @param area Proteomics or Metabolomics
+#' @param instrument LTQFT_1
+#' @param username cpanse
+#' @param how.often 1
+#' @param how.many  1
+#' @param nr.methods 1
+#' @param nr.replicates 1
+#' @param showcondition TODO
+#' @param qc.type TODO
+#' @param hplc TODO
+#' @param method random
+#' @param pathprefix D:Data2San
+#' @param pathprefixsep '/'
 #'
 #' @return a instrument configuration as \code{data.frame}.
 #' @export generate_queue
+#' @import dplyr 
+#' @importFrom stats na.omit rnorm
 #'
 #' @examples
 #' generate_queue(x <- bfabricShiny:::.test_data_medium(),start2 = NA,start3 = NA)
@@ -975,24 +950,4 @@ generate_queue <- function(x,
   }
   rv <- rv[order(rv$`File Name`),]
   return(list(rv = rv, nextpos = nextpos))
-}
-
-
-
-#' Run shiny queue generator application
-#'
-#' @return
-#'
-#' @export runQueue
-#' @examples
-#' #bfabricShiny::runQueue()
-runQueue <- function(ipadress= "172.23.255.1"){
-  qgs <- system.file("shiny", "queue_generator10", package = "bfabricShiny")
-  shiny::runApp(qgs,
-                #host = getOption("shiny.host", "127.0.0.1"),
-                host = ipadress, #"130.60.81.134",
-                port = 1234,
-                display.mode = "normal",
-                quiet = TRUE,
-                launch.browser = FALSE)
 }

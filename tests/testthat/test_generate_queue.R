@@ -1,12 +1,7 @@
 #R
 
+context("bfabricShiny")
 
-
-library(testthat)
- 
-
-#test data
-  
 .test_generate_queue<- function(x, method="default"){
   generate_queue(x,
                       projectid = 3000,

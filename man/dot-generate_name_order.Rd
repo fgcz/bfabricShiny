@@ -2,18 +2,18 @@
 % Please edit documentation in R/ms_queue.R
 \name{.generate_name_order}
 \alias{.generate_name_order}
-\title{.generate_name}
+\title{.generate_name_order}
 \usage{
 .generate_name_order(x, startposition = 1)
 }
 \arguments{
-\item{x}{}
+\item{x}{queue configuration}
 }
 \value{
-
+queue configuration
 }
 \description{
-.generate_name
+.generate_name_order
 }
 \examples{
 bfabricShiny:::.generate_name_order(bfabricShiny:::.test_data_medium())
