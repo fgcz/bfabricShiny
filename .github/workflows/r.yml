@@ -33,7 +33,7 @@ jobs:
         run: |
           pkgs <- c('testthat', 'knitr', 'shiny', 'protViz', 'roxygen2', 'rcmdcheck', 'rmarkdown', 'devtools', 'PKI', 'devtools')
           pkgs[!pkgs %in% installed.packages()] |> install.packages()
-          remotes::install_deps(dependencies = TRUE); devtools::install_github("trestletech/shinyStore");
+          remotes::install_deps(dependencies = TRUE); devtools::install_github('trestletech/shinyStore');
         shell: Rscript {0}
       - name: Check
         run: rcmdcheck::rcmdcheck(build_args = "", args = "", error_on = "error", check_dir = "/tmp/bfabricShiny.Rcheck")
