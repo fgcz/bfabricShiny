@@ -4,7 +4,7 @@
 \alias{runQueue}
 \title{Run shiny queue generator application}
 \usage{
-runQueue()
+runQueue(ipadress = "172.23.255.1")
 }
 \value{
 

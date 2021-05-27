@@ -14,11 +14,11 @@ bfabric(
 )
 }
 \arguments{
-\item{input}{}
+\item{input}{default module input}
 
-\item{output}{}
+\item{output}{default module output}
 
-\item{session}{}
+\item{session}{module session}
 }
 \value{
 check the \code{input$resourceid} value.
@@ -27,13 +27,13 @@ check the \code{input$resourceid} value.
 provides a shiny server module for the bfabric system.
 It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
 
-\code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate 
+\code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate
 the key files.
 }
 \details{
-t.b.d. 
+t.b.d.
 \enumerate{
-\item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))} 
+\item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))}
 \item follow the instructions \code{\link{bfabricInput}}
 }
 }

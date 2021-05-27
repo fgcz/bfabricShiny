@@ -2,18 +2,18 @@
 % Please edit documentation in R/bfabric.R
 \name{bfabricInput}
 \alias{bfabricInput}
-\title{Shiny UI module}
+\title{defines the bfabric shiny UI module}
 \usage{
 bfabricInput(id)
 }
 \arguments{
-\item{id}{}
+\item{id}{shiny session id}
 }
 \value{
 tagList
 }
 \description{
-Shiny UI module
+defines the bfabric shiny UI module
 }
 \examples{
 \dontrun{
@@ -25,6 +25,7 @@ Shiny UI module
    )
 
 }
+
 }
 \references{
 \url{https://doi.org/10.1145/1739041.1739135}

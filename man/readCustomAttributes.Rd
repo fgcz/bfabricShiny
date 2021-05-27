@@ -2,21 +2,21 @@
 % Please edit documentation in R/fgcz.R
 \name{readCustomAttributes}
 \alias{readCustomAttributes}
-\title{reads Custom Attributes of a}
+\title{reads Custom Attributes of a workunit}
 \usage{
 readCustomAttributes(login, webservicepassword, workunitid = 202570)
 }
 \arguments{
-\item{login}{}
+\item{login}{login}
 
-\item{webservicepassword}{}
+\item{webservicepassword}{webservicepassword}
 
-\item{workunitid}{}
+\item{workunitid}{a valid bfabric workunit id}
 }
 \value{
 a \code{data.frame} containing columns sampleId , resourceId, and
 iff exisiting a merged table of the Custom Attributes.
 }
 \description{
-reads Custom Attributes of a
+reads Custom Attributes of a workunit
 }

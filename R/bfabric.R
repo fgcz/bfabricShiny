@@ -1,7 +1,8 @@
-#' Shiny UI module
+#' defines the bfabric shiny UI module
 #'
-#' @param id
-#'
+#' @param id shiny session id
+#' @import shiny
+#' @importFrom PKI PKI.load.key
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return tagList
@@ -39,9 +40,9 @@ bfabricInput <- function(id) {
 
 #' shiny server module for the bfabric
 #'
-#' @param input
-#' @param output
-#' @param session
+#' @param input default module input
+#' @param output default module output
+#' @param session module session
 #' @description provides a shiny server module for the bfabric system.
 #' It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
 #'

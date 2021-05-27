@@ -87,6 +87,7 @@
 
 # Tray creation ----
 #'
+#' @importFrom tidyr unite
 #' @examples
 #' get_tray()
 get_tray_2_48_plates <- function(start.row = 1
@@ -140,6 +141,7 @@ get_tray_waters <- function(start.row = 1
 }
 
 #' method eksigent
+#' @importFrom magrittr `%>%`
 #' @examples
 #' r <- bfabricShiny:::.waters()
 #' r
@@ -236,19 +238,15 @@ getQCsample <- function(){
   return(res)
 }
 
-#' Title
-#'
-#' @param x
-#' @param instrument
-#'
-#' @return
-#' @export
-#'
+
 #' @examples
+#' \donttest{
+#' 
 #' bfabricShiny::.tray_position(bfabricShiny:::.test_data_medium(), instrument="LUMOS_2")
 #' bfabricShiny::.tray_position(bfabricShiny:::.test_data_medium(),
 #' startpos = list(row = 4, col = "A", plate = 1),
 #'  instrument="LUMOS_2")
+#'}
 .tray_position <- function(queue,
                            startpos = list(row = 1, col = "A", plate = 1),
                            instrument = ""){
@@ -818,7 +816,10 @@ generate_queue_order <- function(x,
 #'
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
 #' generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
+#' \dontrun{
+#' 
 #' generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
+#' }
 #' bfabricShiny:::.test_data_medium()
 #' generate_queue(bfabricShiny:::.test_data_medium())
 #'

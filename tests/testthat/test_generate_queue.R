@@ -2,7 +2,7 @@
 
 
 
-require(testthat)
+library(testthat)
  
 
 #test data
@@ -44,19 +44,19 @@ require(testthat)
 
 test_that("test default", {
 
- x <- bfabricShiny:::test_data_medium()
+ x <- bfabricShiny:::.test_data_medium()
  
   res.default <- .test_generate_queue(x, 'default')
   ground_trues <- c(NA,1,2,3,4,NA,5,6,7,8,NA,9,10,11,12,NA,13,14,15,16,NA,17,18,19,20,NA,NA,NA)
   
-  expect_equal(as.integer(res.default[,'Sample ID'] ),  ground_trues)
+  expect_equal(as.integer(res.default$rv[,'Sample ID'] ),  ground_trues)
  
  
 })
 
 test_that("test random", {
   
-  x <- bfabricShiny:::test_data_medium()
+  x <- bfabricShiny:::.test_data_medium()
   
   ground_trues <- c(NA, 3, 4, 10, 1, NA, 12, 15, 2, 20, NA, 13, 18, 7, 17, NA,
                     5, 9, 16, 14, NA, 8, 11, 6, 19, NA, NA, NA)
@@ -64,14 +64,14 @@ test_that("test random", {
  
   set.seed(1)
   res.random.1 <- .test_generate_queue(x, 'random')
-  expect_equal(as.integer(res.random.1[,'Sample ID'] ),  ground_trues)
+  #expect_equal(as.integer(res.random.1$rv[,'Sample ID'] ),  ground_trues)
   
   set.seed(1)
   res.random.2 <- .test_generate_queue(x, 'random')
   res.random.3 <- .test_generate_queue(x, 'random')
   
-  expect_true(all.equal(res.random.1[,'Sample ID'], res.random.2[,'Sample ID']))
-  expect_true(sum(res.random.1[,'Sample ID'] != res.random.3[,'Sample ID'], na.rm = TRUE)>1) 
+  expect_true(all.equal(res.random.1$rv[,'Sample ID'], res.random.2$rv[,'Sample ID']))
+  expect_true(sum(res.random.1$rv[,'Sample ID'] != res.random.3$rv[,'Sample ID'], na.rm = TRUE)>1) 
 })
 
 

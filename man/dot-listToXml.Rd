@@ -6,14 +6,6 @@
 \usage{
 .listToXml(item, tag)
 }
-\arguments{
-\item{item}{}
-
-\item{tag}{xml tag}
-}
-\value{
-xmlNode
-}
 \description{
 Convert List to XML
 }

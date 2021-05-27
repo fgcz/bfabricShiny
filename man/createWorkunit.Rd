@@ -7,7 +7,7 @@
 createWorkunit(
   login,
   webservicepassword,
-  projectid,
+  containerid,
   applicationid,
   inputresource,
   status = "available",

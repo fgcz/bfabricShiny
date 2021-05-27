@@ -42,31 +42,31 @@ query(login, webservicepassword, endpoint='sample', query = list(id=206577))
  RES <- query(endpoint = 'resource',
     query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
     login, webservicepassword)
-    
- WU.pending <- query(endpoint='workunit', 
+
+ WU.pending <- query(endpoint='workunit',
     query = list('status' = 'pending'),
     login, webservicepassword)
-    
+
  APP.analysis <- query(endpoint='application',
     query=list('applicationtype' = 'analysis'),
     login, webservicepassword)
-    
+
  # a more complex example
- 
+
  ## query metadata
  Q <- query(login, webservicepassword,
-   endpoint = 'resource', 
+   endpoint = 'resource',
    query = list('workunitid' = 163763))
- 
+
  ## stage data
  uris <- sapply(Q$res, function(x){x$uris[3]})
  (rawfilenames <- sapply(strsplit(unlist(uris), ":"), function(x){x[3]}))
  library(rawfileQC)
  library(parallel)
- RAW <- do.call('rbind', 
+ RAW <- do.call('rbind',
    mclapply(rawfilenames, read.raw, ssh = TRUE, mc.cores = 12))
 
- ## have fun  
+ ## have fun
  hex.bin(RAW)
 }
 

@@ -4,14 +4,14 @@
 \alias{getResources}
 \title{get all resources of a (login, project)}
 \usage{
-getResources(login, webservicepassword, workunitid)
+getResources(login = NULL, webservicepassword = NULL, workunitid)
 }
 \arguments{
-\item{login}{}
+\item{login}{bfabric login}
 
-\item{webservicepassword}{}
+\item{webservicepassword}{bfabric webservicepassword}
 
-\item{project}{}
+\item{project}{a project or order Id}
 }
 \value{
 a vector of resource ids

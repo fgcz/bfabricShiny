@@ -16,13 +16,29 @@ use source code from github
 
 ```{r}
 #  install.packages('devtools')
-library(devtools)
-install_github("trestletech/shinyStore")
-install_github('cpanse/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
+devtools::install_github("trestletech/shinyStore")
+install.packages('PKI')
+devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
 ```
 
 
 # Demonstration
+
+
+## Run shiny based queue generator application
+
+
+```
+pkgs <- c('tidyverse', 'shiny')
+pkgs[!pkgs %in% installed.packages()] |> 
+  install.packages()
+```
+
+```
+system.file("shiny", "queue_generator10", package = "bfabricShiny") |>
+  shiny::runApp(display.mode = "normal")
+```
+
 ## JSON - SOAP proxy using python 
 
 

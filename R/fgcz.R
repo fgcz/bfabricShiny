@@ -35,10 +35,7 @@
 ##'
 ##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
-##' @param item
-##' @param tag xml tag
-##' @return xmlNode
-##' @export
+##' @importFrom XML xmlNode
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 .listToXml <- function(item, tag) {
   # just a textnode, or empty node with attributes
@@ -187,18 +184,15 @@
 
 #' queries projects of a login
 #'
-#' @param login
-#' @param webservicepassword
+#' @param login bfabric login 
+#' @param webservicepassword bfabric webservicepassword
 #'
 #' @importFrom httr POST
 #' @importFrom httr content
 #' @return a vector of project ids
 #' @export getProjects
-#'
-#'
-#'
 getProjects <- function(login, webservicepassword) {
-
+  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
   projetcs <- ({
     rv <- httr::POST('http://localhost:5000/q',
                body = toJSON(list(login = login,
@@ -277,8 +271,8 @@ query <- function(login, webservicepassword,
                   query,
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
-
-  warning("please use the read method.")
+  .Deprecated("bfabricShiny::read")
+  
   query_result <- POST(posturl,
                body = toJSON(list(login = login,
                                   webservicepassword = webservicepassword,
@@ -307,12 +301,13 @@ query <- function(login, webservicepassword,
 #' @return a nested list object
 #'
 #' @importFrom httr POST
+#' @importFrom jsonlite toJSON
 #' @export read
 #'
 #' @examples
 #'
 #' \dontrun{
-#' query(login, webservicepassword, endpoint='sample', query = list(id=206577))
+#' bfabricShiny::query(login, webservicepassword, endpoint='sample', query = list(id=206577))
 #' }
 #'
 #' \dontrun{
@@ -338,7 +333,7 @@ query <- function(login, webservicepassword,
 #'  ## stage data
 #'  uris <- sapply(Q$res, function(x){x$uris[3]})
 #'  (rawfilenames <- sapply(strsplit(unlist(uris), ":"), function(x){x[3]}))
-#'  library(rawfileQC)
+#'  library(rawDiag)
 #'  library(parallel)
 #'  RAW <- do.call('rbind',
 #'    mclapply(rawfilenames, read.raw, ssh = TRUE, mc.cores = 12))
@@ -347,13 +342,14 @@ query <- function(login, webservicepassword,
 #'  hex.bin(RAW)
 #' }
 #'
-#' ## Have Fun!
-read <- function(login, webservicepassword,
+read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   query,
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
 
+  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  
   query_result <- POST(posturl,
                        body = toJSON(list(login = login,
                                           webservicepassword = webservicepassword,
@@ -372,8 +368,10 @@ read <- function(login, webservicepassword,
 
 
 # getWorkunits(login, webservicepassword)
-getWorkunits <- function(login, webservicepassword, projectid = 3000, applicationid = 224){
-  workunits <- ({
+getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, applicationid = 224){
+  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
+  
+   workunits <- ({
     rv <- POST('http://localhost:5000/q',
                body = toJSON(list(login = login,
                                   webservicepassword = webservicepassword,
@@ -398,16 +396,18 @@ getWorkunits <- function(login, webservicepassword, projectid = 3000, applicatio
 
 #' get all resources of a (login, project)
 #'
-#' @param login
-#' @param webservicepassword
-#' @param project
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
+#' @param project a project or order Id
 #'
+#' @export
 #' @return a vector of resource ids
-#' @export getResources
-getResources <- function(login, webservicepassword, workunitid){
-  if (is.null(workunitid)){
-    return(NULL)
-  }
+getResources <- function(login=NULL, webservicepassword=NULL, workunitid){
+  
+  stopifnot(isTRUE(is.null(login)),
+            isTRUE(is.null(webservicepassword)),
+            isTRUE(is.null(workunitid)))
+  
 
   resources <- ({
     rv <- POST('http://localhost:5000/q',
@@ -429,12 +429,11 @@ getResources <- function(login, webservicepassword, workunitid){
 
 #' getApplications
 #'
-#' @param login
-#' @param webservicepassword
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
 #'
 #' @return
-#' @export getApplications
-#'
+#' @export
 #' @examples
 #' \dontrun{
 #' library(bfabricShiny)
@@ -498,19 +497,17 @@ createWorkunit <-
   }
 
 
-#' Title
+#' Saves an object in bfabric
 #'
-#' @param login
-#' @param webservicepassword
-#' @param endpoint
-#' @param query
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
+#' @param endpoint bfabric endpoint
+#' @param query list object to be saved in bfabric.
 #'
 #' @return
-#' @export bfabric_save
-#'
-#' @examples
-bfabric_save <- function(login, webservicepassword, endpoint = 'workunit', query){
-
+#' @export
+save <- function(login, webservicepassword, endpoint = 'workunit', query){
+  stopifnot(isTRUE(is.null(login)), isTRUE(is.null(webservicepassword)))
   rv <- POST('http://localhost:5000/s',
              body = toJSON(
                list(
@@ -526,7 +523,6 @@ bfabric_save <- function(login, webservicepassword, endpoint = 'workunit', query
   rv <- content(rv)
 
   return(rv$res)
-
 }
 
 saveResource <- function(login,
@@ -556,14 +552,14 @@ saveResource <- function(login,
 
 #' upload resouce to bfabric
 #'
-#' @param login
-#' @param webservicepassword
-#' @param projectid
-#' @param applicationid
-#' @param status
-#' @param workunitname
-#' @param resourcename
-#' @param file_content
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
+#' @param projectid a project or order id
+#' @param applicationid the application id
+#' @param status 'pending', 'failed', or 'available'
+#' @param workunitname the workunit name
+#' @param resourcename the reosurce name
+#' @param file_content a BLOB containing the content
 #'
 #' @return
 #' @export bfabric_upload_file
@@ -601,11 +597,11 @@ bfabric_upload_file <- function(login,
 
 
 
-#' reads Custom Attributes of a
+#' reads Custom Attributes of a workunit
 #'
-#' @param login
-#' @param webservicepassword
-#' @param workunitid
+#' @param login login
+#' @param webservicepassword webservicepassword
+#' @param workunitid a valid bfabric workunit id
 #'
 #' @return a \code{data.frame} containing columns sampleId , resourceId, and
 #' iff exisiting a merged table of the Custom Attributes.

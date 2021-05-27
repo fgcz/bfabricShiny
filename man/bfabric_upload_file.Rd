@@ -18,21 +18,21 @@ bfabric_upload_file(
 )
 }
 \arguments{
-\item{login}{}
+\item{login}{bfabric login}
 
-\item{webservicepassword}{}
+\item{webservicepassword}{bfabric webservicepassword}
 
-\item{projectid}{}
+\item{projectid}{a project or order id}
 
-\item{applicationid}{}
+\item{applicationid}{the application id}
 
-\item{status}{}
+\item{status}{'pending', 'failed', or 'available'}
 
-\item{workunitname}{}
+\item{workunitname}{the workunit name}
 
-\item{resourcename}{}
+\item{resourcename}{the reosurce name}
 
-\item{file_content}{}
+\item{file_content}{a BLOB containing the content}
 }
 \value{
 

@@ -194,7 +194,7 @@ shinyServer(function(input, output, session) {
 
       progress$set(message = paste("set workunit", wuid, "available."), detail= "status to 'available'", value = 0.95)
 
-      rv <- bfabric_save(bf$login(), bf$webservicepassword(), endpoint = 'workunit',
+      rv <- bfabricShiny::save(bf$login(), bf$webservicepassword(), endpoint = 'workunit',
                          query =  list(status = 'available', id=wuid));
 
       message(paste("generate report DONE. the report was written to workunit ID", wuid, "in bfabric."))

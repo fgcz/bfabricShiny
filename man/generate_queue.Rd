@@ -83,7 +83,7 @@ generate_queue(x <- bfabricShiny:::.test_data_medium(),
    qc.type = 1,
    method = "default",
    pathprefix = "D:Data2San")
-generate_queue(bfabricShiny:::.test_data_medium() , order=TRUE)
+generate_queue(bfabricShiny:::.test_data_single() , order=TRUE, startpos = list(row=3, col="A", plate=2))
 generate_queue(bfabricShiny:::.test_data_medium() , order=FALSE)
 generate_queue(bfabricShiny:::.test_data_single())
 generate_queue(bfabricShiny:::.test_data_large())
@@ -91,7 +91,10 @@ generate_queue(bfabricShiny:::.test_data_medium_random())
 
 generate_queue(bfabricShiny:::.test_data_medium_random(), method = "default")
 generate_queue(bfabricShiny:::.test_data_medium_random(), method = "random")
+\dontrun{
+
 generate_queue(bfabricShiny:::.test_data_medium(), method = "blockrandom")
+}
 bfabricShiny:::.test_data_medium()
 generate_queue(bfabricShiny:::.test_data_medium())
 

@@ -7,9 +7,9 @@
 getProjects(login, webservicepassword)
 }
 \arguments{
-\item{login}{}
+\item{login}{bfabric login}
 
-\item{webservicepassword}{}
+\item{webservicepassword}{bfabric webservicepassword}
 }
 \value{
 a vector of project ids
