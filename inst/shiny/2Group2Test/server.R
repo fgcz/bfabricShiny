@@ -3,7 +3,7 @@
 ## shiny::runApp('C:/Users/wolski/prog/SRMService/inst/shiny/2Group2Test', port = 1234, host=)
 
 stopifnot(require(SRMService))
-
+stopifnot(require(base64enc))
 library(bfabricShiny)
 
 options(shiny.maxRequestSize = 30 * 1024^2)
@@ -368,7 +368,7 @@ shinyServer( function(input, output, session) {
           warning("File does not exist" , v_download_links$pdfReport)
         }
 
-        file_pdf_content <- base64encode(readBin(v_download_links$pdfReport, "raw",
+        file_pdf_content <- base64enc::base64encode(readBin(v_download_links$pdfReport, "raw",
                                                  file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
 
         wuid <- bfabric_upload_file(login = bf$login(),
@@ -385,10 +385,10 @@ shinyServer( function(input, output, session) {
         if(! file.exists(v_download_links$tsvTable)){
           warning("File does not exist" , v_download_links$tsvTable)
         }
-        file_csv_content <- base64encode(readBin(v_download_links$tsvTable, "raw",
+        file_csv_content <- base64enc::base64encode(readBin(v_download_links$tsvTable, "raw",
                                                  file.info(v_download_links$tsvTable)[1, "size"]), "txt")
 
-        bfabricShiny:::saveResource(login = bf$login(),
+        bfabricShiny:::.saveResource(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     workunitid = wuid,
                                     content = file_csv_content,

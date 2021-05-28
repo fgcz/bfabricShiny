@@ -181,7 +181,7 @@ shinyServer(function(input, output, session) {
                                          "pdf")
 
         progress$set(message = "saving PDF to bfabric ...", detail= "using rmarkdown", value = 0.8)
-        bfabricShiny:::saveResource(login = bf$login(),
+        bfabricShiny:::.saveResource(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
                                     workunitid = wuid,
                                     content = file_pdf_content,

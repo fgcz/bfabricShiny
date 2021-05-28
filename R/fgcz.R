@@ -464,39 +464,6 @@ getApplications <- function(login, webservicepassword){
 }
 
 
-createWorkunit <-
-  function(login,
-           webservicepassword,
-           containerid,
-           applicationid,
-           inputresource,
-           status = 'available',
-           description = '',
-           name ) {
-    workunitid <- NA
-    rv <- POST('http://localhost:5000/s',
-               body = toJSON(
-                 list(
-                   login = login,
-                   webservicepassword = webservicepassword,
-                   endpoint = 'workunit',
-                   query = list(
-                     'containerid' = containerid,
-                     'applicationid' = applicationid,
-                     'name' = name,
-                     'status' = status,
-                     'description' = description
-                   )
-                 ),
-                 encode = 'json'
-               ))
-
-    #'inputresource' = list(inputresource),
-
-    rv <- content(rv)
-    print(rv)
-    return(rv$res)
-  }
 
 
 #' Saves an object in bfabric
@@ -508,8 +475,15 @@ createWorkunit <-
 #'
 #' @return
 #' @export
+#' @examples 
+#' \dontrun{
+#' bfabricShiny::save(login, webservicepassword , 'workunit',
+#'   list(id=254893, description='test2',
+#'   inputresourceid=list(1753925, 1753924))
+#' }
 save <- function(login, webservicepassword, endpoint = 'workunit', query){
   stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+  
   rv <- POST('http://localhost:5000/s',
              body = toJSON(
                list(
@@ -523,11 +497,67 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
 
 
   rv <- content(rv)
-
+ 
   return(rv$res)
 }
 
-saveResource <- function(login,
+#' Create a workunit
+#' @aliases bfabricUploadFile
+#' @importFrom httr POST content
+#' @importFrom jsonlite toJSON
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2021
+#' 
+#' @examples 
+#' \dontrun{
+#' bfabricShiny:::.createWorkunit(login, webservicepassword, containerid=3000, applicationid=500, inputresourceid=list(1753925, 1753924))
+#' }
+#' 
+.createWorkunit <-
+  function(login = NULL,
+           webservicepassword = NULL,
+           containerid=NULL,
+           applicationid=NULL,
+           inputresourceid = NULL,
+           status = 'PENDING',
+           description = '',
+           name='') {
+    
+    stopifnot(isFALSE(is.null(login)),
+              isFALSE(is.null(webservicepassword)),
+              isFALSE(is.null(containerid)),
+              isFALSE(is.null(applicationid))
+              )
+    
+    queryObject <- list(
+      'containerid' = containerid,
+      'applicationid' = applicationid,
+      'name' = name,
+      'status' = status,
+      'description' = description
+    )
+    
+    if (isFALSE(is.null(inputresource))){
+      queryObject$inputresourceid  <- inputresourceid
+    }
+    
+    rv <- httr::POST('http://localhost:5000/s',
+               body = jsonlite::toJSON(
+                 list(
+                   login = login,
+                   webservicepassword = webservicepassword,
+                   endpoint = 'workunit',
+                   query = queryObject
+                 ),
+                 encode = 'json'
+               ))
+    
+   
+    rv <- content(rv)
+    return(rv$res)
+  }
+
+
+.saveResource <- function(login,
                          webservicepassword,
                          workunitid,
                          content,
@@ -549,55 +579,174 @@ saveResource <- function(login,
              ))
 
   rv <- content(rv)
-
+  return(rv$res)
 }
 
-#' upload resouce to bfabric
+#' Generate a workunit and upload a resource (file) to an internal bfabric
+#' storage.
 #'
 #' @param login bfabric login
 #' @param webservicepassword bfabric webservicepassword
-#' @param projectid a project or order id
-#' @param applicationid the application id
-#' @param status 'pending', 'failed', or 'available'
+#' @param projectid a containerid (project id or order id)
+#' @param applicationid a application id
+#' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
+#' default is 'pending'.
+#' @param inputresourceid an integer or a list of integer inputresourceIds. 
+#' Of note, this works only for  succeeding/preceding applications.
+#' Default is set to \code{NULL}.
 #' @param workunitname the workunit name
 #' @param resourcename the reosurce name
 #' @param file_content a BLOB containing the content
 #'
-#' @return
-#' @export bfabric_upload_file
-bfabric_upload_file <- function(login,
-                        webservicepassword,
-                        projectid = 1000,
+#' @return the workunit id
+#' @export
+bfabric_upload_file <- function(login = NULL,
+                        webservicepassword = NULL,
+                        projectid = 3000,
                         applicationid = 217,
-                        status,
+                        status = 'pending',
                         description = '',
-                        inputresource = NULL,
+                        inputresourceid = NULL,
                         workunitname = 'MaxQuant result',
                         resourcename = 'MaxQuant report',
                         file_content = NULL) {
-
+  .Deprecated('use bfabricShiny::uploadResource')
+  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+  
+    description <- 
+      sprintf("%s\nGenerated by Rpkg https://github.com/fgcz/bfabricShiny/ version %s.\n System information: %s",
+              description,
+              packageVersion('bfabricShiny'),
+              paste(Sys.info(), collapse = ', '))
+  
+  
   message(workunitname)
   message(resourcename)
+  
   wu <-
-    createWorkunit(
+    .createWorkunit(
       login = login,
       webservicepassword = webservicepassword,
       containerid = projectid,
-      inputresource = inputresource,
+      inputresourceid = inputresourceid,
       applicationid = applicationid,
       name = workunitname,
-      status = 'pending',
+      status = status,
       description = description
     )
 
 
-  r <- saveResource(login, webservicepassword, workunitid = wu[[1]]$`_id`,
-                    content = file_content, name = resourcename)
+  r <- .saveResource(login, webservicepassword,
+                     workunitid = wu[[1]]$`_id`,
+                    content = file_content,
+                    name = resourcename)
 
   wu[[1]]$`_id`
 }
 
+#' Generate a workunit and upload a resource (file)  to a internal bfabric
+#' storage
+#'
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
+#' @param containerid a containerid (project id or order id)
+#' @param applicationid a application id
+#' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
+#' default is 'PENDING'.
+#' @param inputresourceid an integer or a list of integer of inputresourceIds. 
+#' Of note, this works only for  succeeding/preceding applications.
+#' Default is set to \code{NULL}.
+#' @param workunitname the workunit name
+#' @param resourcename the reosurce name
+#' @param file_content a BLOB containing the content
+#'
+#' @return returns a nested list containing the workunit and the resource
+#' object.
+#' @importFrom base64enc base64encode
+#' @importFrom tools file_ext
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2021
+#' @export
+uploadResource <- function(login = NULL,
+                                webservicepassword = NULL,
+                                containerid = 3000,
+                                applicationid = 217,
+                                status = 'pending',
+                                description = '',
+                                inputresourceid = NULL,
+                                workunitname = 'MaxQuant result',
+                                resourcename = 'MaxQuant report',
+                                file = NULL) {
+  
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(file)),
+            file.exists(file)
+            )
+  
+  stopifnot(status %in% c('AVAILABLE', 'FAILED', 'PENDING'))
+  
+  fileContent <- readBin(file, "raw", file.info(file)[1, "size"]) |>
+    base64enc::base64encode(tools::file_ext(file))
+  
+  description <- 
+    sprintf("%s\nGenerated by Rpkg https://github.com/fgcz/bfabricShiny/ version %s.\n System information: %s",
+            description,
+            packageVersion('bfabricShiny'),
+            paste(Sys.info(), collapse = ', '))
+  
+  wu <-
+    .createWorkunit(
+      login = login,
+      webservicepassword = webservicepassword,
+      containerid = containerid,
+      inputresourceid = inputresourceid,
+      applicationid = applicationid,
+      name = workunitname,
+      status = status,
+      description = description
+    )
+  
+  message(wu)
+  res <- 
+    .saveResource(login, webservicepassword,
+                     workunitid = wu[[1]]$`_id`,
+                     content = fileContent,
+                     name = resourcename
+                  )
+  
+  list(workunit=wu, resource=res)
+}
 
+
+# sanity check for uploading file to bfabric
+.sanityCheckUploadResource <- function(){
+  inputfile1 <- file.path(system.file(package = 'aaa'),
+                          'extdata', '20210311_Qda_order_24259_H_Elhawi_extract.txt')
+  
+  inputfile2 <- file.path(system.file(package = 'aaa'),
+                          'extdata', 'amino-acid-analysis-report-template.html')
+  
+  stopifnot(file.exists(inputfile1), file.exists(inputfile1))
+  
+  wu1 <- bfabricShiny::uploadResource(login, webservicepassword, 
+                                         containerid = 3000,
+                                         applicationid = 499,
+                                         status = 'PENDING',
+                                         description = 'AAA sanity check input',
+                                         workunitname = "AAA report",
+                                         resourcename = 'csv file',
+                                         file = inputfile1)
+  
+  wu2 <- bfabricShiny::uploadResource(login, webservicepassword, 
+                                         containerid = 3000,
+                                         applicationid = 500,
+                                         status = NULL,
+                                         description = 'AAA sanity check output',
+                                         workunitname = "AAA report",
+                                         resourcename = 'html report',
+                                         inputresourceid = wu1$resource[[1]]$`_id`,
+                                         file = inputfile2)
+}
 
 #' reads Custom Attributes of a workunit
 #'
@@ -608,7 +757,7 @@ bfabric_upload_file <- function(login,
 #' @return a \code{data.frame} containing columns sampleId , resourceId, and
 #' iff exisiting a merged table of the Custom Attributes.
 #'
-#' @export readCustomAttributes
+#' @export
 readCustomAttributes <- function(login, webservicepassword, workunitid = 202570){
 
   inputResourcesIds <- unlist(read(login, webservicepassword,

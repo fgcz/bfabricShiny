@@ -4,7 +4,7 @@
 \alias{getResources}
 \title{get all resources of a (login, project)}
 \usage{
-getResources(login = NULL, webservicepassword = NULL, workunitid)
+getResources(login = NULL, webservicepassword = NULL, workunitid = NULL)
 }
 \arguments{
 \item{login}{bfabric login}
