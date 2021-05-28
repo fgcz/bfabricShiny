@@ -706,7 +706,6 @@ uploadResource <- function(login = NULL,
       description = description
     )
   
-  message(wu)
   res <- 
     .saveResource(login, webservicepassword,
                      workunitid = wu[[1]]$`_id`,
