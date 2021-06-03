@@ -536,7 +536,7 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
       'description' = description
     )
     
-    if (isFALSE(is.null(inputresource))){
+    if (isFALSE(is.null(inputresourceid))){
       queryObject$inputresourceid  <- inputresourceid
     }
     

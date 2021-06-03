@@ -30,7 +30,7 @@ bfabric_upload_file(
 \item{status}{in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
 default is 'pending'.}
 
-\item{inputresourceid}{an integer or a list of integer of inputresourceIds. 
+\item{inputresourceid}{an integer or a list of integer inputresourceIds. 
 Of note, this works only for  succeeding/preceding applications.
 Default is set to \code{NULL}.}
 

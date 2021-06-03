@@ -3,7 +3,7 @@
 #' @param id shiny session id
 #' @import shiny
 #' @importFrom PKI PKI.load.key
-#' @importFrom shinyStore updateStore
+#' @importFrom shinyStore updateStore initStore
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return tagList

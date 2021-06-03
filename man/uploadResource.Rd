@@ -15,7 +15,7 @@ uploadResource(
   inputresourceid = NULL,
   workunitname = "MaxQuant result",
   resourcename = "MaxQuant report",
-  file_content = NULL
+  file = NULL
 )
 }
 \arguments{
@@ -49,5 +49,5 @@ Generate a workunit and upload a resource (file)  to a internal bfabric
 storage
 }
 \author{
-Christian Panse <cp@fgcz.ethz.ch> 2021
+Christian Panse <cp@fgcz.ethz.ch> 2016-2021
 }
