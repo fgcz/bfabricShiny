@@ -18,7 +18,7 @@
 }
 
 #' @importFrom utils read.csv
-.ssh_unzip <- function(host = 'fgcz-r-021.uzh.ch', user = 'cpanse', zipfile = .workunit2resource(), file = 'proteinGroups.txt'){
+.ssh_unzip <- function(host = 'fgcz-r-035.uzh.ch', user = 'cpanse', zipfile = .workunit2resource(), file = 'proteinGroups.txt'){
 
   cmd <- paste('unzip -p ', zipfile, file)
   ssh_cmd <- paste("ssh ", user, "@", host, " '", cmd, "'", sep="")

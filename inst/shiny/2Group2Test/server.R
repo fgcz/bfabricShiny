@@ -4,6 +4,7 @@
 
 stopifnot(require(SRMService))
 stopifnot(require(base64enc))
+#stopifnot(require(PKI))
 library(bfabricShiny)
 
 options(shiny.maxRequestSize = 30 * 1024^2)
@@ -58,7 +59,10 @@ shinyServer( function(input, output, session) {
     if (file.exists(v_upload_file$filenam)){
       v_upload_file$protein <- bfabricShiny:::.unzip(zipfile = filename, file = 'proteinGroups.txt')
     }else{
-      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename, file = 'proteinGroups.txt', user=bf$login())
+      v_upload_file$protein <- bfabricShiny:::.ssh_unzip(zipfile = filename,
+                                                         file = 'proteinGroups.txt',
+                                                         user=bf$login(),
+                                                         host='fgcz-r-035.uzh.ch')
     }
   })
 

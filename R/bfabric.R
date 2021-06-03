@@ -2,7 +2,7 @@
 #'
 #' @param id shiny session id
 #' @import shiny
-#' @importFrom PKI PKI.load.key
+#' @importFrom PKI PKI.load.key PKI.encrypt
 #' @importFrom shinyStore updateStore initStore
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
@@ -32,7 +32,7 @@ bfabricInput <- function(id) {
     passwordInput(ns('webservicepassword'), 'Web Service Password',
                   placeholder = "in bfabric on 'User Details'."),
     htmlOutput(ns("applications")),
-    actionButton(ns("saveBfabricPassword"), "Save password", icon("save")),
+    actionButton(ns("saveBfabricPassword"), "Encrypt & Save Password", icon("save")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("workunits")),
     htmlOutput(ns("resources"))
@@ -197,9 +197,9 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         return()
       }
 
-      updateStore(session, "login", isolate(input$login), encrypt=pubKey)
-      updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
-      updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+      shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+      shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
     }
   }
   )

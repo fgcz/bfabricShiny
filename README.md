@@ -31,9 +31,11 @@ devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE, quiet = F
 
 
 ```
-pkgs <- c('tidyverse', 'shiny')
+pkgs <- c('devtools', 'tidyverse', 'shiny', 'affy', 'limma')
 pkgs[!pkgs %in% installed.packages()] |> 
-  install.packages()
+  BiocManager::install()
+  
+devtools::install_github('protViz/SRMService', build_vignettes = FALSE, quiet = FALSE)
 ```
 
 ```
