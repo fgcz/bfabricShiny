@@ -2,7 +2,7 @@
 #'
 #' @param id shiny session id
 #' @import shiny
-#' @importFrom PKI PKI.load.key PKI.encrypt
+#' @importFrom PKI PKI.load.key PKI.encrypt PKI.decrypt
 #' @importFrom shinyStore updateStore initStore
 #' @seealso \url{http://fgcz-bfabric.uzh.ch}
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
