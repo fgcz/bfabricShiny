@@ -22,6 +22,7 @@ Imports:
     XML
 Suggest: 
     DT,
+    base64enc,
     ggplot2 (>= 2.2),
     rmarkdown,
     roxygen2,

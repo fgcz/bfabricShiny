@@ -1,16 +1,19 @@
 # This is the server logic for a Shiny web application.
 # You can find out more about building applications with Shiny here:
 #
-# https://github.com/bfabric/bfabricShiny
-#
+# https://github.com/fgcz/bfabricShiny
 
-library(bfabricShiny)
-library(tidyverse)
-library(jsonlite)
-library(httr)
-library(DT)
-library(XML)
 
+#library(tidyverse)
+
+
+stopifnot(
+  require(bfabricShiny),
+  require(base64enc),
+  require(jsonlite),
+  require(httr),
+  require(DT),
+  require(XML))
 
 source("queuetools.R", local = FALSE)
 
@@ -558,12 +561,12 @@ shinyServer(function(input, output, session) {
                   sep = ',', row.names = FALSE,
                   append = TRUE, quote = FALSE, eol = '\r\n')
       
-      message("ALIVE")
       file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
       
       containerids <- strsplit(as.character(input$project), ",")[[1]]
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
+        
         POST("http://localhost:5000/add_resource",
              body = toJSON(list(base64 = file_content,
                                 name = 'MS configuration',
@@ -596,6 +599,11 @@ shinyServer(function(input, output, session) {
     
   }
   )
+  
+  #------------------- sessionInfo --------
+  output$sessionInfo <- renderPrint({
+    capture.output(sessionInfo())
+  })
 
 })
 
