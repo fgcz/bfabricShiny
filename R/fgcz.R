@@ -597,6 +597,7 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
 #' @param workunitname the workunit name
 #' @param resourcename the reosurce name
 #' @param file_content a BLOB containing the content
+#' @importFrom base64enc base64encode
 #'
 #' @return the workunit id
 #' @export
