@@ -570,7 +570,8 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
                  webservicepassword = webservicepassword,
                  endpoint = 'resource',
                  query = list(
-                   'name' = name,
+                   'name' = sprintf("WU%s-%s-%s", workunitidcs,
+                                    format(Sys.time(), format="%Y%m%d-%H%M"), name),
                    'workunitid' = workunitid,
                    'base64' = content
                  )
@@ -711,9 +712,7 @@ uploadResource <- function(login = NULL,
     .saveResource(login, webservicepassword,
                      workunitid = wu[[1]]$`_id`,
                      content = fileContent,
-                     name = sprintf("WU%s-%s-%s", wu[[1]]$`_id`,
-                                    format(Sys.time(), format="%Y%m%d-%H%M"),
-                                    resourcename)
+                     name = resourcename
                   )
   
   list(workunit=wu, resource=res)
