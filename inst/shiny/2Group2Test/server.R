@@ -430,7 +430,7 @@ shinyServer( function(input, output, session) {
         description = "",
         inputresourceid = v_upload_file$inputresourceID,
         workunitname = "MaxQuant2Gr",
-        resourcename = sprintf("MaxQuant2Gr-C%s-%s",
+        resourcename = sprintf("MaxQuant2Gr-report-C%s-%s",
                                bf$projectid(),
                                format(Sys.time(),
                                       format="%Y%m%d-%H%M")),
@@ -446,7 +446,10 @@ shinyServer( function(input, output, session) {
                                      webservicepassword = bf$webservicepassword(),
                                      workunitid = rv$bfrv1$workunit[[1]]$`_id`,
                                      content = file_csv_content,
-                                     name =  paste0(input$experimentID, ".txt"))
+                                     name =  sprintf("MaxQuant2Gr-C%s-%s",
+                                                     bf$projectid(),
+                                                     format(Sys.time(),
+                                                            format="%Y%m%d-%H%M")))
       }else{
         warning("File does not exist" , v_download_links$tsvTable)
       }
