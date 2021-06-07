@@ -711,7 +711,9 @@ uploadResource <- function(login = NULL,
     .saveResource(login, webservicepassword,
                      workunitid = wu[[1]]$`_id`,
                      content = fileContent,
-                     name = resourcename
+                     name = sprintf("WU%s-%s-%s", wu[[1]]$`_id`,
+                                    format(Sys.time(), format="%Y%m%d-%H%M"),
+                                    resourcename)
                   )
   
   list(workunit=wu, resource=res)

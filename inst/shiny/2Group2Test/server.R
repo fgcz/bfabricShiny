@@ -417,9 +417,6 @@ shinyServer( function(input, output, session) {
     on.exit(progress$close())
     
     if (rv$download_flag > 0){
-      message("bfabricUpload")
-      print("bfabricUpload")
-      
       progress$set(message = "uploading Quantify Sample Summary Reports file to bfabric")
       rv$bfrv1 <- bfabricShiny::uploadResource(
         login = bf$login(),
@@ -429,11 +426,8 @@ shinyServer( function(input, output, session) {
         status = "PENDING",
         description = "",
         inputresourceid = v_upload_file$inputresourceID,
-        workunitname = "MaxQuant2Gr",
-        resourcename = sprintf("MaxQuant2Gr-report-C%s-%s",
-                               bf$projectid(),
-                               format(Sys.time(),
-                                      format="%Y%m%d-%H%M")),
+        workunitname = input$experimentID,
+        resourcename = sprinf("%s.pdf", input$experimentID),
         file = v_download_links$pdfReport
       )
       
@@ -446,10 +440,7 @@ shinyServer( function(input, output, session) {
                                      webservicepassword = bf$webservicepassword(),
                                      workunitid = rv$bfrv1$workunit[[1]]$`_id`,
                                      content = file_csv_content,
-                                     name =  sprintf("MaxQuant2Gr-C%s-%s",
-                                                     bf$projectid(),
-                                                     format(Sys.time(),
-                                                            format="%Y%m%d-%H%M")))
+                                     name =  sprinf("%s.txt", input$experimentID))
       }else{
         warning("File does not exist" , v_download_links$tsvTable)
       }
