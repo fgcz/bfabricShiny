@@ -24,7 +24,7 @@ shinyServer( function(input, output, session) {
                                   condition = NULL,
                                   inputresourceID = NULL)
   v_download_links <- reactiveValues(filename = NULL)
-  
+
   rv <- reactiveValues(download_flag = 0)
 
   getWorkDir <- function(){
@@ -100,7 +100,7 @@ shinyServer( function(input, output, session) {
     v_upload_file$minPeptides <- max(protein$Peptides)
 
 
-    v_upload_file$pint <- protein[, grep("Intensity\\.", colnames(protein))]
+    v_upload_file$pint <- protein[, grep("Intensity\\.", colnames(protein)), drop = FALSE]
     v_upload_file$maxNA <- ncol(v_upload_file$pint)
     v_upload_file$maxMissing <- ncol(v_upload_file$pint) - 4
 
@@ -128,7 +128,7 @@ shinyServer( function(input, output, session) {
       pint[pint == 0] <- NA
 
 
-      pint2 <- pint[protein$Peptides >= 2,]
+      pint2 <- pint[protein$Peptides >= 2,, drop=FALSE]
       nrNA <- apply(pint , 1, function(x){sum(is.na(x))})
       nrNA2 <- apply(pint2 , 1, function(x){sum(is.na(x))})
 
@@ -367,22 +367,22 @@ shinyServer( function(input, output, session) {
     content = function(file) {
 
       rv$download_flag <- rv$download_flag + 1
-      
+
       file.copy(v_download_links$pdfReport, file)
 
     }
   )
 
- 
+
   .backup <- function(){
     {
       if(! file.exists(v_download_links$pdfReport)){
         warning("File does not exist" , v_download_links$pdfReport)
       }
-      
+
       file_pdf_content <- base64enc::base64encode(readBin(v_download_links$pdfReport, "raw",
                                                           file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
-      
+
       wuid <- bfabric_upload_file(login = bf$login(),
                                   webservicepassword = bf$webservicepassword(),
                                   projectid = bf$projectid(),
@@ -391,31 +391,31 @@ shinyServer( function(input, output, session) {
                                   workunitname = input$experimentID,
                                   resourcename = paste0(input$experimentID, ".pdf"),
                                   applicationid = 217)
-      
+
       message(wuid)
-      
+
       if(! file.exists(v_download_links$tsvTable)){
         warning("File does not exist" , v_download_links$tsvTable)
       }
       file_csv_content <- base64enc::base64encode(readBin(v_download_links$tsvTable, "raw",
                                                           file.info(v_download_links$tsvTable)[1, "size"]), "txt")
-      
+
       bfabricShiny:::.saveResource(login = bf$login(),
                                    webservicepassword = bf$webservicepassword(),
                                    workunitid = wuid,
                                    content = file_csv_content,
                                    name =  paste0(input$experimentID, ".txt"))
     }### copy to b-fabric
-    
+
   }
-  
+
   #------------------- uploadResource --------
   bfabricUploadResource <- observeEvent(rv$download_flag, {
-    
+
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "upload report to bfabric")
     on.exit(progress$close())
-    
+
     if (rv$download_flag > 0){
       progress$set(message = "uploading Quantify Sample Summary Reports file to bfabric")
       rv$bfrv1 <- bfabricShiny::uploadResource(
@@ -427,26 +427,26 @@ shinyServer( function(input, output, session) {
         description = "",
         inputresourceid = v_upload_file$inputresourceID,
         workunitname = input$experimentID,
-        resourcename = sprinf("%s.pdf", input$experimentID),
+        resourcename = sprintf("%s.pdf", input$experimentID),
         file = v_download_links$pdfReport
       )
-      
+
       if(file.exists(v_download_links$tsvTable)){
-        
+
         file_csv_content <- base64enc::base64encode(readBin(v_download_links$tsvTable, "raw",
                                                             file.info(v_download_links$tsvTable)[1, "size"]), "txt")
-        
+
         bfabricShiny:::.saveResource(login = bf$login(),
                                      webservicepassword = bf$webservicepassword(),
                                      workunitid = rv$bfrv1$workunit[[1]]$`_id`,
                                      content = file_csv_content,
-                                     name =  sprinf("%s.txt", input$experimentID))
+                                     name =  sprintf("%s.txt", input$experimentID))
       }else{
         warning("File does not exist" , v_download_links$tsvTable)
       }
     }
   })
-  
+
   #------------------- sessionInfo --------
   output$sessionInfo <- renderPrint({
     capture.output(sessionInfo())
