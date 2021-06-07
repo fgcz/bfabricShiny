@@ -2,10 +2,11 @@
 ## shiny::runApp("inst/shiny/2Group2Test",port=1234, host="130.60.81.134")
 ## shiny::runApp('C:/Users/wolski/prog/SRMService/inst/shiny/2Group2Test', port = 1234, host=)
 
-stopifnot(require(SRMService))
-stopifnot(require(base64enc))
-#stopifnot(require(PKI))
-library(bfabricShiny)
+stopifnot(
+	require(SRMService),
+	require(base64enc),
+	require(PKI),
+	require(bfabricShiny))
 
 options(shiny.maxRequestSize = 30 * 1024^2)
 
@@ -372,18 +373,33 @@ shinyServer( function(input, output, session) {
           warning("File does not exist" , v_download_links$pdfReport)
         }
 
-        file_pdf_content <- base64enc::base64encode(readBin(v_download_links$pdfReport, "raw",
-                                                 file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
+        #file_pdf_content <- base64enc::base64encode(readBin(v_download_links$pdfReport, "raw",
+        #                                         file.info(v_download_links$pdfReport)[1, "size"]), "pdf")
 
-        wuid <- bfabric_upload_file(login = bf$login(),
+        #wuid <- bfabric_upload_file(login = bf$login(),
+        #                            webservicepassword = bf$webservicepassword(),
+        #                            projectid = bf$projectid(),
+        #                            file_content = file_pdf_content,
+        #                            inputresource = v_upload_file$inputresourceID,
+        #                            workunitname = input$experimentID,
+        #                            resourcename = paste0(input$experimentID, ".pdf"),
+        #                            applicationid = 217)
+
+	print("try to uploadResource")
+        rv <- uploadResource(login = bf$login(),
                                     webservicepassword = bf$webservicepassword(),
-                                    projectid = bf$projectid(),
-                                    file_content = file_pdf_content,
-                                    inputresource = v_upload_file$inputresourceID,
+                                    containerid = bf$projectid(),
+                                    applicationid = 217,
+				    description = '',
+				    status="PENDING",
+                                    inputresourceid = v_upload_file$inputresourceID,
                                     workunitname = input$experimentID,
                                     resourcename = paste0(input$experimentID, ".pdf"),
-                                    applicationid = 217)
+                                    file = v_download_links$pdfReport)
 
+	print(rv)
+	wuid <- rv$workunit[[1]]$`_id`
+ 	
         message(wuid)
 
         if(! file.exists(v_download_links$tsvTable)){
