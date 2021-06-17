@@ -1,4 +1,4 @@
-#' defines the bfabric shiny UI module
+#' Defines the bfabric shiny UI module
 #'
 #' @param id shiny session id
 #' @import shiny
@@ -10,15 +10,12 @@
 #' @export bfabricInput
 #' @examples
 #' \dontrun{
-#'
 #'     mainPanel(
 #'       tabsetPanel(
 #'         tabPanel("bfabric", bfabricInput("bfabric8")),
 #'         tabPanel("plot", plotOutput("distPlot"))
 #'    )
-#'
 #' }
-#'
 bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -210,4 +207,55 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
               workunitid = reactive({input$workunit}),
               projectid = reactive({input$projectid})))
 }
+
+#' @export bfabricInputLogin
+bfabricInputLogin <- function(id) {
+  # Create a namespace function using the provided id
+  ns <- NS(id)
+  
+  privKey <- PKI.load.key(file = file.path(system.file("keys",
+                                                       package = "bfabricShiny"), "bfabricShiny.key"))
+  
+  tagList(
+    initStore(ns("store"), "shinyStore-ex2", privKey),
+    textInput(ns('login'), 'bfabric Login'),
+    passwordInput(ns('webservicepassword'), 'Web Service Password',
+                  placeholder = "in bfabric on 'User Details'."),
+    htmlOutput(ns("applications")),
+    actionButton(ns("saveBfabricPassword"), "Encrypt & Save Password", icon("save"))
+  )
+}
+
+#' @export bfabricLogin
+bfabricLogin <- function(input, output, session) {
+  ns <- session$ns
+  
+  pubKey <- PKI.load.key(file = file.path(system.file("keys",
+                                                      package = "bfabricShiny"),
+                                          "bfabricShiny.key.pub"))
+  
+  ## shinyStore; for login and password handling
+  observe({
+    if ('login' %in% names(input)){
+      if (input$saveBfabricPassword <= 0){
+        # On initialization, set the value of the text editor to the current val.
+        message("saving 'login and webservicepassword' ...")
+        updateTextInput(session, "login", value=isolate(input$store)$login)
+        updateTextInput(session, "webservicepassword",
+                        value=isolate(input$store)$webservicepassword)
+        return()
+      }
+      
+      shinyStore::updateStore(session, "login", isolate(input$login),
+                              encrypt=pubKey)
+      shinyStore::updateStore(session, "webservicepassword",
+                              isolate(input$webservicepassword), encrypt=pubKey)
+    }
+  }
+  )
+  
+  return(list(login = reactive({input$login}),
+              webservicepassword = reactive({input$webservicepassword})))
+}
+
 

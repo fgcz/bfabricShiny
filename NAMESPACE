@@ -2,6 +2,8 @@
 
 export(bfabric)
 export(bfabricInput)
+export(bfabricInputLogin)
+export(bfabricLogin)
 export(bfabric_upload_file)
 export(generate_queue)
 export(getApplications)
