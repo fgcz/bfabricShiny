@@ -17,9 +17,13 @@ apt-get install r-base libcurl4-openssl-dev
 use source code from github
 
 ```{r}
-#  install.packages('devtools')
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+
+if (!requireNamespace("PKI", quietly = TRUE))
+    install.packages('PKI')
+
 devtools::install_github("trestletech/shinyStore")
-install.packages('PKI')
 devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
 ```
 
