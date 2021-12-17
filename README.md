@@ -1,6 +1,6 @@
-![](https://github.com/fgcz/bfabricShiny/workflows/R-CMD-check-bfabricShiny/badge.svg)
+![](https://github.com/fgcz/bfabric/workflows/R-CMD-check-bfabric/badge.svg)
 
-# bfabricShiny
+# bfabric R package
 
 enables connecting R and bfabric using REST
 
