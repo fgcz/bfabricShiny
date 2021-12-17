@@ -1,11 +1,11 @@
-Package: bfabricShiny
+Package: bfabric
 Type: Package
 Title: A Shiny Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [aut], Christian Panse [cre, aut]
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
 Version: 0.10.28
 Description: provides access modules and functions to interact with the FGCZ's 
-    bfabric system. The package contains shiny applications, e.g.,
+    bfabric <https://fgcz-bfabric.uzh.ch> system. The package contains shiny applications, e.g.,
     to allow the FGCZ user to automatically generate a certain set of queues for
     Thermo Fisher Scientific instruments. 
 Depends:
@@ -24,6 +24,7 @@ Suggest:
     DT,
     base64enc,
     ggplot2 (>= 2.2),
+    protViz (>= 0.7),
     rmarkdown,
     roxygen2,
     testthat,
@@ -32,11 +33,12 @@ Suggest:
     xml2 (>= 1.1)
 License: GPL-3 + file LICENSE
 LazyData: FALSE
+SystemRequirements: installed bfabricPy python3 package
 Collate:
     bfabric.R
     ms_queue.R
     fgcz.R
     zzz.R
-URL: https://github.com/fgcz/bfabricShiny
-BugReports: https://github.com/fgcz/bfabricShiny/issues
+URL: https://github.com/fgcz/bfabric
+BugReports: https://github.com/fgcz/bfabric/issues
 RoxygenNote: 7.1.1
