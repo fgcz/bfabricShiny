@@ -2,7 +2,7 @@
 % Please edit documentation in R/bfabric.R
 \name{bfabricInput}
 \alias{bfabricInput}
-\title{defines the bfabric shiny UI module}
+\title{Defines the bfabric shiny UI module}
 \usage{
 bfabricInput(id)
 }
@@ -13,19 +13,16 @@ bfabricInput(id)
 tagList
 }
 \description{
-defines the bfabric shiny UI module
+Defines the bfabric shiny UI module
 }
 \examples{
 \dontrun{
-
     mainPanel(
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8")),
         tabPanel("plot", plotOutput("distPlot"))
    )
-
 }
-
 }
 \references{
 \url{https://doi.org/10.1145/1739041.1739135}

@@ -35,17 +35,25 @@ read method to access bfabric REST
 \examples{
 
 \dontrun{
-bfabricShiny::query(login, webservicepassword, endpoint='sample', query = list(id=206577))
+bfabricShiny::read(login, webservicepassword, endpoint='sample', query = list(id=206577))
 }
 
-\dontrun{
- RES <- query(endpoint = 'resource',
-    query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
-    login, webservicepassword)
-
- WU.pending <- query(endpoint='workunit',
+res.sample <- bfabricShiny::read(endpoint = 'sample',
+   query = list(containerid = 27053),
+   login = login,
+   webservicepassword = webservicepassword,
+   as_data_frame = TRUE)
+   
+res.file <- bfabricShiny::read(endpoint = 'resource',
+  query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
+  login, webservicepassword)
+  
+res.workunit <- bfabricShiny::read(endpoint='workunit',
     query = list('status' = 'pending'),
-    login, webservicepassword)
+    login, webservicepassword,
+    as_data_frame = TRUE)
+      
+\dontrun{
 
  APP.analysis <- query(endpoint='application',
     query=list('applicationtype' = 'analysis'),
