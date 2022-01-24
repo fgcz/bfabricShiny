@@ -308,23 +308,22 @@ query <- function(login, webservicepassword,
 #'
 #' @examples
 #'
-#' \dontrun{
-#' bfabricShiny::read(login, webservicepassword, endpoint='sample', query = list(id=206577))
-#' }
-#' 
-#' res.sample <- bfabricShiny::read(endpoint = 'sample',
-#'    query = list(containerid = 27053),
-#'    login = login,
+#' res.sample <- bfabricShiny::read(login = login,
 #'    webservicepassword = webservicepassword,
+#'    endpoint = 'sample',
+#'    query = list(containerid = 27053),
 #'    as_data_frame = TRUE)
 #'    
-#' res.file <- bfabricShiny::read(endpoint = 'resource',
+#' res.sample |> subset(select=c("_id", "name", "groupingvar.name"))
+#'    
+#' res.file <- bfabricShiny::read(login, webservicepassword,
+#'   endpoint = 'resource',
 #'   query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
-#'   login, webservicepassword)
+#'   )
 #'   
-#' res.workunit <- bfabricShiny::read(endpoint='workunit',
+#' res.workunit <- bfabricShiny::read(login, webservicepassword, 
+#'     endpoint='workunit',
 #'     query = list('status' = 'pending'),
-#'     login, webservicepassword,
 #'     as_data_frame = TRUE)
 #'       
 #' \dontrun{
@@ -362,16 +361,17 @@ read <- function(login = NULL, webservicepassword = NULL,
   stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
-  query_result <- POST(posturl,
-                       body = toJSON(list(login = login,
+  
+  query_result <- httr::POST(posturl,
+                       body = jsonlite::toJSON(list(login = login,
                                           webservicepassword = webservicepassword,
                                           endpoint = endpoint,
                                           query = query
                        ),
                        encode = 'json'))
 
-  rv <- content(query_result)
-  
+  rv <- httr::content(query_result)
+  if (is.null(rv$res)){warning("query failed."); return(rv);}
   if(as_data_frame){
     if (interactive()) {message("reshaping list to data.frame object ...")}
     rv <- Reduce(rbind, rv$res) |>
