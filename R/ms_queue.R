@@ -965,7 +965,7 @@ generate_queue <- function(x,
   
   if(interactive()){
     message(sprintf("Using login = '%s' and webservicepassword = '%s...'.", login, substr(webservicepassword, 0, 8)))
-    message(sprintf("Querying bfabric for samples in container %d ...", containerid))
+    message(sprintf("Querying bfabric for samples in container %d ...", container))
   }
   
   res.sample <- bfabricShiny::read(endpoint = 'sample',
