@@ -951,3 +951,78 @@ generate_queue <- function(x,
   rv <- rv[order(rv$`File Name`),]
   return(list(rv = rv, nextpos = nextpos))
 }
+
+
+
+.fgcz_queue_config_xc <- function(containerid = 27053,
+                                 user=Sys.info()['user'],
+                                 instrument="LUMOS_2",
+                                 queueFileName=NULL){
+  
+  
+  stopifnot(packageVersion('bfabricShiny') >= "0.11.2", packageVersion('protViz') >= "0.7")
+  stopifnot(exists("webservicepassword"), exists("login"), exists("posturl"))
+  
+  if(interactive()){
+    message(sprintf("Using login = '%s' and webservicepassword = '%s...'.", login, substr(webservicepassword, 0, 8)))
+    message(sprintf("Querying bfabric for samples in container %d ...", containerid))
+  }
+  
+  res.sample <- bfabricShiny::read(endpoint = 'sample',
+                                   query = list(containerid = 27053),
+                                   login = login,
+                                   webservicepassword = webservicepassword,
+                                   as_data_frame = TRUE, 
+                                   posturl = posturl)
+  
+  if(interactive()){
+    message(sprintf("Retrieved %d columns.", nrow(res.sample)))
+  }
+  qc <- res.sample |>
+    as.data.frame() |>
+    subset(select = c('_id', 'name', 'groupingvar.name'))
+  
+  qc <- qc[order(as.numeric(qc[['_id']])), ] |>
+    protViz::assignPlatePosition(volume=1,
+                                 plate=2:3,
+                                 x = as.character(1:12),
+                                 y = c('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')) |>
+    protViz::blockRandom('groupingvar.name', check=FALSE) |>
+    na.omit() |>
+    protViz::insertSamples(howoften=4, begin=FALSE, end=FALSE,
+                           stdPosX='6', stdPosY='F', plate=1, stdName = "clean",
+                           volume=2,
+                           method="C:\\Xcalibur\\methods\\__Standard_methods\\general_clean") |>
+    protViz::insertSamples(howoften=8, begin=FALSE, end=FALSE,
+                           stdPosX='8', stdPosY='F', plate=1, stdName = "autoQC01",
+                           volume=2,
+                           method="C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01") |>
+    protViz::insertSamples(howoften=0, begin=FALSE, end=TRUE,
+                           volume=2,
+                           stdPosX='7', stdPosY='F', plate=1, stdName = "autoQC4L",
+                           method="C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L")
+  
+  XC <- data.frame(id=qc[['_id']], name=qc$name, plate=qc$plate, x=qc$x, y=qc$y, volume=qc$volume, method=qc$method) |>
+    protViz:::formatXCalibur(path=sprintf("D:\\Data2San\\p%d\\Proteomics\\%s\\%s_%s",
+                                          container=containerid,
+                                          instrument=instrument,
+                                          user=user,
+                                          format(Sys.time(), "%Y%m%d")))
+  
+  if (is.null(queueFileName)){
+    queueFileName <- sprintf("xcQueueConfig_C%d_%s_%s.csv", containerid, user, format(Sys.time(), "%Y%m%d-%H%M"))
+  }
+  
+  cat("Bracket Type=4\r\n", file = queueFileName, append = FALSE)
+  write.table(XC,
+              file = queueFileName,
+              sep = ',',
+              row.names = FALSE,
+              append = TRUE,
+              quote = FALSE,
+              eol = '\r\n')
+  
+  if(interactive()){
+    message(sprintf("queue configuration can be found in\n\n\t%s\n", queueFileName))
+  }
+}
