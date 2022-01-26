@@ -954,12 +954,12 @@ generate_queue <- function(x,
 
 
 
-.fgcz_queue_config_xc <- function(containerid = 27053,
-                                 user=Sys.info()['user'],
-                                 instrument="LUMOS_2",
-                                 queueFileName=NULL){
+.fgcz_queue_config_xc <- function(container = NULL,
+                                 user = Sys.info()['user'],
+                                 instrument = "LUMOS_2",
+                                 queueFileName = NULL){
   
-  
+  stopifnot(!is.null(container))
   stopifnot(packageVersion('bfabricShiny') >= "0.11.2", packageVersion('protViz') >= "0.7")
   stopifnot(exists("webservicepassword"), exists("login"), exists("posturl"))
   
@@ -969,7 +969,7 @@ generate_queue <- function(x,
   }
   
   res.sample <- bfabricShiny::read(endpoint = 'sample',
-                                   query = list(containerid = 27053),
+                                   query = list(containerid = container),
                                    login = login,
                                    webservicepassword = webservicepassword,
                                    as_data_frame = TRUE, 
