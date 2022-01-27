@@ -1004,13 +1004,13 @@ generate_queue <- function(x,
   
   XC <- data.frame(id=qc[['_id']], name=qc$name, plate=qc$plate, x=qc$x, y=qc$y, volume=qc$volume, method=qc$method) |>
     protViz:::formatXCalibur(path=sprintf("D:\\Data2San\\p%d\\Proteomics\\%s\\%s_%s",
-                                          container=containerid,
+                                          container=container,
                                           instrument=instrument,
                                           user=user,
                                           format(Sys.time(), "%Y%m%d")))
   
   if (is.null(queueFileName)){
-    queueFileName <- sprintf("xcQueueConfig_C%d_%s_%s.csv", containerid, user, format(Sys.time(), "%Y%m%d-%H%M"))
+    queueFileName <- sprintf("xcQueueConfig_C%d_%s_%s.csv", container, user, format(Sys.time(), "%Y%m%d-%H%M"))
   }
   
   cat("Bracket Type=4\r\n", file = queueFileName, append = FALSE)
