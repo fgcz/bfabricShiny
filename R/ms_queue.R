@@ -989,14 +989,14 @@ generate_queue <- function(x,
                                  y = c('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')) |>
     protViz::blockRandom('groupingvar.name', check=FALSE) |>
     na.omit() |>
-    protViz::insertSamples(howoften=4, begin=FALSE, end=FALSE,
-                           stdPosX='6', stdPosY='F', plate=1, stdName = "clean",
-                           volume=2,
-                           method="C:\\Xcalibur\\methods\\__Standard_methods\\general_clean") |>
     protViz::insertSamples(howoften=8, begin=FALSE, end=FALSE,
                            stdPosX='8', stdPosY='F', plate=1, stdName = "autoQC01",
                            volume=2,
                            method="C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC01") |>
+    protViz::insertSamples(howoften=4, begin=FALSE, end=FALSE,
+                           stdPosX='6', stdPosY='F', plate=1, stdName = "clean",
+                           volume=2,
+                           method="C:\\Xcalibur\\methods\\__Standard_methods\\general_clean") |>
     protViz::insertSamples(howoften=0, begin=FALSE, end=TRUE,
                            volume=2,
                            stdPosX='7', stdPosY='F', plate=1, stdName = "autoQC4L",
