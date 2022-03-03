@@ -49,10 +49,11 @@
     QEXACTIVE_2 = 'Xcalibur',
     QEXACTIVEHF_2 = 'Xcalibur',
     QEXACTIVEHF_4 = 'Xcalibur',
-    QEXACTIVEHFX_1 = 'Xcalibur',
-    FUSION_1 = 'Xcalibur',
+ #   QEXACTIVEHFX_1 = 'Xcalibur',
+ #   FUSION_1 = 'Xcalibur',
     FUSION_2 =  'Xcalibur',
     EXPLORIS_1 = 'Xcalibur',
+    EXPLORIS_2 = 'Xcalibur',
     LUMOS_1 = 'Xcalibur',
     LUMOS_2 = 'Xcalibur'
   )}
@@ -78,6 +79,7 @@
     LUMOS_1 = 'raw',
     LUMOS_2 = 'raw',
     EXPLORIS_1 = 'raw',
+    EXPLORIS_2 = 'raw',
     IMSTOF_1 = 'h5'
   )
 }
@@ -210,6 +212,7 @@ getHPLCparameter <- function(row = 1, col ="A", plate = 1){
        LUMOS_1 = get_tray_waters(row, col, plate),
        LUMOS_2 = get_tray_waters(row, col, plate),
        EXPLORIS_1 = get_tray_waters(row, col, plate),
+       EXPLORIS_2 = get_tray_waters(row, col, plate),
        IMSTOF_1 = .eksigent())
 }
 
