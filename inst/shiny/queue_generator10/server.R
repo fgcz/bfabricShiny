@@ -459,6 +459,12 @@ shinyServer(function(input, output, session) {
                                     howmany = input$QC01m,
                                     begin = "1" %in% c(input$start1,input$start2, input$start3),
                                     end = "1" %in% c(input$end1,input$end2, input$end3)) %>% 
+          .insertStandardsNanoElute(stdName = "autoQC02", stdPosX='53', stdPosY='1', plate = 2,
+                                    between=input$autoQC02,
+                                    howoften = input$QC02o,
+                                    howmany = input$QC02m,
+                                    begin = "2" %in% c(input$start1,input$start2, input$start3),
+                                    end = "2" %in% c(input$end1,input$end2, input$end3)) %>% 
           .insertStandardsNanoElute(stdName = "autoQC4L", stdPosX='54', stdPosY='1', plate = 2, 
                                     between=input$autoQC4L,
                                     howoften = input$QC4Lo,
