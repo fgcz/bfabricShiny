@@ -427,6 +427,12 @@ shinyServer(function(input, output, session) {
                            howmany = input$QC01m,
                            begin = "1" %in% c(input$start1,input$start2, input$start3),
                            end = "1" %in% c(input$end1,input$end2, input$end3)) %>% 
+           .insertStandardsEVOSEP(stdName = "autoQC02",
+                                  between=input$autoQC02,
+                                  howoften = input$QC02o,
+                                  howmany = input$QC02m,
+                                  begin = "3" %in% c(input$start1,input$start2, input$start3),
+                                  end = "3" %in% c(input$end1,input$end2, input$end3)) %>% 
           .insertStandardsEVOSEP(stdName = "autoQC4L",
                            between=input$autoQC4L,
                            howoften = input$QC4Lo,
