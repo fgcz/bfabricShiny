@@ -163,8 +163,7 @@ function(S,
     
     injection.index <- sprintf("%03d", seq(1, nrow(S)))
     S$"Vial" <- FUN(plate=S$plate, x=S$x, y=S$y)
-    
-    S$"Sample ID" <- paste0(S$sample_name, "_S", S$sample_id )
+    S$"Sample ID" <- paste0("S", S$sample_id, "_", S$sample_name)
 
     if ("sample_condition" %in% names(S)){
         S$"Sample Comment" <- S$"sample_condition"
