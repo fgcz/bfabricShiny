@@ -387,7 +387,7 @@ shinyServer(function(input, output, session) {
                                                 startposition = input$startposition)
       
       # TODO(cp): add an addidtional parameter
-      idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_1", rv['Path'])
+      idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_", rv['Path'])
       rv[idx, 'Inj Vol'] <- 1
      
       return(rv)

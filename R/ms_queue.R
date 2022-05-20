@@ -948,6 +948,7 @@ generate_queue <- function(x,
   rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
   rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
 
+
   if (DEBUG) {
     rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)
   }
