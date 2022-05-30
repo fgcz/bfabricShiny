@@ -92,7 +92,8 @@ shinyServer(function(input, output, session) {
         res.instrument <- names(list(
           QEXACTIVE_1 = 'Xcalibur',
           QEXACTIVE_2 = 'Xcalibur',
-          LUMOS_2 = "Xcalibur"
+          LUMOS_2 = "Xcalibur",
+          EXPLORIS_2 = "Xcalibur"
         ))
       }
 
