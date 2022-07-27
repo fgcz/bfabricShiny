@@ -283,3 +283,5 @@ The idea is to fetch a RData file stored in bfabric.
 ```
 
 
+
+![code_snippet_demo](https://user-images.githubusercontent.com/4901987/181242377-a9bf3988-b193-494c-91c9-a010500ee3f2.gif)
