@@ -4,14 +4,17 @@
 
 ## Demonstration
 
-1. enables connecting R and bfabric using REST
+### Enables connecting R and bfabric using REST
 
 ![bfabricPy-read-R](https://user-images.githubusercontent.com/4901987/65041207-7c757c80-d956-11e9-90ca-9c3e2e0ca724.gif)
 
-2. command line triggered analytics
+### Command line triggered analytics
+
+The animated gif below illustrates the interaction between an application (performing quality control on mass spectrometric measurements using [rawDiag](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00173)) and the B-Fabric platform on the command line level using the  R console.
 
 ![code_snippet_demo](https://user-images.githubusercontent.com/4901987/181242377-a9bf3988-b193-494c-91c9-a010500ee3f2.gif)
 
+The R code as used in the animated gif.
 ```{r}
 ## R --no-save < code_snippet.R
 ## devtools::install_github("fgcz/bfabricShiny")
