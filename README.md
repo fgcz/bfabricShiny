@@ -284,4 +284,49 @@ The idea is to fetch a RData file stored in bfabric.
 
 
 
+## Command Line Triggered Visual Exploration
+
+
 ![code_snippet_demo](https://user-images.githubusercontent.com/4901987/181242377-a9bf3988-b193-494c-91c9-a010500ee3f2.gif)
+
+
+```{r}
+## R --no-save < code_snippet.R
+## devtools::install_github("fgcz/bfabricShiny")
+## devtools::install_github("fgcz/rawDiag")
+stopifnot(R.Version()['major'] >= '4',
+    require('rawDiag'),
+    require('bfabricShiny'))
+
+## Define B-Fabric input workunit
+workunitid <- 165473
+
+## Query metadata from B-Fabric
+Q <- bfabricShiny::read(login, webservicepassword,
+  endpoint = 'resource',
+  query = list('workunitid' = workunitid), as_data_frame=FALSE)
+
+## setting root directory
+rawfilenames <- Q$res |>
+    sapply(function(x)file.path('/srv/www/htdocs/', x$relativepath))
+
+## Extract MS data from BLOBs using the rawDiag R package
+## That requires storage access via SSH, NFS, or SAMBA
+RAW <- rawfilenames |>
+    parallel::mclapply(rawDiag::read.raw, mc.cores = 12) |>
+    base::Reduce(f = rbind)
+
+## Print a summary
+RAW |> rawDiag::summary.rawDiag()
+
+## Have fun with visualization https://doi.org/10.1021/acs.jproteome.8b00173
+## (a)
+RAW |> rawDiag::PlotPrecursorHeatmap(bins = 25)
+## (b)
+RAW |> rawDiag::PlotPrecursorHeatmap(bins = 25) +
+  ggplot2::facet_wrap(~ filename)
+## (c)
+RAW |> rawDiag::PlotTicBasepeak(method = 'overlay')
+## (d)
+RAW |> rawDiag::PlotInjectionTime(method = 'overlay')
+```
