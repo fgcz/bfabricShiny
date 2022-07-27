@@ -10,7 +10,7 @@
 
 ### Command line triggered analytics
 
-The animated gif below illustrates the interaction between an application (performing quality control on mass spectrometric measurements using [rawDiag](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00173)) and the B-Fabric platform on the command line level using the  R console.
+The animated gif below illustrates the interaction between an application (performing quality control on mass spectrometric measurements using [rawDiag](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00173)) and the [B-Fabric](https://fgcz-bfabric.uzh.ch) platform on the command line level using the  R console.
 
 ![code_snippet_demo](https://user-images.githubusercontent.com/4901987/181242377-a9bf3988-b193-494c-91c9-a010500ee3f2.gif)
 
