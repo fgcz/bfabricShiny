@@ -1,0 +1,21 @@
+citHeader("To cite the R package 'bfabricShiny' in publications use:")
+
+PKG <- "bfabricShiny"
+year <- 2022
+vers <- paste("R package version", packageVersion('bfabricShiny'))
+url <- paste0("https://github.com/fgcz/", PKG)
+doi <- "10.1515/jib-2022-0031"
+
+citEntry(entry	= "article",
+         title	= "Bridging Data Management Platforms and Visualization Tools to EnableAd-hoc and Smart Analytics in Life Sciences",
+         author = c(
+           person("Christian", "Panse", email="cp@fgcz.ethz.ch", role=c("aut", "cre")),
+           person("Christian", "Trachsel",role="aut"),
+           person("Can", "T{\"u}rker", email="Can.Tuerker@fgcz.uzh.ch", role="aut")),
+	 journal = "Journal of Integrative Bioinformatics",
+         year = 2022,
+         url = url,
+	 doi = doi,
+         note = paste(vers,"---"),
+         textVersion = paste0("Panse, C., Trachsel, C., Tuerker, C., (", year, ").  Bridging Data Management Platforms and Visualization Tools to EnableAd-hoc and Smart Analytics in Life Sciences. ", vers, ". DOI:", doi, ".")
+)
