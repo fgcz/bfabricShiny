@@ -15,9 +15,6 @@ save(login, webservicepassword, endpoint = "workunit", query)
 
 \item{query}{list object to be saved in bfabric.}
 }
-\value{
-
-}
 \description{
 Saves an object in bfabric
 }

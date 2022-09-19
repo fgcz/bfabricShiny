@@ -33,6 +33,9 @@ a nested list object
 read method to access bfabric REST
 }
 \examples{
+# ensure you have login and password
+Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+source(Rprofile)
 
 res.sample <- bfabricShiny::read(login = login,
    webservicepassword = webservicepassword,
@@ -52,29 +55,10 @@ res.workunit <- bfabricShiny::read(login, webservicepassword,
     query = list('status' = 'pending'),
     as_data_frame = TRUE)
       
-\dontrun{
-
- APP.analysis <- query(endpoint='application',
-    query=list('applicationtype' = 'analysis'),
-    login, webservicepassword)
-
- # a more complex example
 
  ## query metadata
- Q <- query(login, webservicepassword,
+ Q <- bfabricShiny::read(login, webservicepassword,
    endpoint = 'resource',
    query = list('workunitid' = 163763))
-
- ## stage data
- uris <- sapply(Q$res, function(x){x$uris[3]})
- (rawfilenames <- sapply(strsplit(unlist(uris), ":"), function(x){x[3]}))
- library(rawDiag)
- library(parallel)
- RAW <- do.call('rbind',
-   mclapply(rawfilenames, read.raw, ssh = TRUE, mc.cores = 12))
-
- ## have fun
- hex.bin(RAW)
-}
-
+   
 }

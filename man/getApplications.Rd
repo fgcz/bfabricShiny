@@ -11,9 +11,6 @@ getApplications(login, webservicepassword)
 
 \item{webservicepassword}{bfabric webservicepassword}
 }
-\value{
-
-}
 \description{
 getApplications
 }

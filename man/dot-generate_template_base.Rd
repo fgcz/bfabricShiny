@@ -15,6 +15,3 @@ the original dataframe (data.frame)
 \description{
 .generate_template_base
 }
-\examples{
-
-}

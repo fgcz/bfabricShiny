@@ -1,13 +1,14 @@
 Package: bfabricShiny
 Type: Package
-Title: A Shiny Module for Bridging B-Fabric and R using REST
+Title: A Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [aut], Christian Panse [cre, aut]
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
-Version: 0.11.10
-Description: provides access modules and functions to interact with the FGCZ's 
-    bfabric <https://fgcz-bfabric.uzh.ch> system. The package contains shiny applications, e.g.,
-    to allow the FGCZ user to automatically generate a certain set of queues for
-    Thermo Fisher Scientific instruments. 
+Version: 0.11.11
+Description: provides a shiny module and read, save, and delete functions to
+    interact with the FGCZ's B-Fabric <https://fgcz-bfabric.uzh.ch> system
+    using WSDL and REST. Also, the package contains shiny
+    applications, e.g., to allow the FGCZ user to automatically generate a
+    configuration of queues for Thermo Fisher Scientific and Bruker instruments. 
 Depends:
     R (>= 4.1)
 Imports:
@@ -42,4 +43,4 @@ Collate:
     zzz.R
 URL: https://github.com/fgcz/bfabricShiny
 BugReports: https://github.com/fgcz/bfabricShiny/issues
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
