@@ -1,4 +1,6 @@
-![](https://github.com/fgcz/bfabric/workflows/R-CMD-check-bfabric/badge.svg)
+
+
+[![JIB](https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen)](https://doi.org/10.1515/jib-2022-0031)
 
 # bfabricShiny R package
 
