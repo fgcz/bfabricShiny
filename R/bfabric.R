@@ -20,7 +20,7 @@ bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
-  privKey <- PKI.load.key(file = file.path(system.file("keys",
+  privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
                                                        package = "bfabricShiny"), "bfabricShiny.key"))
 
   tagList(
@@ -60,6 +60,7 @@ bfabricInput <- function(id) {
 #' @references \url{https://doi.org/10.1145/1739041.1739135}
 #' @return check the \code{input$resourceid} value.
 #' @importFrom utils read.table
+#' @import PKI
 #' @export bfabric
 bfabric <- function(input, output, session, applicationid, resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
@@ -213,7 +214,7 @@ bfabricInputLogin <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   
-  privKey <- PKI.load.key(file = file.path(system.file("keys",
+  privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
                                                        package = "bfabricShiny"), "bfabricShiny.key"))
   
   tagList(
@@ -230,7 +231,7 @@ bfabricInputLogin <- function(id) {
 bfabricLogin <- function(input, output, session) {
   ns <- session$ns
   
-  pubKey <- PKI.load.key(file = file.path(system.file("keys",
+  pubKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
                                                       package = "bfabricShiny"),
                                           "bfabricShiny.key.pub"))
   

@@ -11,6 +11,7 @@
 
 library(bfabricShiny)
 library(protViz)
+library(PKI)
 
 xy_range_str <- function(e) {
   if(is.null(e)) return(NULL)

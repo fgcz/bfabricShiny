@@ -10,10 +10,14 @@ test_that("test read", {
   expect_true(file.exists(Rprofile))
   source(Rprofile)
   
+  expect_length(login, 1)
+  expect_length(webservicepassword, 1)
+  expect_true(nchar(webservicepassword)== 32)
+  
   # "Ensure you have REST service running on localhost:5000"
   
   user <- bfabricShiny::read(endpoint='user',
-                            query=list(login='cpanse'),
+                            query = list(login = 'cpanse'),
                             login = login,
                             webservicepassword = webservicepassword)
   
