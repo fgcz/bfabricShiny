@@ -104,8 +104,9 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
 
     if (nrow(applications) > 0) {
-      idx <- which(applications$id %in% applicationid)
-      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep = " - ")
+      idx <- which(applications$id %in% applicationid) |>
+        sort(decreasing = TRUE)
+      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep = " - ") 
 
       selectInput(ns("applicationid"), "input applicationid:",
                   xxx,
