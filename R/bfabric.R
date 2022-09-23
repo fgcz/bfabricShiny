@@ -25,9 +25,12 @@ bfabricInput <- function(id) {
 
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
-    textInput(ns('login'), 'bfabric Login'),
+    a(img(src="https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen"),
+      href='https://www.degruyter.com/document/doi/10.1515/jib-2022-0031/html'),
+    br(),
+    textInput(ns('login'), 'B-Fabric Login', placeholder = "as you login on https://fgcz-bfabric.uzh.ch"),
     passwordInput(ns('webservicepassword'), 'Web Service Password',
-                  placeholder = "in bfabric on 'User Details'."),
+                  placeholder = "in B-Fabric on 'User Details' (upper-right corner)."),
     htmlOutput(ns("applications")),
     actionButton(ns("saveBfabricPassword"), "Encrypt & Save Password", icon("save")),
     htmlOutput(ns("projects")),
@@ -84,6 +87,7 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
     fn <- system.file("extdata/application.csv", package = "bfabricShiny")
 
     if (file.exists(fn) &&  nchar(fn) > 0) {
+     
       applications <- read.table(fn, header = TRUE)
       return(applications)
 
@@ -100,7 +104,6 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
 
   output$applications <- renderUI({
     applications <- application()
-
     # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
 
     if (nrow(applications) > 0) {
@@ -108,9 +111,10 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
         sort(decreasing = TRUE)
       xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep = " - ") 
 
-      selectInput(ns("applicationid"), "input applicationid:",
+      tagList(
+      selectInput(ns("applicationid"), "input applicationId:",
                   xxx,
-                  multiple = FALSE)
+                  multiple = FALSE))
     }else{NULL}
   })
 

@@ -1,9 +1,10 @@
 
 library(bfabricShiny)
 library(protViz)
-
+library(PKI)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
+  
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(61), resoucepattern = 'fasta$')
   
   ### observes file upload
@@ -25,7 +26,7 @@ shinyServer(function(input, output, session) {
     
     message(cmd)
     
-    S<-scan(pipe(cmd), what='character')
+    S <- scan(pipe(cmd), what='character')
     S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
   })
   
