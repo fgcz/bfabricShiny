@@ -12,9 +12,11 @@ shinyUI(
       column(12,
              #tags$h1(paste("FGCZ", "Queue Generator Version 2.0", sep = " ")),
              tags$hr(),
-             
+             # [![JIB](https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen)](https://doi.org/10.1515/jib-2022-0031)
              fluidRow(
                column(3, 
+                      a(img(src="https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen"),
+                        href='https://www.degruyter.com/document/doi/10.1515/jib-2022-0031/html'),
                       tags$h3("Available samples for your queue:"),
                       tags$h5("use \"shift + click\" or \"click + drag\"  for selecting a block of consecutive samples"),
                       tags$h5("use \"control + click\" to select multiple samples"),
