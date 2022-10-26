@@ -283,7 +283,7 @@ shinyServer( function(input, output, session) {
       cat("SELECT", input$select, "\n")
       grp2 <- SRMService::Grp2Analysis(v_upload_file$annotation,
                                        input$experimentID,
-                                       projectID = bf$projectid(),
+                                       projectID = as.character(bf$projectid()),
                                        workunitID = bf$workunitid(),
                                        maxNA = input$maxMissing,
                                        nrPeptides = input$minPeptides,
@@ -314,7 +314,7 @@ shinyServer( function(input, output, session) {
       }
 
       SRMService::RMD_MQ_Quant_2GrpAnalysis(workdir = workdir)
-      rmdfile2run <- file.path(workdir ,"Grp2Analysis.Rmd")
+      rmdfile2run <- file.path(workdir, "Grp2Analysis.Rmd")
 
       # generate the LFQ report
       rmarkdown::render(rmdfile2run,
