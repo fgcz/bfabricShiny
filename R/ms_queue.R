@@ -114,7 +114,7 @@ get_tray_2_48_plates <- function(start.row = 1
 #' bfabricShiny:::get_tray_2_48_plates_nextpos(12)
 #'
 get_tray_2_48_plates_nextpos <- function(n, startpos = list(row = 1, col = "A", plate = 1)){
-  positions <- get_tray_2_48_plates(start.row = 1, start.col = "A", start.plate = 1)
+  positions <- get_tray_2_48_plates(start.row = startpos$row, start.col = startpos$col, start.plate = startpos$plate)
   end.pos <- positions[n+1,]
   return(end.pos)
 }
@@ -723,6 +723,7 @@ generate_queue_order <- function(x,
                      pathprefixsep = pathprefixsep,
                      order = order,
                      startpos = startpos)
+    print(res$nextpos)
     startpos <- list(row = res$nextpos$rows, col = res$nextpos$cols, plate = res$nextpos$plate)
     res_queues[[names(samples_list)[i]]] <- res$rv
   }
@@ -858,9 +859,10 @@ generate_queue <- function(x,
 
   if (!method %in% c('PRM', 'testing')) {
     res.position <- .tray_position(queue = res.template, startpos = startpos, instrument = instrument )
-    nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
+    nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template), startpos = startpos)
   } else {
     res.position <- res.template
+    #TODO(CP): this wont work for multi container queue !!! 2022-11-21
     nextpos <- get_tray_2_48_plates_nextpos(nrow(res.template))
   }
 
