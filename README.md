@@ -63,11 +63,13 @@ RAW |> rawDiag::PlotInjectionTime(method = 'overlay')
 
 ## INSTALL
 
+
 ```{bash}
-apt-get install r-base libcurl4-openssl-dev 
+## Debian 12
+apt-get install r-base libcurl4-openssl-dev lcmaps-openssl-interface -y
 ```
 
-use source code from github
+use source code from GitHub
 
 ```{r}
 if (!requireNamespace("devtools", quietly = TRUE))
@@ -77,7 +79,8 @@ if (!requireNamespace("PKI", quietly = TRUE))
     install.packages('PKI')
 
 devtools::install_github("trestletech/shinyStore")
-devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE, quiet = FALSE)
+devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE,
+  quiet = FALSE)
 ```
 
 
@@ -86,12 +89,13 @@ devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE, quiet = F
 ## Run shiny based queue generator application
 
 
-```
+```{r}
 pkgs <- c('devtools', 'tidyverse', 'shiny', 'affy', 'limma')
 pkgs[!pkgs %in% installed.packages()] |> 
   BiocManager::install()
-  
-devtools::install_github('protViz/SRMService', build_vignettes = FALSE, quiet = FALSE)
+
+devtools::install_github('protViz/SRMService', build_vignettes = FALSE,
+  quiet = FALSE)
 ```
 
 ```
