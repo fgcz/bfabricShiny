@@ -79,7 +79,7 @@ shinyServer(function(input, output, session) {
     if (input$containerType == 'project'){
       numericInput('project', 'Container (project or order):', value = 3530,  min = 1000, max = NA, width = 400)
     } else{
-      textInput('project', 'Containers (orders):', value = "3181,3492", width = 1000, placeholder = 'comma separated list of order IDs')
+      textInput('project', 'Containers (orders):', value = "29941,30021,30041,30057", width = 1000, placeholder = 'comma separated list of order IDs')
     }
   })
 
@@ -357,6 +357,7 @@ shinyServer(function(input, output, session) {
     }
     
     if (input$instrumentControlSoftware == "XCalibur"){
+      
       rv <- bfabricShiny:::generate_queue_order(x = res,
                                                 foldername = input$folder,
                                                 projectid = containerid,
@@ -390,7 +391,10 @@ shinyServer(function(input, output, session) {
       # TODO(cp): add an addidtional parameter
       idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_", rv['Path'])
       rv[idx, 'Inj Vol'] <- 1
-     
+      # save(res,rv, file = '/tmp/queue.RData')
+      print(res)
+      # base::save(res,rv, file="/tmp/ddd.RData")
+      print(rv)
       return(rv)
     }else if (input$instrumentControlSoftware == "HyStar"){
       message("DEBUG")
@@ -496,7 +500,7 @@ shinyServer(function(input, output, session) {
   #----- DT::renderDataTable ----
   output$table <- DT::renderDataTable(DT::datatable({
 
-    if (input$sample != "" && length(input$sample) >= 1){
+    if ((length(input$sample) >= 1)){
 
       getBfabricContent()
 
