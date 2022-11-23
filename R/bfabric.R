@@ -21,7 +21,8 @@ bfabricInput <- function(id) {
   ns <- NS(id)
 
   privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
-                                                       package = "bfabricShiny"), "bfabricShiny.key"))
+    package = "bfabricShiny"), "bfabricShiny.key"))
+
 
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
@@ -33,6 +34,9 @@ bfabricInput <- function(id) {
                   placeholder = "in B-Fabric on 'User Details' (upper-right corner)."),
     htmlOutput(ns("applications")),
     actionButton(ns("saveBfabricPassword"), "Encrypt & Save Password", icon("save")),
+    br(),
+    br(),
+    htmlOutput(ns("employee")),
     htmlOutput(ns("projects")),
     htmlOutput(ns("workunits")),
     htmlOutput(ns("resources"))
@@ -65,22 +69,40 @@ bfabricInput <- function(id) {
 #' @importFrom utils read.table
 #' @import PKI
 #' @export bfabric
-bfabric <- function(input, output, session, applicationid, resoucepattern = ".*", resourcemultiple=FALSE) {
+bfabric <- function(input, output, session, applicationid,
+                    resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
 
   pubKey <- PKI.load.key(file = file.path(system.file("keys",
-                                                      package = "bfabricShiny"), "bfabricShiny.key.pub"))
+    package = "bfabricShiny"), "bfabricShiny.key.pub"))
 
-
-  #value <- reactiveValues(resourceid = NA)
-  output$projects <- renderUI({
-
-    projects <- getProjects(input$login, input$webservicepassword)
-
-    if (is.null(projects)) {
-    }else{
-      selectInput(ns("projectid"), "container id", projects, multiple = FALSE)
+  output$employee <- renderUI({
+    if (empdegree()){
+      HTML("As an employee, you have access to all containers.")
     }
+  })
+
+  output$projects <- renderUI({
+    if (empdegree()){
+      numericInput(ns("projectid"), "Order | project | container id:",
+                   value = 3000, min = 1000, max = 30000)
+    }else{
+      projects <- getProjects(input$login, input$webservicepassword)
+      if (is.null(projects)) {
+      }else{
+        selectInput(ns("projectid"), "Order | project | container id:",
+                    projects, multiple = FALSE)
+      }
+    }
+  })
+
+  empdegree <- reactive({
+    rv <- bfabricShiny::read(input$login, input$webservicepassword ,
+                             endpoint = 'user', list(login=input$login))
+    if(isFALSE(is.null(rv$res))){
+      return('empdegree' %in% names(rv$res[[1]]))
+    }
+    return (FALSE)
   })
 
   application <- reactive({
@@ -104,12 +126,12 @@ bfabric <- function(input, output, session, applicationid, resoucepattern = ".*"
 
   output$applications <- renderUI({
     applications <- application()
-    # selectInput(ns("applicationid"), "input applicationid:", applicationid, multiple = FALSE)
 
     if (nrow(applications) > 0) {
       idx <- which(applications$id %in% applicationid) |>
         sort(decreasing = TRUE)
-      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'], sep = " - ") 
+      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'],
+                   sep = " - ")
 
       tagList(
       selectInput(ns("applicationid"), "input applicationId:",
@@ -220,7 +242,7 @@ bfabricInputLogin <- function(id) {
   ns <- NS(id)
   
   privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
-                                                       package = "bfabricShiny"), "bfabricShiny.key"))
+      package = "bfabricShiny"), "bfabricShiny.key"))
   
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
