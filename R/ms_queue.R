@@ -283,7 +283,7 @@ getQCsample <- function(){
     dplyr::mutate(IDX = rep(1:length(y), y)) %>%
     dplyr::bind_rows(df) %>%
     dplyr::arrange(IDX)
-  res <- res %>% dplyr::select("extract.name", "extract.id", "extract.Condition")
+  res <- res %>% dplyr::select("extract.name", "extract.id", "extract.Condition", "containerid")
 
   return(res)
 }
@@ -517,10 +517,10 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
     .equal.groups()
   res <- dplyr::mutate(res, blockidx = as.vector(replicate(blocks, sprintf("%02d", c(1:elements)))))
   res <- dplyr::arrange(res, blockidx)
-  res <-   dplyr::mutate(res, randomidx = as.vector(replicate(elements, sample(1:blocks))))
-  res <-   dplyr::arrange(res, blockidx, randomidx)
+  res <- dplyr::mutate(res, randomidx = as.vector(replicate(elements, sample(1:blocks))))
+  res <- dplyr::arrange(res, blockidx, randomidx)
   res <- dplyr::filter(res, !is.na(extract.id))
-  res <- dplyr::select(res, "extract.name", "extract.id", "extract.Condition")
+  res <- dplyr::select(res, "extract.name", "extract.id", "extract.Condition", "containerid")
 
   return(res)
 }
