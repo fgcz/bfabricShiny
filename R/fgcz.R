@@ -345,7 +345,7 @@ read <- function(login = NULL, webservicepassword = NULL,
   stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
-  
+  start_time <- Sys.time()
   query_result <- httr::POST(posturl,
                        body = jsonlite::toJSON(list(login = login,
                                           webservicepassword = webservicepassword,
@@ -355,6 +355,12 @@ read <- function(login = NULL, webservicepassword = NULL,
                        encode = 'json'))
 
   rv <- httr::content(query_result)
+  end_time <- Sys.time()
+  if (interactive()) {
+      message(paste0("query time is ",
+                     difftime(end_time,  start_time, units = "secs") |> round(1),
+                     " seconds."))
+  }
   if (is.null(rv$res)){warning("query failed."); return(rv);}
   if(as_data_frame){
     if (interactive()) {message("reshaping list to data.frame object ...")}
@@ -369,29 +375,21 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 # getWorkunits(login, webservicepassword)
 getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, applicationid = 224){
-  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
-  
-   workunits <- ({
-    rv <- POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
-                                  webservicepassword = webservicepassword,
-                                  endpoint = 'workunit',
-                                  query=list('applicationid' = applicationid,
-                                             'status' = 'available',
-                                             'containerid' = projectid)
-               ),
-               encode = 'json'))
-
-    rv <- content(rv)
-    rv <- sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")})
-
-    if (length(rv) > 0){
-      rv <- sort(rv, decreasing = TRUE)
+    stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+    
+    workunits <- read(login, webservicepassword,
+                      endpoint = 'workunit',
+                      query=list('applicationid' = applicationid,
+                                 'status' = 'available',
+                                 'containerid' = projectid))
+    
+    
+    workunits <- sapply(workunits$res, function(y){paste(y$`_id`, y$name, sep=" - ")})
+    
+    if (length(workunits) > 0){
+        workunits <- sort(workunits, decreasing = TRUE)
     }
-
-    rv
-  })
-  return(workunits)
+    return(workunits)
 }
 
 #' get all resources of a (login, project)
@@ -409,21 +407,13 @@ getResources <- function(login=NULL, webservicepassword=NULL, workunitid=NULL){
             isFALSE(is.null(workunitid)))
   
 
-  resources <- ({
-    rv <- POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
+  resources <- read(login = login,
                                   webservicepassword = webservicepassword,
                                   endpoint = 'resource',
                                   query=list('workunitid' = workunitid)
-                                 ),
-               encode = 'json'))
+                                 )
 
-    rv <- content(rv)
-    # sort(sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}), decreasing = TRUE)
-    rv$res
-     })
-
-  return(resources)
+  return(resources$res)
 }
 
 
