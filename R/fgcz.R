@@ -291,7 +291,76 @@ query <- function(login, webservicepassword,
   rv
 }
 
+.read <- function(login = NULL, webservicepassword = NULL,
+                  endpoint = 'workunit',
+                  page = 1,
+                  query = list(),
+                  posturl = 'http://localhost:5000/read'){
+  
+  
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            is.numeric(page))
+  
+  if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
+  start_time <- Sys.time()
+  query_result <- httr::POST(posturl,
+                             body = jsonlite::toJSON(list(login = login,
+                                                          webservicepassword = webservicepassword,
+                                                          endpoint = endpoint,
+                                                          query = query,
+                                                          page = page
+                             ),
+                             encode = 'json'))
+  end_time <- Sys.time()
+  rv <- httr::content(query_result)
+  if (is.null(rv$res)){warning("query failed."); return(rv);}
+ 
+  if (interactive()) {
+    
+    if ('errorreport' %in% names(rv$res)){
+      message(paste0("errorreport: ", rv$res$errorreport))
+    }else{
+      msg <- paste0("endpoint: ", endpoint, "\n",
+                    "entitiesonpage: ", rv$res$entitiesonpage, "\n",
+                    "numberofpages: ", rv$res$numberofpages, "\n",
+                    "page: ", rv$res$page)
+      message(msg)
+      
+    }
+    message(paste0("query time: ",
+                   round(difftime(end_time, start_time, units = 'secs'), 2), " [secs]."))
+  }
+  rv$res
+}
 
+
+.rread <- function(login = NULL, webservicepassword = NULL,
+                   endpoint = 'workunit',
+                   query = list(),
+                   posturl = 'http://localhost:5000/read'){
+  
+  k <- 10
+  rv <- .read(login = login,
+              webservicepassword = webservicepassword,
+              endpoint = endpoint, query = query, posturl = posturl)
+  
+  # TODO(CP): too lazy to program; so start with page 1
+  if (rv$numberofpages > 1){
+    rv <- lapply(seq(1, min(rv$numberofpages, k)),
+                  FUN=.read,
+                  login=login,
+                  webservicepassword = webservicepassword,
+                  endpoint = endpoint,
+                  query = query,
+                  posturl = posturl) |> 
+      lapply(FUN = function(x){get(endpoint, x)}) |> 
+      unlist(recursive = FALSE)
+    return (rv)
+  }
+  get(endpoint, rv)
+}
+  
 #' read method to access bfabric REST
 #'
 #' @param endpoint the endpoint, e.g., workunit, resource, application, project.
