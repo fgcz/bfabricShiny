@@ -17,9 +17,25 @@ stopifnot(
 
 source("queuetools.R", local = FALSE)
 
+
 shinyServer(function(input, output, session) {
 
   values <- reactiveValues(wuid = NULL)
+
+  login <- reactive({
+    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+    source(Rprofile, local=TRUE)
+    message(paste0("read login ", login, "."))
+    return (login)
+  })
+
+  webservicepassword <- reactive({
+    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+    source(Rprofile,local=TRUE)
+    message(paste0("read webservicepassword for login ", login, "."))
+    return(webservicepassword)
+  })
+
   # ---- getInstruments ----
   getInstrument <- reactive({
     bfabricShiny:::.getInstrument()
@@ -195,74 +211,66 @@ shinyServer(function(input, output, session) {
     if (is.null(input$project) || grepl(",", input$project)) {
       return(NULL)
     }else{
-      res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/",
-                                          input$project, sep = '')))
-      message(paste('got', nrow(res), 'users.'))
-      return(res$user.login)
+      rv <- bfabricShiny::readPages(login(), webservicepassword(),
+                                    endpoint = 'user',
+                               query = list(containerid = input$project)) |>
+        lapply(FUN=function(x){x$login}) |>
+        unlist()
+      return(rv)
     }
   })
-
-  #---- getSample ------
-  # res <- as.data.frame(fromJSON("http://localhost:5000/sample/2066"))
-  .restSample <- function(container=3181, url="http://localhost:5000/sample/"){
-
-    if (is.numeric(container) & container > 999) {
-      sampleURL <- paste(url, container, sep = '')
-
-      if (require(RCurl)) {
-        if (RCurl::url.exists(sampleURL) == FALSE) {
-          message(paste("URL", sampleURL, "for container", container, "does not exists."))
-          return(NULL)
-        }
-      }
-
+  
+  #---- getSampleAsDataFrame ------
+  .getSampleAsDataFrame <- function(login, webservicepassword, containerid = 3530){
+    if (is.numeric(containerid) & containerid > 999) {
       out <- tryCatch({
-
         if(exists("session")){
           progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-          progress$set(message = paste("fetching sample data of container",
-                                       container, "..."))
+          progress$set(message = paste("fetching container",
+                                       containerid, "..."))
           on.exit(progress$close())
         }
-
-        message(sampleURL)
-        res <- as.data.frame(fromJSON(sampleURL))
-        message(paste0('got ', nrow(res), ' samples of container ', container, "."))
-        rownames(res) <- res$samples._id
-        df <- res[,c('samples._id', 'samples.name', 'samples.condition')]
-        df$containerid = container
-        df <- df[order(df$samples._id),]
-        return(df)
+        rv <- bfabricShiny::readPages(login, webservicepassword,
+                                      endpoint = 'sample',
+                                      query = list(containerid = containerid))
+        df <- data.frame(samples._id = sapply(rv, FUN = function(x){x$`_id`}) |>
+                           as.numeric(),
+                         samples.name= sapply(rv, FUN = function(x){x$name}),
+                         samples.condition = lapply(rv,
+                                                    FUN = function(x){
+                                                      x$grouping$name}) |>
+                           sapply(FUN=function(x){if (is.null(x)){"N/A"}else{x}}),
+                         containerid = sapply(rv, FUN = function(x){x$container$`_id`})) 
+        return(df[order(df$samples._id), ])
       },
       error = function(cond) {
-        message(paste("Container", container, "does not seem to have samples:"))
+        message(paste("Container", containerid, "does not seem to have samples:"))
         message("Here's the original error message:")
         message(cond)
         # Choose a return value in case of error
         return(NULL)
       },
       warning = function(cond) {
-        message(paste("REST request caused a warning for container:", container))
+        message(paste("REST request caused a warning for container:", containerid))
         message("Here's the original warning message:")
         message(cond)
         return(NULL)
       },
       finally = {
-        message(paste("Processed sample query for container:", container))
-      }
-      )
+        message(paste("Processed sample query for container:", containerid, "."))
+      })
       return(out)
     }
     NULL
   }
-
+  
   getSample <- reactive({
     if (input$containerType == 'project') {
-
+      
       if (is.null(input$project)) {
         return(NULL)
       } else {
-        res <- .restSample(input$project)
+        res <- .getSampleAsDataFrame(login=login(), webservicepassword=webservicepassword(), containerid = input$project)
         return(res)
       }
     } else if (input$containerType == 'order') {
@@ -272,15 +280,21 @@ shinyServer(function(input, output, session) {
         containerIDs <- as.numeric(strsplit(input$project,
                                             c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"),
                                             perl = FALSE)[[1]])
-        res <- do.call('rbind', lapply(unique(containerIDs), .restSample))
+        
+        res <- containerIDs |>
+          unique() |>
+          lapply(FUN = .getSampleAsDataFrame,
+                 login = login(),
+                 webservicepassword = webservicepassword()) |>
+          Reduce(f = rbind)
+        
         return(res)
       }
     }else{
       NULL
     }
   })
-
-
+  
   output$sample <- renderUI({
     res <- getSample()
 
@@ -308,7 +322,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-
+  
   getResourcename <- reactive({
     paste("fgcz-queue-generator_p", input$project, "_", input$instrument, "_", format(Sys.time(), "%Y%m%d"), ".csv", sep='')
   })
