@@ -960,6 +960,8 @@ generate_queue <- function(x,
 
 
 
+
+#' @import protViz
 .fgcz_queue_config_xc <- function(container = NULL,
                                  user = Sys.info()['user'],
                                  instrument = "LUMOS_2",

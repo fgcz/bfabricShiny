@@ -18,6 +18,7 @@ Imports:
     httr,
     jsonlite (>= 1.4),
     magrittr,
+    protViz (>= 0.7),
     shiny (>= 1.0),
     shinyStore (>= 0.1),
     tidyr (>= 0.6),
