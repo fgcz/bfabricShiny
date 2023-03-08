@@ -3,20 +3,17 @@
 #
 # https://github.com/fgcz/bfabricShiny
 
-
-#library(tidyverse)
-
-
 stopifnot(
   require(bfabricShiny),
   require(base64enc),
   require(jsonlite),
   require(httr),
   require(DT),
+  require(dplyr),
   require(XML))
 
+# TODO(cp): replace with CRAN protViz functions
 source("queuetools.R", local = FALSE)
-
 
 shinyServer(function(input, output, session) {
 
@@ -40,7 +37,6 @@ shinyServer(function(input, output, session) {
   getInstrument <- reactive({
     bfabricShiny:::.getInstrument()
   })
-
 
   getInstrumentSuffix <- reactive({
     bfabricShiny:::.getInstrumentSuffix()

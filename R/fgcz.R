@@ -291,6 +291,8 @@ query <- function(login, webservicepassword,
   rv
 }
 
+
+## TODO(cp): this function should replace the read function
 .read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   page = 1,
@@ -348,16 +350,17 @@ query <- function(login, webservicepassword,
 #' @export
 #'
 #' @examples
-#' fraction <- readPages(login = login, webservicepassword = webservicepassword,
-#'   endpoint = 'sample',
-#'   query = list( attribute = list(name = 'fraction',
-#'   value = 'true'))
+#' \dontrun{
+#'   fraction <- readPages(login = login,
+#'     webservicepassword = webservicepassword,
+#'     endpoint = 'sample',
+#'     query = list( attribute = list(name = 'fraction',
+#'         value = 'true'))
+#'         }
 readPages <- function(login = NULL, webservicepassword = NULL,
                    endpoint = 'workunit',
                    query = list(),
                    posturl = 'http://localhost:5000/read',  maxpages = 10){
-  
-  
   rv <- .read(login = login,
               webservicepassword = webservicepassword,
               endpoint = endpoint, query = query, posturl = posturl)
