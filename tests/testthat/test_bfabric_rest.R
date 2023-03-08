@@ -8,7 +8,7 @@ test_that("test read", {
   
   Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
   expect_true(file.exists(Rprofile))
-  source(Rprofile)
+  source(Rprofile, local = TRUE)
   
   expect_length(login, 1)
   expect_length(webservicepassword, 1)
@@ -69,6 +69,22 @@ test_that("test read", {
              endpoint = 'resource',
              query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
   )$res[[1]][['filechecksum']] == '127f0c5b6352a326f9a6c8458d59d921')
+  
+  
+  Xuser <- bfabricShiny:::.read(login = 'XXX',
+                                webservicepassword = webservicepassword,
+                                endpoint = 'user',
+                                query = list())
+  
+  expect_true('errorreport' %in% names(Xuser))
+  
+  Sfrac <- bfabricShiny::readPages(login = login,
+                                   webservicepassword = webservicepassword,
+                                   endpoint = 'sample',
+                                   query = list( attribute = list(name = 'fraction',
+                                                                  value = 'true')))
+  
+  expect_gt(Sfrac|>length(), 10)
 })
 
 

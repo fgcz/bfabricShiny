@@ -11,7 +11,7 @@ getResources(login = NULL, webservicepassword = NULL, workunitid = NULL)
 
 \item{webservicepassword}{bfabric webservicepassword}
 
-\item{project}{a project or order Id}
+\item{workunitid}{a workunit Id}
 }
 \value{
 a vector of resource ids

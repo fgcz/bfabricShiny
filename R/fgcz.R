@@ -339,8 +339,8 @@ query <- function(login, webservicepassword,
 
 #' read function which supports pages
 #'
-#' @param login  
-#' @param webservicepassword 
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword
 #' @param endpoint the endpoint, e.g., \code{'sample'}
 #' @param query e,g, \code{list(containerid = 3000)}
 #' @param posturl where the flask server is working
@@ -487,7 +487,7 @@ getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, 
 #'
 #' @param login bfabric login
 #' @param webservicepassword bfabric webservicepassword
-#' @param project a project or order Id
+#' @param workunitid  a workunit Id
 #'
 #' @export
 #' @return a vector of resource ids
@@ -742,12 +742,13 @@ bfabric_upload_file <- function(login = NULL,
 #' @param applicationid a application id
 #' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
 #' default is 'PENDING'.
+#' @param description free text, default is is empty.
 #' @param inputresourceid an integer or a list of integer of inputresourceIds. 
 #' Of note, this works only for  succeeding/preceding applications.
 #' Default is set to \code{NULL}.
 #' @param workunitname the workunit name
 #' @param resourcename the reosurce name
-#' @param file_content a BLOB containing the content
+#' @param file a BLOB containing the content
 #'
 #' @return returns a nested list containing the workunit and the resource
 #' object.

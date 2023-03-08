@@ -30,6 +30,8 @@ uploadResource(
 \item{status}{in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
 default is 'PENDING'.}
 
+\item{description}{free text, default is is empty.}
+
 \item{inputresourceid}{an integer or a list of integer of inputresourceIds. 
 Of note, this works only for  succeeding/preceding applications.
 Default is set to \code{NULL}.}
@@ -38,7 +40,7 @@ Default is set to \code{NULL}.}
 
 \item{resourcename}{the reosurce name}
 
-\item{file_content}{a BLOB containing the content}
+\item{file}{a BLOB containing the content}
 }
 \value{
 returns a nested list containing the workunit and the resource
