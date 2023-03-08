@@ -335,19 +335,36 @@ query <- function(login, webservicepassword,
 }
 
 
-.rread <- function(login = NULL, webservicepassword = NULL,
+#' read function which supports pages
+#'
+#' @param login  
+#' @param webservicepassword 
+#' @param endpoint the endpoint, e.g., \code{'sample'}
+#' @param query e,g, \code{list(containerid = 3000)}
+#' @param posturl where the flask server is working
+#' @param maxpages max number of supported pages to 
+#'
+#' @return a list
+#' @export
+#'
+#' @examples
+#' fraction <- readPages(login = login, webservicepassword = webservicepassword,
+#'   endpoint = 'sample',
+#'   query = list( attribute = list(name = 'fraction',
+#'   value = 'true'))
+readPages <- function(login = NULL, webservicepassword = NULL,
                    endpoint = 'workunit',
                    query = list(),
-                   posturl = 'http://localhost:5000/read'){
+                   posturl = 'http://localhost:5000/read',  maxpages = 10){
   
-  k <- 10
+  
   rv <- .read(login = login,
               webservicepassword = webservicepassword,
               endpoint = endpoint, query = query, posturl = posturl)
   
   # TODO(CP): too lazy to program; so start with page 1
   if (rv$numberofpages > 1){
-    rv <- lapply(seq(1, min(rv$numberofpages, k)),
+    rv <- lapply(seq(1, min(rv$numberofpages, maxpages)),
                   FUN=.read,
                   login=login,
                   webservicepassword = webservicepassword,

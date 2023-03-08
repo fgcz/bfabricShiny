@@ -3,7 +3,7 @@ Type: Package
 Title: A Module for Bridging B-Fabric and R using REST
 Author: Christian Trachsel [aut], Christian Panse [cre, aut]
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
-Version: 0.12.3
+Version: 0.12.4
 Description: provides a shiny module and read, save, and delete functions to
     interact with the FGCZ's B-Fabric <https://fgcz-bfabric.uzh.ch> system
     using WSDL and REST. Also, the package contains shiny
