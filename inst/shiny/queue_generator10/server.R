@@ -19,23 +19,22 @@ shinyServer(function(input, output, session) {
 
   values <- reactiveValues(wuid = NULL)
 
+  Rprofile <- reactive({ file.path(Sys.getenv("HOME"), ".Rprofile") })
+
   login <- reactive({
-    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-    source(Rprofile, local=TRUE)
+    source(Rprofile(), local=TRUE)
     message(paste0("read login ", login, "."))
     return (login)
   })
   
   posturl <- reactive({
-    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-    source(Rprofile, local=TRUE)
+    source(Rprofile(), local=TRUE)
     message(paste0("read bfabricposturl ", bfabricposturl, "."))
     return (bfabricposturl)
   })
 
   webservicepassword <- reactive({
-    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-    source(Rprofile,local=TRUE)
+    source(Rprofile(), local=TRUE)
     message(paste0("read webservicepassword for login ", login, "."))
     return(webservicepassword)
   })
@@ -556,11 +555,9 @@ shinyServer(function(input, output, session) {
   })
 
   output$systemInformation <- renderUI({
-    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-    
     info <- paste0("system information<br>",
                    "R.version.string: ", R.version.string, "<br>",
-                   "Rprofile: ", Rprofile, "<br>",
+                   "Rprofile: ", Rprofile(), "<br>",
                    "posturl: ", posturl(), "<br>",
                    "login: ", login())
     HTML(info)
