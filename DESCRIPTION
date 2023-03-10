@@ -33,6 +33,8 @@ Suggest:
     tidyverse,
     RCurl,
     xml2 (>= 1.1)
+Remotes:
+    trestletech/shinyStore
 License: GPL-3 + file LICENSE
 LazyData: FALSE
 SystemRequirements: installed bfabricPy python3 package
