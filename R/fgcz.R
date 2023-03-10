@@ -196,25 +196,20 @@
 getProjects <- function(login, webservicepassword) {
   stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   projetcs <- ({
-    rv <- httr::POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
-                                webservicepassword = webservicepassword,
-                                endpoint = 'user',
-                                query = list('login' = login))),
-               encode = 'json')
-
-    rv <- httr::content(rv)
-    rv_p <- sapply(rv$res[[1]]$project, function(y){y$`_id`})
-    rv_cp <- sapply(rv$res[[1]]$coachedproject, function(y){y$`_id`})
-    rv_o <- sapply(rv$res[[1]]$order, function(y){y$`_id`})
-
+    
+    rv <- bfabricShiny::readPages(login, webservicepassword,
+                                  endpoint = 'user',
+                                  query = list(login = login))
+    
+    rv_p <- sapply(rv[[1]]$project, function(y){y$`_id`})
+    rv_cp <- sapply(rv[[1]]$coachedproject, function(y){y$`_id`})
+    rv_o <- sapply(rv[[1]]$order, function(y){y$`_id`})
+    
     sort(c(unlist(rv_p), unlist(rv_cp), unlist(rv_o)), decreasing = TRUE)
   })
-
-
+  
   projetcs
 }
-
 
 #' query bfabric
 #'
@@ -457,27 +452,23 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 
 # getWorkunits(login, webservicepassword)
-getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, applicationid = 224){
+getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000,
+                         applicationid = 224){
   stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
   
    workunits <- ({
-    rv <- POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
+    rv <- bfabricShiny::readPages(login = login,
                                   webservicepassword = webservicepassword,
                                   endpoint = 'workunit',
                                   query=list('applicationid' = applicationid,
                                              'status' = 'available',
-                                             'containerid' = projectid)
-               ),
-               encode = 'json'))
-
-    rv <- content(rv)
-    rv <- sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")})
+                                             'containerid' = projectid))
+    
+    rv <- sapply(rv, function(y){paste(y$`_id`, y$name, sep=" - ")})
 
     if (length(rv) > 0){
       rv <- sort(rv, decreasing = TRUE)
     }
-
     rv
   })
   return(workunits)
@@ -491,26 +482,17 @@ getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000, 
 #'
 #' @export
 #' @return a vector of resource ids
-getResources <- function(login=NULL, webservicepassword=NULL, workunitid=NULL){
+getResources <- function(login=NULL, webservicepassword=NULL,
+                         workunitid = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(workunitid)))
   
-
-  resources <- ({
-    rv <- POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
-                                  webservicepassword = webservicepassword,
+  
+  resources <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'resource',
-                                  query=list('workunitid' = workunitid)
-                                 ),
-               encode = 'json'))
-
-    rv <- content(rv)
-    # sort(sapply(rv$res, function(y){paste(y$`_id`, y$name, sep=" - ")}), decreasing = TRUE)
-    rv$res
-     })
+                                  query = list('workunitid' = workunitid))
 
   return(resources)
 }
@@ -535,23 +517,10 @@ getResources <- function(login=NULL, webservicepassword=NULL, workunitid=NULL){
 #' }
 #'
 getApplications <- function(login, webservicepassword){
-  applications <- ({
-    rv <- POST('http://localhost:5000/q',
-               body = toJSON(list(login = login,
-                                  webservicepassword = webservicepassword,
-                                  endpoint = 'application',
-                                  query = list()
-               ),
-               encode = 'json'))
-
-    rv <- content(rv)
-    rv$res
-  })
-  return(applications)
+  bfabricShiny::readPages(login, webservicepassword,
+                          endpoint = 'application',
+                          query = list())
 }
-
-
-
 
 #' Saves an object in bfabric
 #'

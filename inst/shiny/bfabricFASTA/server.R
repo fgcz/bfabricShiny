@@ -16,12 +16,12 @@ shinyServer(function(input, output, session) {
     resources <- bf$resources()
  
     FASTA.parameter <- list(
-      FASTAfile = paste("/srv/www/htdocs/fasta", input$relativepath, sep='/')
+      FASTAfile = paste("/srv/www/htdocs/", input$relativepath, sep='/')
     )
     cmd <- paste("cat", FASTA.parameter$FASTAfile, "| fcat | tryptic-digest", sep=" ")
     
     if (!file.exists(FASTA.parameter$FASTAfile)){
-      cmd <- paste("ssh fgcz-r-021 '", cmd, "'", sep='')
+      cmd <- paste("ssh r35 '", cmd, "'", sep='')
     }
     
     message(cmd)

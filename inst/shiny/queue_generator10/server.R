@@ -25,6 +25,13 @@ shinyServer(function(input, output, session) {
     message(paste0("read login ", login, "."))
     return (login)
   })
+  
+  posturl <- reactive({
+    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+    source(Rprofile, local=TRUE)
+    message(paste0("read bfabricposturl ", bfabricposturl, "."))
+    return (bfabricposturl)
+  })
 
   webservicepassword <- reactive({
     Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
@@ -340,7 +347,7 @@ shinyServer(function(input, output, session) {
     values$wuid <- NULL
 
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = "counting  lambdas 11 ...")
+    progress$set(message = "composing content ...")
     on.exit(progress$close())
 
     res <- getSample()
@@ -526,7 +533,8 @@ shinyServer(function(input, output, session) {
     res <- getBfabricContent()
     
     if (is.null(res)){
-      HTML("Download not possible yet.")
+      msg <- "Download not possible yet."
+      HTML(msg)
       
     }else {
       if (input$instrumentControlSoftware == "XCalibur"){
@@ -544,8 +552,19 @@ shinyServer(function(input, output, session) {
         downloadButton('downloadHyStarXML', 'Download HyStar configuration xml file (experimental)')
       }
     }
+    
   })
 
+  output$systemInformation <- renderUI({
+    Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+    
+    info <- paste0("system information<br>",
+                   "R.version.string: ", R.version.string, "<br>",
+                   "Rprofile: ", Rprofile, "<br>",
+                   "posturl: ", posturl(), "<br>",
+                   "login: ", login())
+    HTML(info)
+  })
   
   output$downloadHyStarXML <- downloadHandler(
    

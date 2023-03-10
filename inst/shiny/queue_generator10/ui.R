@@ -127,8 +127,6 @@ shinyUI(
              
              #copied from mockup
              
-             
-             
              # Show a plot of the generated distribution
              
              fluidRow(
@@ -141,7 +139,13 @@ shinyUI(
                     wellPanel(
                       htmlOutput("download")
                     )
+             ),
+             column(4, 
+                    wellPanel(
+                      htmlOutput("systemInformation")
+                    )
              )
+             
       ) 
     )
   )
