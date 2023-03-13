@@ -90,6 +90,7 @@
 #' @importFrom tidyr unite
 #' @examples
 #' get_tray()
+#' @noRd 
 get_tray_2_48_plates <- function(start.row = 1
                      , start.col = 'A'
                      , start.plate = 1){
@@ -109,10 +110,9 @@ get_tray_2_48_plates <- function(start.row = 1
   return(tray)
 }
 
-#'
+#' @noRd 
 #' @examples
 #' bfabricShiny:::get_tray_2_48_plates_nextpos(12)
-#'
 get_tray_2_48_plates_nextpos <- function(n, startpos = list(row = 1, col = "A", plate = 1)){
   positions <- get_tray_2_48_plates(start.row = startpos$row, start.col = startpos$col, start.plate = startpos$plate)
   end.pos <- positions[n+1,]
@@ -120,7 +120,7 @@ get_tray_2_48_plates_nextpos <- function(n, startpos = list(row = 1, col = "A", 
 }
 
 
-#'
+#' @noRd
 #' @examples
 #'
 #' all.equal(get_tray_waters(),bfabricShiny:::.waters())
@@ -140,7 +140,7 @@ get_tray_waters <- function(start.row = 1
   return(res)
 }
 
-#' method eksigent
+#' @noRd
 #' @importFrom magrittr `%>%`
 #' @examples
 #' r <- bfabricShiny:::.waters()
@@ -162,7 +162,7 @@ get_tray_waters <- function(start.row = 1
 }
 
 
-#'
+#' @noRd
 #' @examples
 #' bfabricShiny:::.eksigent()
 .eksigent <- function(){
@@ -216,8 +216,8 @@ getHPLCparameter <- function(row = 1, col ="A", plate = 1){
        IMSTOF_1 = .eksigent())
 }
 
-#'
-#'@examples
+#' @noRd
+#' @examples
 #' bfabricShiny:::getQCsample()
 #'
 getQCsample <- function(){
@@ -239,7 +239,7 @@ getQCsample <- function(){
   return(res)
 }
 
-
+#' @noRd
 #' @examples
 #' \donttest{
 #' 
@@ -289,7 +289,7 @@ getQCsample <- function(){
 }
 
 
-#'
+#' @noRd
 #' @examples
 #' autoQC01 = "TRUE"
 #' QC01o = 4
@@ -328,7 +328,7 @@ getQCsample <- function(){
 }
 
 #QC inserting functions ----
-#'
+#' @noRd
 #' @examples
 #' autoQC01 = "TRUE"
 #' QC01o = 3
@@ -350,7 +350,8 @@ getQCsample <- function(){
     return(res)
   }
 }
-#'
+
+#' @noRd
 #' @examples
 #' autoQC02 = "TRUE"
 #' QC02o = 3
@@ -372,7 +373,8 @@ getQCsample <- function(){
   }
   return(res)
 }
-#'
+
+#' @noRd
 #' @examples
 #' autoQC02 = "TRUE"
 #' QC02o = 3
@@ -394,7 +396,7 @@ getQCsample <- function(){
   }
 }
 
-#'
+#' @noRd
 #' @examples
 #' autoQC02 = "TRUE"
 #' QC02o = 3
@@ -417,6 +419,7 @@ getQCsample <- function(){
   }
 }
 
+#' @noRd
 .insert_qc_samples <- function(x, y, z, u, v){
   x <- x %>%
     dplyr::mutate(idx = seq_along(x$extract.name))
@@ -430,7 +433,7 @@ getQCsample <- function(){
   return(res)
 }
 
-#'
+#' @noRd
 #' @examples
 #' bfabricShiny:::getStartorEndLine()
 getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
@@ -448,7 +451,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 }
 
 #queue start and end ----
-#'
+#' @noRd
 #' @examples
 #' bfabricShiny:::.gen.start("LUMOS_1", start1 = 1, start2 = NA, start3 = NA)
 #'
@@ -460,7 +463,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   return(res)
 }
 
-#'
+#' @noRd
 #'
 #' @examples
 #' .gen.start("LUMOS_1", start1, start2 , start3)
@@ -481,9 +484,6 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 #' @param x: the sample information (data.frame)
 #'
 #' @return the original dataframe (data.frame)
-#'
-#' @examples
-#'
 .generate_template_base <- function(x){
   return(x)
 }
@@ -495,22 +495,24 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   return(res)
 }
 
-#blockrandom queue formating function ----
-#'
-#'@examples
-#'
+# blockrandom queue formating function ----
+#' @noRd
+#' @return a data frame.
+#' 
+#' @examples
 #' set.seed(3)
 #' bfabricShiny:::.generate_template_random_block(bfabricShiny:::.test_data_medium())
 #' set.seed(3)
 #' bfabricShiny:::.generate_template_random_block(bfabricShiny:::.test_data_medium_random())
 .generate_template_random_block <- function(x){
-  #TODO:
-  #check if more than one condition is present. If not display a warning
-  #check if all extract.Conditions are equal sized if not display a warning
-  # tab <- as.vector(table(x$extract.Condition))
-  #length(unique(tab)) == 1
-  #max(table(x$extract.Condition)) - min(table(x$extract.Condition))
-  #TODO END
+  
+  ## TODO:
+  ## check if more than one condition is present. If not display a warning
+  ## check if all extract.Conditions are equal sized if not display a warning
+  ## tab <- as.vector(table(x$extract.Condition))
+  ## length(unique(tab)) == 1
+  ## max(table(x$extract.Condition)) - min(table(x$extract.Condition))
+  
   blocks <- length(unique(x$extract.Condition))
   elements <- max(table(x$extract.Condition))
   res <- x %>%
@@ -526,7 +528,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 }
 
 #method evaluation queue formating function ----
-#'
+#' @noRd
 #' @examples
 #'
 #' sampleData <- bfabricShiny:::.test_data_medium()
@@ -556,7 +558,7 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
 }
 
 #PRM queue formating function ----
-#'
+#' @noRd
 #' @examples
 #'
 #' sampleData <- bfabricShiny::.test_data_large()
@@ -640,8 +642,8 @@ getStartorEndLine <- function(instrument = "LUMOS_1", method = 1){
   return(injection.name)
 }
 
-#'
-#'@examples
+#' @noRd
+#' @examples
 #'
 #' generate_queue_order(bfabricShiny:::.test_data_medium())
 #' generate_queue_order(bfabricShiny:::.test_data_medium())
