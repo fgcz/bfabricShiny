@@ -19,7 +19,11 @@ shinyServer(function(input, output, session) {
 
   values <- reactiveValues(wuid = NULL)
 
-  Rprofile <- reactive({ file.path(Sys.getenv("HOME"), ".Rprofile") })
+  Rprofile <- reactive({ 
+    f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
+    if (file.exists(f)){ return (f) }
+    
+    })
 
   login <- reactive({
     source(Rprofile(), local=TRUE)
@@ -203,8 +207,6 @@ shinyServer(function(input, output, session) {
 
 
   # -------checkbox FGCZ naming conventions -----
-
-  # res <- as.data.frame(fromJSON(paste("http://localhost:5000/user/",  3000, sep='')))
   getLogin <- reactive({
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "fetching user data ...")
@@ -214,6 +216,7 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }else{
       rv <- bfabricShiny::readPages(login(), webservicepassword(),
+                                    posturl = posturl(),
                                     endpoint = 'user',
                                query = list(containerid = input$project)) |>
         lapply(FUN=function(x){x$login}) |>
@@ -234,6 +237,7 @@ shinyServer(function(input, output, session) {
         }
         rv <- bfabricShiny::readPages(login, webservicepassword,
                                       endpoint = 'sample',
+                                      posturl = posturl(),
                                       query = list(containerid = containerid))
         df <- data.frame(samples._id = sapply(rv, FUN = function(x){x$`_id`}) |>
                            as.numeric(),
@@ -610,7 +614,7 @@ shinyServer(function(input, output, session) {
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
         
-        POST("http://localhost:5000/add_resource",
+        POST(paste0(posturl(), "add_resource"),
              body = toJSON(list(base64 = file_content,
                                 name = 'MS configuration',
                                 containerid = containerid,
