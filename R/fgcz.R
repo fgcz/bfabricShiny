@@ -186,19 +186,20 @@
 
 #' queries projects of a login
 #'
-#' @param login bfabric login 
-#' @param webservicepassword bfabric webservicepassword
+#' @inheritParams readPages
 #'
 #' @importFrom httr POST
 #' @importFrom httr content
 #' @return a vector of project ids
-#' @export getProjects
-getProjects <- function(login, webservicepassword) {
-  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+.getProjects <- function(login, webservicepassword,  posturl = NULL) {
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)))
   projetcs <- ({
     
     rv <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'user',
+                                  posturl = posturl,
                                   query = list(login = login))
     
     rv_p <- sapply(rv[[1]]$project, function(y){y$`_id`})
@@ -213,11 +214,7 @@ getProjects <- function(login, webservicepassword) {
 
 #' query bfabric
 #'
-#' @param endpoint the endpoint, e.g., workunit, resource, application, project.
-#' @param query the query object list
-#' @param login bfabric login
-#' @param webservicepassword bfabric password, check user details.
-#' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
+#' @inheritParams readPages
 #' @param as_data_frame if TRUE it returns a data.frame object.
 #' @return a nested list object
 #'
@@ -292,12 +289,15 @@ query <- function(login, webservicepassword,
                   endpoint = 'workunit',
                   page = 1,
                   query = list(),
-                  posturl = 'http://localhost:5000/read'){
+                  posturl = NULL){
   
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)),
             is.numeric(page))
+  
+  posturl <- paste0(posturl, 'read')
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
   start_time <- Sys.time()
@@ -314,16 +314,14 @@ query <- function(login, webservicepassword,
   if (is.null(rv$res)){warning("query failed."); return(rv);}
  
   if (interactive()) {
-    
-    if ('errorreport' %in% names(rv$res)){
-      message(paste0("errorreport: ", rv$res$errorreport))
+    if ('errorreport' %in% names(rv)){
+     return(rv)
     }else{
       msg <- paste0("endpoint: ", endpoint, "\n",
                     "entitiesonpage: ", rv$res$entitiesonpage, "\n",
                     "numberofpages: ", rv$res$numberofpages, "\n",
                     "page: ", rv$res$page)
       message(msg)
-      
     }
     message(paste0("query time: ",
                    round(difftime(end_time, start_time, units = 'secs'), 2), " [secs]."))
@@ -335,7 +333,8 @@ query <- function(login, webservicepassword,
 #' read function which supports pages
 #'
 #' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
+#' @param webservicepassword bfabric webservicepassword,
+#' visible when you check your user details in the bfabric system.
 #' @param endpoint the endpoint, e.g., \code{'sample'}
 #' @param query e,g, \code{list(containerid = 3000)}
 #' @param posturl where the flask server is working
@@ -345,6 +344,12 @@ query <- function(login, webservicepassword,
 #' @export
 #'
 #' @examples
+#' readPages(login, webservicepassword , endpoint = 'user',
+#' query=list(login='cpanse'))
+#' 
+#' readPages(login, webservicepassword , endpoint = 'user',
+#' query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
+#' 
 #' \dontrun{
 #'   fraction <- readPages(login = login,
 #'     webservicepassword = webservicepassword,
@@ -355,33 +360,48 @@ query <- function(login, webservicepassword,
 readPages <- function(login = NULL, webservicepassword = NULL,
                    endpoint = 'workunit',
                    query = list(),
-                   posturl = 'http://localhost:5000/read',  maxpages = 10){
+                   posturl = 'http://localhost:5000/',
+                   maxpages = 10){
+  
+  
+  
   rv <- .read(login = login,
               webservicepassword = webservicepassword,
-              endpoint = endpoint, query = query, posturl = posturl)
+              endpoint = endpoint,
+              query = query,
+              posturl = posturl)
+  
   
   # TODO(CP): too lazy to program; so start with page 1
-  if (rv$numberofpages > 1){
+  if ('errorreport' %in% names(rv)){
+    return(rv)
+  }
+  
+  if ('entitiesonpage' %in% names(rv)){
+    if (rv$entitiesonpage == 0) return (NULL)
+  }
+  
+  if(rv$numberofpages > 1){
     rv <- lapply(seq(1, min(rv$numberofpages, maxpages)),
-                  FUN=.read,
-                  login=login,
-                  webservicepassword = webservicepassword,
-                  endpoint = endpoint,
-                  query = query,
-                  posturl = posturl) |> 
+                 FUN=.read,
+                 login=login,
+                 webservicepassword = webservicepassword,
+                 endpoint = endpoint,
+                 query = query,
+                 posturl = posturl) |> 
       lapply(FUN = function(x){get(endpoint, x)}) |> 
       unlist(recursive = FALSE)
     return (rv)
+  }else{
+    return(get(endpoint, rv))
   }
-  get(endpoint, rv)
+  
+  return(rv)
 }
   
 #' read method to access bfabric REST
 #'
-#' @param endpoint the endpoint, e.g., workunit, resource, application, project.
-#' @param query the query object list
-#' @param login bfabric login
-#' @param webservicepassword bfabric password, check user details.
+#' @inheritParams readPages
 #' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
 #' @param as_data_frame if TRUE it returns a data.frame object.
 #' @return a nested list object
@@ -452,18 +472,25 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 
 # getWorkunits(login, webservicepassword)
-getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000,
+#' @noRd
+.getWorkunits <- function(login = NULL, webservicepassword =  NULL,
+                          posturl = NULL,
+                          containerid = 3000,
                          applicationid = 224){
-  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+  
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)))
   
    workunits <- ({
     rv <- bfabricShiny::readPages(login = login,
                                   webservicepassword = webservicepassword,
+                                  posturl = posturl,
                                   endpoint = 'workunit',
                                   query=list('applicationid' = applicationid,
                                              'status' = 'available',
-                                             'containerid' = projectid))
-    
+                                             'containerid' = containerid))
+    if (is.null(rv)) return(NULL)
     rv <- sapply(rv, function(y){paste(y$`_id`, y$name, sep=" - ")})
 
     if (length(rv) > 0){
@@ -476,22 +503,23 @@ getWorkunits <- function(login=NULL, webservicepassword=NULL, projectid = 3000,
 
 #' get all resources of a (login, project)
 #'
-#' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
+#' @inheritParams readPages
 #' @param workunitid  a workunit Id
 #'
-#' @export
 #' @return a vector of resource ids
-getResources <- function(login=NULL, webservicepassword=NULL,
+.getResources <- function(login=NULL, webservicepassword=NULL,
+                          posturl=NULL,
                          workunitid = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)),
             isFALSE(is.null(workunitid)))
   
   
   resources <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'resource',
+                                  posturl = posturl,
                                   query = list('workunitid' = workunitid))
 
   return(resources)
@@ -500,15 +528,12 @@ getResources <- function(login=NULL, webservicepassword=NULL,
 
 #' getApplications
 #'
-#' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
-#'
-#' @return
-#' @export
+#' @inheritParams readPages
+#' @return list of bfabric applications
 #' @examples
 #' \dontrun{
 #' library(bfabricShiny)
-#' A <- getApplications(login, webservicepassword)
+#' A <- .getApplications(login, webservicepassword)
 #' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}),
 #'  name = sapply(A, function(x){x$name}))
 #' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
@@ -516,20 +541,18 @@ getResources <- function(login=NULL, webservicepassword=NULL,
 #'   row.names = FALSE)
 #' }
 #'
-getApplications <- function(login, webservicepassword){
+.getApplications <- function(login, webservicepassword, posturl){
   bfabricShiny::readPages(login, webservicepassword,
                           endpoint = 'application',
+                          posturl = posturl,
                           query = list())
 }
 
 #' Saves an object in bfabric
-#'
-#' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
-#' @param endpoint bfabric endpoint
-#' @param query list object to be saved in bfabric.
-#'
-#' @return
+#' 
+#' @inheritParams readPages
+#' 
+#' @return bfabric json object.
 #' @export
 #' @examples 
 #' \dontrun{
@@ -642,8 +665,7 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
 #' Generate a workunit and upload a resource (file) to an internal bfabric
 #' storage.
 #'
-#' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
+#' @inheritParams readPages
 #' @param projectid a containerid (project id or order id)
 #' @param applicationid a application id
 #' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
@@ -705,8 +727,7 @@ bfabric_upload_file <- function(login = NULL,
 #' Generate a workunit and upload a resource (file)  to a internal bfabric
 #' storage
 #'
-#' @param login bfabric login
-#' @param webservicepassword bfabric webservicepassword
+#' @inheritParams readPages
 #' @param containerid a containerid (project id or order id)
 #' @param applicationid a application id
 #' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
@@ -812,15 +833,14 @@ To help us funding further development, please cite:
 
 #' reads Custom Attributes of a workunit
 #'
-#' @param login login
-#' @param webservicepassword webservicepassword
+#' @inheritParams readPages
 #' @param workunitid a valid bfabric workunit id
 #'
 #' @return a \code{data.frame} containing columns sampleId , resourceId, and
 #' iff exisiting a merged table of the Custom Attributes.
 #'
 #' @export
-readCustomAttributes <- function(login, webservicepassword, workunitid = 202570){
+.readCustomAttributes <- function(login, webservicepassword, workunitid = 202570){
 
   inputResourcesIds <- unlist(read(login, webservicepassword,
     endpoint = 'workunit',
