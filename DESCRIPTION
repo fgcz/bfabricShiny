@@ -28,7 +28,7 @@ Suggest:
     ggplot2 (>= 2.2),
     protViz (>= 0.7),
     rmarkdown,
-    roxygen2,
+    roxygen2 (>= 6.0),
     testthat,
     tidyverse,
     RCurl,
@@ -46,4 +46,5 @@ Collate:
     zzz.R
 URL: https://github.com/fgcz/bfabricShiny
 BugReports: https://github.com/fgcz/bfabricShiny/issues
+Encoding: UTF-8
 RoxygenNote: 7.2.1
