@@ -45,7 +45,7 @@ shinyUI(
                         choiceValues = NULL
                       ),
                       fluidRow(
-                        column(4, htmlOutput("project")),
+                        column(4, htmlOutput("container")),
                         column(4, htmlOutput("login")), #tags$h4("user name:")),
                         column(4, htmlOutput("folder"))#htmlOutput("project"))  #tags$h4("folder name:"))
                       ),

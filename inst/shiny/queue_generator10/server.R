@@ -44,8 +44,20 @@ shinyServer(function(input, output, session) {
   })
 
   # ---- getInstruments ----
+  
+  .getMetabolomicsInstrument <- function(){
+    list(
+      QUANTIVA_1 = 'Xcalibur',
+      QEXACTIVE_2 = 'Xcalibur',
+      QEXACTIVE_3 = 'Xcalibur'
+    )}
+  
   getInstrument <- reactive({
-    bfabricShiny:::.getInstrument()
+    if (input$area == "Metabolomics") {
+      .getMetabolomicsInstrument()
+    }else{
+      bfabricShiny:::.getInstrument()
+    }
   })
 
   getInstrumentSuffix <- reactive({
@@ -78,6 +90,8 @@ shinyServer(function(input, output, session) {
     }
   }))
 
+  
+  ## ========== output$area 
   output$area <- renderUI(({
     res.area <- c("Proteomics", "Metabolomics")
     selectInput('area', 'Area:', res.area, multiple = FALSE, selected = res.area[1])
@@ -97,11 +111,11 @@ shinyServer(function(input, output, session) {
     selectInput('replicates', 'Number of injections for each method:', res.replicates, multiple = FALSE, selected = res.replicates[1])
   }))
 
-  output$project <- renderUI({
+  output$container <- renderUI({
     if (input$containerType == 'project'){
-      numericInput('project', 'Container (project or order):', value = 3530,  min = 1000, max = NA, width = 400)
+      numericInput('container', 'Container (project or order):', value = 3530,  min = 1000, max = NA, width = 400)
     } else{
-      textInput('project', 'Containers (orders):', value = "29941,30021,30041,30057", width = 1000, placeholder = 'comma separated list of order IDs')
+      textInput('container', 'Containers (orders):', value = "29941,30021,30041,30057", width = 1000, placeholder = 'comma separated list of order IDs')
     }
   })
 
@@ -212,86 +226,56 @@ shinyServer(function(input, output, session) {
     progress$set(message = "fetching user data ...")
     on.exit(progress$close())
 
-    if (is.null(input$project) || grepl(",", input$project)) {
+    if (is.null(input$container) || grepl(",", input$container)) {
       return(NULL)
     }else{
       rv <- bfabricShiny::readPages(login(), webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
-                               query = list(containerid = input$project)) |>
+                               query = list(containerid = input$container)) |>
         lapply(FUN=function(x){x$login}) |>
         unlist()
       return(rv)
     }
   })
   
-  #---- getSampleAsDataFrame ------
-  .getSampleAsDataFrame <- function(login, webservicepassword, containerid = 3530){
-    if (is.numeric(containerid) & containerid > 999) {
-      out <- tryCatch({
-        if(exists("session")){
-          progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-          progress$set(message = paste("fetching container",
-                                       containerid, "..."))
-          on.exit(progress$close())
-        }
-        rv <- bfabricShiny::readPages(login, webservicepassword,
-                                      endpoint = 'sample',
-                                      posturl = posturl(),
-                                      query = list(containerid = containerid))
-        df <- data.frame(samples._id = sapply(rv, FUN = function(x){x$`_id`}) |>
-                           as.numeric(),
-                         samples.name= sapply(rv, FUN = function(x){x$name}),
-                         samples.condition = lapply(rv,
-                                                    FUN = function(x){
-                                                      x$grouping$name}) |>
-                           sapply(FUN=function(x){if (is.null(x)){"N/A"}else{x}}),
-                         containerid = sapply(rv, FUN = function(x){x$container$`_id`})) 
-        return(df[order(df$samples._id), ])
-      },
-      error = function(cond) {
-        message(paste("Container", containerid, "does not seem to have samples:"))
-        message("Here's the original error message:")
-        message(cond)
-        # Choose a return value in case of error
-        return(NULL)
-      },
-      warning = function(cond) {
-        message(paste("REST request caused a warning for container:", containerid))
-        message("Here's the original warning message:")
-        message(cond)
-        return(NULL)
-      },
-      finally = {
-        message(paste("Processed sample query for container:", containerid, "."))
-      })
-      return(out)
-    }
-    NULL
-  }
-  
   getSample <- reactive({
     if (input$containerType == 'project') {
       
-      if (is.null(input$project)) {
+      if (is.null(input$container)) {
         return(NULL)
       } else {
-        res <- .getSampleAsDataFrame(login=login(), webservicepassword=webservicepassword(), containerid = input$project)
+        progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+        progress$set(message = paste("fetching samples of container",
+                                     input$container, "..."))
+        on.exit(progress$close())
+             
+        res <- bfabricShiny:::.getSamples(login(), webservicepassword(),
+                                   posturl = posturl(),
+                                   containerid = input$container)
         return(res)
       }
     } else if (input$containerType == 'order') {
-      if (is.null(input$project) | is.numeric(input$project)) {
+      if (is.null(input$container) | is.numeric(input$container)) {
         return(NULL)
       } else {
-        containerIDs <- as.numeric(strsplit(input$project,
+        containerIDs <- as.numeric(strsplit(input$container,
                                             c("[[\ ]{0,1}[,;:]{1}[\ ]{0,1}"),
                                             perl = FALSE)[[1]])
         
         res <- containerIDs |>
           unique() |>
-          lapply(FUN = .getSampleAsDataFrame,
-                 login = login(),
-                 webservicepassword = webservicepassword()) |>
+          lapply(FUN = function(x){
+            progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+            progress$set(message = paste("fetching samples of container",
+                                         x, "..."))
+            on.exit(progress$close())
+            
+            bfabricShiny:::.getSamples(
+              login = login(),
+              webservicepassword = webservicepassword(),
+              posturl = posturl(), containerid=x)}
+          ) |>
           Reduce(f = rbind)
         
         return(res)
@@ -328,9 +312,9 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  
   getResourcename <- reactive({
-    paste("fgcz-queue-generator_p", input$project, "_", input$instrument, "_", format(Sys.time(), "%Y%m%d"), ".csv", sep='')
+    paste("fgcz-queue-generator_p", input$container, "_", input$instrument, "_",
+          format(Sys.time(), "%Y%m%d"), ".csv", sep='')
   })
 
 
@@ -371,7 +355,7 @@ shinyServer(function(input, output, session) {
     }
     # generate the actual queue data.frame ----
 
-    containerid <- input$project
+    containerid <- input$container
     if (input$containerType == 'order') {
       containerid <- NULL
     }
@@ -465,7 +449,7 @@ shinyServer(function(input, output, session) {
                            begin = "3" %in% c(input$start1,input$start2, input$start3),
                            end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) %>% 
           .mapPlatePositionEVOSEP(volume = 1) %>%
-          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$container, "\\",
                                                 input$area, "\\",
                                                 input$instrument, "\\",
                                                 input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
@@ -502,7 +486,7 @@ shinyServer(function(input, output, session) {
                                     howmany = input$QC4Lm,
                                     begin = "3" %in% c(input$start1,input$start2, input$start3),
                                     end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) %>% 
-          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$project, "\\",
+          .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$container, "\\",
                                           input$area, "\\",
                                           input$instrument, "\\",
                                           input$login,"_", format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
@@ -569,7 +553,7 @@ shinyServer(function(input, output, session) {
   
   output$downloadHyStarXML <- downloadHandler(
    
-    filename = paste("C", input$project, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.xml", sep = ""),
+    filename = paste("C", input$container, "-", format(Sys.time(), format = "%Y%m%d-%H%M%S"), "_HyStar.xml", sep = ""),
     content = function(file) {
       rv <- getBfabricContent()
       #message("saving bfabric content ...")
@@ -610,7 +594,7 @@ shinyServer(function(input, output, session) {
       
       file_content <- base64encode(readBin(fn, "raw", file.info(fn)[1, "size"]), 'csv')
       
-      containerids <- strsplit(as.character(input$project), ",")[[1]]
+      containerids <- strsplit(as.character(input$container), ",")[[1]]
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
         

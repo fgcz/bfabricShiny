@@ -41,7 +41,8 @@
 }
 
 # TODO(cp): save slots at the end for QC
-.mapPlatePositionMClass <- function(S, x = as.character(1:8), y = c('A', 'B', 'C', 'D', 'E', 'F'), ...){
+.mapPlatePositionMClass <- function(S, x = as.character(1:8),
+                                    y = c('A', 'B', 'C', 'D', 'E', 'F'), ...){
 	n <-  nrow(S)
 	
 	if (length(x) * length(y) < nrow(S)){
@@ -53,7 +54,8 @@
 	S
 }
 
-.mapPlatePositionNanoElute <- function(S, x = as.character(1:54), y = c('1'), plate=1, volume=1, ...){
+.mapPlatePositionNanoElute <- function(S, x = as.character(1:54), y = c('1'),
+                                       plate=1, volume=1, ...){
     n <-  nrow(S)
     
     if (length(x) * length(y) < nrow(S)){
