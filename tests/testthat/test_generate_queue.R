@@ -70,4 +70,15 @@ test_that("test random", {
 })
 
 
+test_that("protViz_queue", {
+  Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+
+  smp <- bfabricShiny:::.getSamples(login, webservicepassword,
+                                      posturl = bfabricposturl,
+                                      containerid = 30993)
+  
+  set.seed(1)
+  smp |> protViz::blockRandom("samples.condition")
+})
+
   
