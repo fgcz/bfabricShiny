@@ -9,14 +9,15 @@ readPages(
   webservicepassword = NULL,
   endpoint = "workunit",
   query = list(),
-  posturl = "http://localhost:5000/read",
+  posturl = "http://localhost:5000/",
   maxpages = 10
 )
 }
 \arguments{
 \item{login}{bfabric login}
 
-\item{webservicepassword}{bfabric webservicepassword}
+\item{webservicepassword}{bfabric webservicepassword,
+visible when you check your user details in the bfabric system.}
 
 \item{endpoint}{the endpoint, e.g., \code{'sample'}}
 
@@ -33,6 +34,12 @@ a list
 read function which supports pages
 }
 \examples{
+readPages(login, webservicepassword , endpoint = 'user',
+query=list(login='cpanse'))
+
+readPages(login, webservicepassword , endpoint = 'user',
+query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
+
 \dontrun{
   fraction <- readPages(login = login,
     webservicepassword = webservicepassword,

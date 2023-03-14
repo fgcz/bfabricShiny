@@ -184,33 +184,6 @@
 }
 
 
-#' queries projects of a login
-#'
-#' @inheritParams readPages
-#'
-#' @importFrom httr POST
-#' @importFrom httr content
-#' @return a vector of project ids
-.getProjects <- function(login, webservicepassword,  posturl = NULL) {
-  stopifnot(isFALSE(is.null(login)),
-            isFALSE(is.null(webservicepassword)),
-            isFALSE(is.null(posturl)))
-  projetcs <- ({
-    
-    rv <- bfabricShiny::readPages(login, webservicepassword,
-                                  endpoint = 'user',
-                                  posturl = posturl,
-                                  query = list(login = login))
-    
-    rv_p <- sapply(rv[[1]]$project, function(y){y$`_id`})
-    rv_cp <- sapply(rv[[1]]$coachedproject, function(y){y$`_id`})
-    rv_o <- sapply(rv[[1]]$order, function(y){y$`_id`})
-    
-    sort(c(unlist(rv_p), unlist(rv_cp), unlist(rv_o)), decreasing = TRUE)
-  })
-  
-  projetcs
-}
 
 #' query bfabric
 #'
@@ -377,6 +350,10 @@ readPages <- function(login = NULL, webservicepassword = NULL,
     return(rv)
   }
   
+  if ('status' %in% names(rv)){
+    return(rv)
+  }
+  
   if ('entitiesonpage' %in% names(rv)){
     if (rv$entitiesonpage == 0) return (NULL)
   }
@@ -470,8 +447,34 @@ read <- function(login = NULL, webservicepassword = NULL,
   rv
 }
 
+#' @noRd
+#' @return a vector of project ids
+.getContainers <- function(login, webservicepassword,  posturl = NULL) {
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)))
+  
+  containers <- ({
+    rv <- bfabricShiny::readPages(login, webservicepassword,
+                                  endpoint = 'user',
+                                  posturl = posturl,
+                                  query = list(login = login))
+    
+    if ('errorreport' %in% names(rv)){
+      return (rv)
+    }
+    
+    projetcs <- sapply(rv[[1]]$project, function(y){y$`_id`})
+    coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$`_id`})
+    orders <- sapply(rv[[1]]$order, function(y){y$`_id`})
+    
+    c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
+  })
+  
+  containers
+}
 
-# getWorkunits(login, webservicepassword)
+
 #' @noRd
 .getWorkunits <- function(login = NULL, webservicepassword =  NULL,
                           posturl = NULL,
@@ -490,6 +493,11 @@ read <- function(login = NULL, webservicepassword = NULL,
                                   query=list('applicationid' = applicationid,
                                              'status' = 'available',
                                              'containerid' = containerid))
+    
+    if ('errorreport' %in% names(rv)){
+      return (rv)
+    }
+    
     if (is.null(rv)) return(NULL)
     rv <- sapply(rv, function(y){paste(y$`_id`, y$name, sep=" - ")})
 
@@ -521,6 +529,7 @@ read <- function(login = NULL, webservicepassword = NULL,
                                   endpoint = 'resource',
                                   posturl = posturl,
                                   query = list('workunitid' = workunitid))
+ 
 
   return(resources)
 }

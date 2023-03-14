@@ -21,7 +21,8 @@ bfabric_upload_file(
 \arguments{
 \item{login}{bfabric login}
 
-\item{webservicepassword}{bfabric webservicepassword}
+\item{webservicepassword}{bfabric webservicepassword,
+visible when you check your user details in the bfabric system.}
 
 \item{projectid}{a containerid (project id or order id)}
 

@@ -37,9 +37,10 @@ bfabricInput <- function(id) {
     br(),
     br(),
     htmlOutput(ns("employee")),
-    htmlOutput(ns("projects")),
+    htmlOutput(ns("containers")),
     htmlOutput(ns("workunits")),
-    htmlOutput(ns("resources"))
+    htmlOutput(ns("resources")),
+    htmlOutput(ns("systemInformation"))
   )
 }
 
@@ -73,118 +74,87 @@ bfabric <- function(input, output, session, applicationid,
                     resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
 
+  Rprofile <- reactive({
+    f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
+    if (file.exists(f)){ return (f) }
+    else{stop(paste0("File not found ", f))}
+  })
+
+  posturl <- reactive({
+    source(Rprofile(), local=TRUE)
+    message(paste0("read bfabricposturl ", bfabricposturl, "."))
+    return (bfabricposturl)
+  })
+
   pubKey <- PKI.load.key(file = file.path(system.file("keys",
     package = "bfabricShiny"), "bfabricShiny.key.pub"))
 
   output$employee <- renderUI({
+    if (nchar(input$login) == 0 || nchar(input$webservicepassword) == 0){return(NULL)}
     if (empdegree()){
       HTML("As an employee, you have access to all containers.")
     }
   })
 
-  output$projects <- renderUI({
-    if (empdegree()){
-      numericInput(ns("projectid"), "Order | project | container id:",
-                   value = 3000, min = 1000, max = 30000)
-    }else{
-      projects <- getProjects(input$login, input$webservicepassword)
-      if (is.null(projects)) {
+  #=======output$containers======
+  output$containers <- renderUI({
+    if(bfabricConnectionWorking()){
+      if (empdegree()){
+        numericInput(ns("containerid"), "Order | project | container id:",
+                     value = 3000, min = 1000, max = 30000)
       }else{
-        selectInput(ns("projectid"), "Order | project | container id:",
-                    projects, multiple = FALSE)
+        containers <- bfabricShiny:::.getContainers(input$login,
+                                                    input$webservicepassword,
+                                                    posturl = posturl())
+        
+        if ('errorreport' %in% names(containers)) {
+          HTML(paste0("<b>container:</b> ", containers$errorreport))
+        }else{
+          selectInput(ns("containerid"), "Order | project | container id:",
+                      containers, multiple = FALSE)
+        }
       }
-    }
-  })
+    }})
 
-  empdegree <- reactive({
-    rv <- bfabricShiny::read(input$login, input$webservicepassword ,
-                             endpoint = 'user', list(login=input$login))
-    if(isFALSE(is.null(rv$res))){
-      return('empdegree' %in% names(rv$res[[1]]))
-    }
-    return (FALSE)
-  })
-
-  application <- reactive({
-    fn <- system.file("extdata/application.csv", package = "bfabricShiny")
-
-    if (file.exists(fn) &&  nchar(fn) > 0) {
-     
-      applications <- read.table(fn, header = TRUE)
-      return(applications)
-
-    }else{
-
-      A <- getApplications(input$login, input$webservicepassword)
-      bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
-      applications <- bfabricApplication[order(bfabricApplication$id),]
-      return(applications)
-
-    }
-
-  })
-
-  output$applications <- renderUI({
-    applications <- application()
-
-    if (nrow(applications) > 0) {
-      idx <- which(applications$id %in% applicationid) |>
-        sort(decreasing = TRUE)
-      xxx <- paste(applications[idx, 'id'], applications[idx, 'name'],
-                   sep = " - ")
-
-      tagList(
-      selectInput(ns("applicationid"), "input applicationId:",
-                  xxx,
-                  multiple = FALSE))
-    }else{NULL}
-  })
-
-
+  #=======output$workunits======
   output$workunits <- renderUI({
-    if (is.null(input$projectid)){
-      return(NULL)
-    }
-
-    id <- strsplit(input$applicationid, " - ")[[1]][1]
-
-    res <- getWorkunits(input$login, input$webservicepassword,
-                        projectid = input$projectid,
-                        applicationid = id)
-
-    if (is.null(res)){
-      return(NULL)
-    }else if (length(res) == 0){
-      return(NULL)
-    }else{
-      selectInput(ns('workunit'), 'workunit:', res, multiple = FALSE)
-    }
-  })
-
-  resources <- reactive({
-    df <- NULL
-    if (length(input$workunit) > 0){
-      res <- getResources(input$login, input$webservicepassword, workunitid = strsplit(input$workunit, " - ")[[1]][1])
-
-      resourceid <- sapply(res, function(y){y$`_id`})
-      relativepath <- sapply(res, function(y){y$relativepath})
-
-      df <- data.frame(resourceid = resourceid, relativepath = relativepath)
-      df <- df[grepl(resoucepattern, df$relativepath), ]
-    }
-
-    return (df)
-  })
-
-
+    if(bfabricConnectionWorking()){
+      if (length(input$containerid) == 0){
+        print("no workunits yet.")
+      }else{
+        
+        if (is.null(input$containerid)){
+          return(NULL)
+        }
+        
+        id <- strsplit(input$applicationid, " - ")[[1]][1]
+        
+        workunits <- .getWorkunits(input$login, input$webservicepassword,
+                                   containerid = input$containerid,
+                                   posturl = posturl(),
+                                   applicationid = id)
+        
+        if ('errorreport' %in% names(workunits)) {
+          HTML(paste0("<b>workunit:</b> ", workunits$errorreport))
+        }
+        else if (is.null(workunits)){
+          HTML(paste0("No workunits; choose a project."))
+        }else if (length(workunits) == 0){
+          return(NULL)
+        }else{
+          selectInput(ns('workunit'), 'workunit:', workunits, multiple = FALSE)
+        }}
+    }})
+  
+  #=======output$resourcess======
   output$resources <- renderUI({
-
+   
     if (length(input$workunit) == 0){
       print("no resources yet.")
     }else{
       workunitid = strsplit(input$workunit, " - ")[[1]][1]
       res <- resources()
-
+      
       if (is.null(res)){
         HTML("no resources found.")
       }else{
@@ -200,10 +170,116 @@ bfabric <- function(input, output, session, applicationid,
                           .selectize-dropdown {word-wrap : break-word;} "
           )
         )
-
+        
       }
     }
   })
+  
+  #=======output$applications======
+  output$applications <- renderUI({
+    if(bfabricConnectionWorking()){
+      applications <- application()
+      
+      if (nrow(applications) > 0) {
+        idx <- which(applications$id %in% applicationid) |>
+          sort(decreasing = TRUE)
+        xxx <- paste(applications[idx, 'id'], applications[idx, 'name'],
+                     sep = " - ")
+        
+        tagList(
+          selectInput(ns("applicationid"), "input applicationId:",
+                      xxx,
+                      multiple = FALSE))
+      }else{NULL}
+    }})
+  
+  #=======output$systemInformation======
+  output$systemInformation <- renderUI({
+    HTML(paste("<hr>system information",
+               "<ul>",
+               "<li>posturl:", posturl(), "</li>",
+               "<li>auth:", bfabricConnectionWorking(), "</li>",
+               "</ul>",
+               "<hr>"))
+    
+  })
+  
+  #=======bfabricConnectionWorking======
+  bfabricConnectionWorking <- eventReactive(
+    list(input$login,
+         input$webservicepassword),
+    {
+      rv = bfabricShiny::readPages(input$login,
+                                   input$webservicepassword ,
+                                   posturl = posturl(),
+                                   endpoint = 'user',
+                                   query = list(login=login))
+      
+      
+      message(paste0("bfabricConnectionWorking ", (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))))
+      (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))
+    })
+  
+  
+  empdegree <- reactive({
+    if(bfabricConnectionWorking()){return(FALSE)}
+    
+    rv <- bfabricShiny::readPages(input$login,
+                                  input$webservicepassword,
+                                  posturl=posturl(),
+                                  endpoint = 'user',
+                                  query = list(login = input$login))
+    
+    if('empdegree' %in% names(rv[[1]])){
+      message("'empdegree' found.")
+      return(TRUE)
+    }
+    return (FALSE)
+  })
+
+  application <- reactive({
+    if(bfabricConnectionWorking()){
+      fn <- system.file("extdata/application.csv", package = "bfabricShiny")
+      
+      if (file.exists(fn) &&  nchar(fn) > 0) {
+        
+        applications <- read.table(fn, header = TRUE)
+        return(applications)
+        
+      }else{
+        A <- .getApplications(input$login, input$webservicepassword,
+                              posturl = posturl())
+        bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
+        applications <- bfabricApplication[order(bfabricApplication$id),]
+        return(applications)
+        
+      }
+    }
+  })
+  
+
+  
+
+  resources <- reactive({
+    if(bfabricConnectionWorking()){
+      df <- NULL
+      if (length(input$workunit) > 0){
+        res <- .getResources(input$login,
+                             input$webservicepassword,
+                             posturl = posturl(),
+                             workunitid = strsplit(input$workunit, " - ")[[1]][1])
+        
+        resourceid <- sapply(res, function(y){y$`_id`})
+        relativepath <- sapply(res, function(y){y$relativepath})
+        
+        df <- data.frame(resourceid = resourceid, relativepath = relativepath)
+        df <- df[grepl(resoucepattern, df$relativepath), ]
+      }
+      
+      return (df)
+    }
+  })
+
 
 
 
@@ -233,7 +309,7 @@ bfabric <- function(input, output, session, applicationid,
               webservicepassword = reactive({input$webservicepassword}),
               resources = reactive({resources()}),
               workunitid = reactive({input$workunit}),
-              projectid = reactive({input$projectid})))
+              containerid = reactive({input$containerid})))
 }
 
 #' @export bfabricInputLogin

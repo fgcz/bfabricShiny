@@ -9,11 +9,15 @@ save(login, webservicepassword, endpoint = "workunit", query)
 \arguments{
 \item{login}{bfabric login}
 
-\item{webservicepassword}{bfabric webservicepassword}
+\item{webservicepassword}{bfabric webservicepassword,
+visible when you check your user details in the bfabric system.}
 
-\item{endpoint}{bfabric endpoint}
+\item{endpoint}{the endpoint, e.g., \code{'sample'}}
 
-\item{query}{list object to be saved in bfabric.}
+\item{query}{e,g, \code{list(containerid = 3000)}}
+}
+\value{
+bfabric json object.
 }
 \description{
 Saves an object in bfabric

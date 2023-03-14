@@ -16,13 +16,14 @@ query(
 \arguments{
 \item{login}{bfabric login}
 
-\item{webservicepassword}{bfabric password, check user details.}
+\item{webservicepassword}{bfabric webservicepassword,
+visible when you check your user details in the bfabric system.}
 
-\item{endpoint}{the endpoint, e.g., workunit, resource, application, project.}
+\item{endpoint}{the endpoint, e.g., \code{'sample'}}
 
-\item{query}{the query object list}
+\item{query}{e,g, \code{list(containerid = 3000)}}
 
-\item{posturl}{POST url, default is \code{'http://localhost:5000/q'}.}
+\item{posturl}{where the flask server is working}
 
 \item{as_data_frame}{if TRUE it returns a data.frame object.}
 }
