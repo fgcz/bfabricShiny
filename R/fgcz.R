@@ -447,6 +447,40 @@ read <- function(login = NULL, webservicepassword = NULL,
   rv
 }
 
+#===========.getSamples======
+#' @noRd
+#' @return a \code{data.frame}
+#' @author CP 2023-03-14
+#' examples
+#' smp <- bfabricShiny:::.getSamples(login, webservicepassword,
+#'    posturl = bfabricposturl,
+#'    containerid = 30993)
+.getSamples <- function(login = NULL,
+                        webservicepassword = NULL,
+                        posturl = NULL,
+                        containerid = NULL) {
+  
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)),
+            isFALSE(is.null(containerid)))
+  
+  rv <- bfabricShiny::readPages(login,
+                                webservicepassword,
+                                endpoint = 'sample',
+                                posturl = posturl,
+                                query = list(containerid = containerid))
+  
+  df <- data.frame(
+    samples._id = sapply(rv, FUN = function(x){x$`_id`}) |> as.numeric(),
+    samples.name = sapply(rv, FUN = function(x){x$name}),
+    samples.condition = lapply(rv, FUN = function(x){x$grouping$name}) |>
+      sapply(FUN = function(x){if (is.null(x)){"N/A"}else{x}}),
+    containerid = sapply(rv, FUN = function(x){x$container$`_id`})) 
+  
+  return(df[order(df$samples._id), ])
+}
+
 #' @noRd
 #' @return a vector of project ids
 .getContainers <- function(login, webservicepassword,  posturl = NULL) {
