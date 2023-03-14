@@ -74,6 +74,10 @@ bfabric <- function(input, output, session, applicationid,
                     resoucepattern = ".*", resourcemultiple=FALSE) {
   ns <- session$ns
 
+  bfabricValues <- reactiveValues()
+  bfabricValues$errorreport <- NULL
+  
+  # ======Rprofile=====
   Rprofile <- reactive({
     f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
     if (file.exists(f)){ return (f) }
@@ -195,13 +199,18 @@ bfabric <- function(input, output, session, applicationid,
   
   #=======output$systemInformation======
   output$systemInformation <- renderUI({
-    HTML(paste("<hr>system information",
-               "<ul>",
-               "<li>posturl:", posturl(), "</li>",
-               "<li>auth:", bfabricConnectionWorking(), "</li>",
-               "</ul>",
-               "<hr>"))
-    
+    if (input$login %in% c('cpanse', 'mderrico', 'wolski')){
+      HTML(paste("<hr>system information",
+                 "<ul>",
+                 "<li>Rprofile:", Rprofile(), "</li>",
+                 "<li>posturl:", posturl(), "</li>",
+                 "<li>auth:", bfabricConnectionWorking(), "</li>",
+                 "<li>errorreport:", bfabricValues$errorreport, "</li>",
+                 "<li>R.version.string:", R.version.string, "</li>",
+                 "<li>bfabricShiny:", packageVersion('bfabricShiny'), "</li>",
+                 "</ul>",
+                 "<hr>"))
+    }
   })
   
   #=======bfabricConnectionWorking======
@@ -215,6 +224,15 @@ bfabric <- function(input, output, session, applicationid,
                                    endpoint = 'user',
                                    query = list(login=login))
       
+      if ("errorreport" %in% names(rv)){
+        bfabricValues$errorreport <- rv$errorreport
+      }
+      else if ("status" %in% names(rv)){
+        bfabricValues$errorreport <- rv$status
+      }
+      else{
+        bfabricValues$errorreport <- NULL
+      }
       
       message(paste0("bfabricConnectionWorking ", (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))))
       (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))
@@ -256,9 +274,6 @@ bfabric <- function(input, output, session, applicationid,
       }
     }
   })
-  
-
-  
 
   resources <- reactive({
     if(bfabricConnectionWorking()){
