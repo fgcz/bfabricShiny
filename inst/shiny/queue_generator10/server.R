@@ -321,7 +321,7 @@ shinyServer(function(input, output, session) {
   #------------------------ getBfabricContent ----
   getBfabricContent <- reactive({
 
-    message(paste("DEBUG", input$instrumentControlSoftware, input$lcSystem))
+    message(paste("System configuration:", input$area, input$instrumentControlSoftware, input$lcSystem))
     
     if (is.null(input$sample)) {
       return(NULL)
@@ -360,7 +360,7 @@ shinyServer(function(input, output, session) {
       containerid <- NULL
     }
     
-    if (input$instrumentControlSoftware == "XCalibur"){
+    if (input$instrumentControlSoftware == "XCalibur" && input$area == "Proteomics"){
       
       rv <- bfabricShiny:::generate_queue_order(x = res,
                                                 foldername = input$folder,
@@ -400,7 +400,29 @@ shinyServer(function(input, output, session) {
       # base::save(res,rv, file="/tmp/ddd.RData")
       print(rv)
       return(rv)
+    }else if (input$instrumentControlSoftware == "XCalibur" &&  input$area == "Metabolomics"){
+      
+      note <- gsub('([[:punct:]])|\\s+', '_', input$folder)
+      inputSampleTable <- data.frame(containerid = res$containerid,
+                                     id = res$extract.id, 
+                                     name = res$extract.name,
+                                     condition = res$extract.Condition)
+      # protViz::blockRandom("condition") |>
+      print(inputSampleTable)
+      rv <- inputSampleTable |>
+        protViz::assignPlatePosition() |>
+        protViz::insertSamples(howoften = 0, begin = TRUE, end = FALSE,
+                               stdPosX = '6', stdPosY = 'F', plate = 1,
+                               stdName = "clean", volume = 2) |>
+        protViz:::formatXCalibur()
+      
+      
+      print(rv)
+      
+      return(rv)
+      
     }else if (input$instrumentControlSoftware == "HyStar"){
+      ##==========HyStar========== 
       message("DEBUG")
       message(paste(names(input), collapse = ", "))
       #print(as_tibble(as.data.frame(input)))
@@ -423,7 +445,7 @@ shinyServer(function(input, output, session) {
       ## TODO method files only for clean|autoQC4L|autoQC01
       if (input$lcSystem == "EVOSEP1x12x8"){
          rv <- inputSampleTable %>%
-          .insertStandardsEVOSEP(stdName = "washing", 
+          .insertStandardsEVOSEP(stdName = "clean", 
                            between=input$clean,
                            howoften = input$cleano,
                            howmany = input$cleanm,
@@ -461,7 +483,7 @@ shinyServer(function(input, output, session) {
         ## nanoElute
         rv <- inputSampleTable %>%
           .mapPlatePositionNanoElute %>%  
-          .insertStandardsNanoElute(stdName = "washing", stdPosX='52', stdPosY='1', plate = 2,
+          .insertStandardsNanoElute(stdName = "clean", stdPosX='52', stdPosY='1', plate = 2,
                             between=input$clean,
                             howoften = input$cleano,
                             howmany = input$cleanm,
