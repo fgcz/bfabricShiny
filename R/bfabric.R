@@ -32,7 +32,6 @@ bfabricInput <- function(id) {
     textInput(ns('login'), 'B-Fabric Login', placeholder = "as you login on https://fgcz-bfabric.uzh.ch"),
     passwordInput(ns('webservicepassword'), 'Web Service Password',
                   placeholder = "in B-Fabric on 'User Details' (upper-right corner)."),
-    htmlOutput(ns("posturl")),
     htmlOutput(ns("applications")),
     actionButton(ns("saveBfabricPassword"), "Encrypt & Save Password", icon("save")),
     br(),
@@ -101,12 +100,7 @@ bfabric <- function(input, output, session, applicationid,
     }
   })
 
-  output$posturl <- renderUI({
-    #f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
-    #source(f, local=TRUE)
-    selectInput(ns('posturl'), 'posturl:', posturl(), multiple = FALSE)
-  })
-  
+
   #=======output$containers======
   output$containers <- renderUI({
     if(bfabricConnectionWorking()){
@@ -326,11 +320,12 @@ bfabric <- function(input, output, session, applicationid,
     }
   }
   )
-
+  # -------bfabric module return--------
   return(list(login = reactive({input$login}),
               webservicepassword = reactive({input$webservicepassword}),
               resources = reactive({resources()}),
               workunitid = reactive({input$workunit}),
+              posturl = reactive({posturl()}),
               containerid = reactive({input$containerid})))
 }
 
