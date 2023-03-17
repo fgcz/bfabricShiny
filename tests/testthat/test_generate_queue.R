@@ -72,13 +72,52 @@ test_that("test random", {
 
 test_that("protViz_queue", {
   Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-
-  smp <- bfabricShiny:::.getSamples(login, webservicepassword,
+  source(Rprofile, local = TRUE)
+  smp.3530 <- bfabricShiny:::.getSamples(login, webservicepassword,
                                       posturl = bfabricposturl,
-                                      containerid = 30993)
+                                      containerid = 3530)
+  smp.30993 <- bfabricShiny:::.getSamples(login, webservicepassword,
+                                     posturl = bfabricposturl,
+                                     containerid = 30993)
   
+  
+  smp.30666 <- bfabricShiny:::.getSamples(login, webservicepassword,
+                                          posturl = bfabricposturl,
+                                          containerid = 30666)
+  # required by protViz:::formatXCalibur
+  names(smp.30993) <- c('id', 'name', 'condition' ,'containerid')
+  names(smp.3530) <- c('id', 'name', 'condition' ,'containerid')
   set.seed(1)
-  smp |> protViz::blockRandom("samples.condition")
+  smp.30993 |>
+    protViz::blockRandom("condition") |>
+    protViz::assignPlatePosition() |> 
+    protViz::insertSamples(howoften = 4, begin = TRUE, end = FALSE,
+                           stdPosX = '6', stdPosY = 'F', plate = 1,
+                           stdName = "clean", volume = 2) |> 
+    protViz:::formatXCalibur()
+  
+  
+  rv1 <- smp.3530 |>
+    protViz::blockRandom("containerid") |>
+    protViz::assignPlatePosition() |> 
+    protViz::insertSamples(howoften = 4, begin = TRUE, end = FALSE,
+                          stdPosX = '6', stdPosY = 'F', plate = 1,
+                          stdName = "clean", volume = 2) |> 
+    protViz:::formatXCalibur()
+  
+  rv1 <- smp.3530 |>
+    protViz::blockRandom("containerid") |>
+    protViz::assignPlatePosition() |> 
+    protViz::insertSamples(howoften = 4, begin = TRUE, end = FALSE,
+                           stdPosX = '6', stdPosY = 'F', plate = 1,
+                           stdName = "clean", volume = 2) 
+  
+  rv2 <- smp.3530 |>
+    protViz::blockRandom("containerid") |>
+    protViz::assignPlatePosition() 
+  
+  
+    
 })
 
   

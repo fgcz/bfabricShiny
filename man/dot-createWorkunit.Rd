@@ -8,6 +8,7 @@
 .createWorkunit(
   login = NULL,
   webservicepassword = NULL,
+  posturl = NULL,
   containerid = NULL,
   applicationid = NULL,
   inputresourceid = NULL,
@@ -21,7 +22,8 @@ Create a workunit
 }
 \examples{
 \dontrun{
-bfabricShiny:::.createWorkunit(login, webservicepassword, containerid=3000, applicationid=500, inputresourceid=list(1753925, 1753924))
+bfabricShiny:::.createWorkunit(login, webservicepassword, posturl=posturl,
+containerid=3000, applicationid=212, inputresourceid=list(1753925, 1753924))
 }
 
 }

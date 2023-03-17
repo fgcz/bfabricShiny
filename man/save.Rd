@@ -4,7 +4,13 @@
 \alias{save}
 \title{Saves an object in bfabric}
 \usage{
-save(login, webservicepassword, endpoint = "workunit", query)
+save(
+  login = NULL,
+  webservicepassword = NULL,
+  endpoint = "workunit",
+  posturl = "http://localhost:5000/",
+  query = NULL
+)
 }
 \arguments{
 \item{login}{bfabric login}
@@ -13,6 +19,8 @@ save(login, webservicepassword, endpoint = "workunit", query)
 visible when you check your user details in the bfabric system.}
 
 \item{endpoint}{the endpoint, e.g., \code{'sample'}}
+
+\item{posturl}{where the flask server is working}
 
 \item{query}{e,g, \code{list(containerid = 3000)}}
 }
@@ -25,7 +33,10 @@ Saves an object in bfabric
 \examples{
 \dontrun{
 bfabricShiny::save(login, webservicepassword , 'workunit',
-  list(id=254893, description='test2',
-  inputresourceid=list(1753925, 1753924))
+  posturl=bfabricposturl,
+  list(applicationid=212, description='test2', containerid=3000))
 }
+}
+\author{
+Christian Panse <cp@fgcz.ethz.ch> 2016-2023, MdE 2023-03-17
 }

@@ -7,6 +7,10 @@ shinyServer(function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric8",  applicationid = c(61), resoucepattern = 'fasta$')
   
+  output$test <- renderUI({
+    selectInput('test', "test", bf$posturl(), multiple = FALSE)
+  })
+  
   ### observes file upload
   get_tryptic_peptides <- eventReactive(input$load, {
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)

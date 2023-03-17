@@ -409,12 +409,18 @@ shinyServer(function(input, output, session) {
                                      condition = res$extract.Condition)
       # protViz::blockRandom("condition") |>
       print(inputSampleTable)
+      
+      Xpath <- paste0("D:\\Data2San\\p", input$container, "\\",
+             input$area, "\\",
+             input$instrument, "\\",
+             input$login,"_",format(Sys.Date(), format = "%Y%m%d"),  "\\")
+      
       rv <- inputSampleTable |>
         protViz::assignPlatePosition() |>
         protViz::insertSamples(howoften = 0, begin = TRUE, end = FALSE,
                                stdPosX = '6', stdPosY = 'F', plate = 1,
                                stdName = "clean", volume = 2) |>
-        protViz:::formatXCalibur()
+        protViz:::formatXCalibur(Xpath)
       
       
       print(rv)
@@ -651,7 +657,6 @@ shinyServer(function(input, output, session) {
       #res <- getBfabricContent()
       #tmp <- write_xlsx(list(HyStar = res), path = "/tmp/gueue_generator.xls")
     }
-    
   }
   )
   

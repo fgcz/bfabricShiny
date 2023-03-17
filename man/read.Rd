@@ -9,7 +9,7 @@ read(
   webservicepassword = NULL,
   endpoint = "workunit",
   query,
-  posturl = "http://localhost:5000/q",
+  posturl = "http://localhost:5000/",
   as_data_frame = FALSE
 )
 }

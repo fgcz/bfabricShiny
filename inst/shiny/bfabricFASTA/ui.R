@@ -20,6 +20,7 @@ shinyUI(fluidPage(
     sidebarPanel(
       tabsetPanel(
         tabPanel("bfabric", bfabricInput("bfabric8"))),
+      htmlOutput("test"),
        sliderInput("bins",
                    "Number of bins:",
                    min = 1,

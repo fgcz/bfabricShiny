@@ -238,7 +238,7 @@ query <- function(login, webservicepassword,
                   query,
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
-  .Deprecated("bfabricShiny::read")
+  .Deprecated("bfabricShiny::readPages")
   
   query_result <- POST(posturl,
                body = toJSON(list(login = login,
@@ -419,15 +419,16 @@ readPages <- function(login = NULL, webservicepassword = NULL,
 read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   query,
-                  posturl = 'http://localhost:5000/q',
+                  posturl = 'http://localhost:5000/',
                   as_data_frame = FALSE){
   
 
-  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)))
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
   
-  query_result <- httr::POST(posturl,
+  query_result <- httr::POST(paste0(posturl, "/q"),
                        body = jsonlite::toJSON(list(login = login,
                                           webservicepassword = webservicepassword,
                                           endpoint = endpoint,
@@ -596,17 +597,24 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @inheritParams readPages
 #' 
 #' @return bfabric json object.
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2023, MdE 2023-03-17
 #' @export
 #' @examples 
 #' \dontrun{
 #' bfabricShiny::save(login, webservicepassword , 'workunit',
-#'   list(id=254893, description='test2',
-#'   inputresourceid=list(1753925, 1753924))
+#'   posturl=bfabricposturl,
+#'   list(applicationid=212, description='test2', containerid=3000))
 #' }
-save <- function(login, webservicepassword, endpoint = 'workunit', query){
-  stopifnot(isFALSE(is.null(login)), isFALSE(is.null(webservicepassword)))
+save <- function(login = NULL,
+                 webservicepassword = NULL,
+                 endpoint = 'workunit',
+                 posturl = 'http://localhost:5000/',
+                 query = NULL){
   
-  rv <- POST('http://localhost:5000/s',
+  stopifnot(isFALSE(is.null(query)),
+            isFALSE(is.null(posturl)))
+  
+  rv <- POST(paste0(posturl, '/s'),
              body = toJSON(
                list(
                  login = login,
@@ -616,7 +624,6 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
                ),
                encode = 'json'
              ))
-
 
   rv <- content(rv)
  
@@ -631,12 +638,14 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
 #' 
 #' @examples 
 #' \dontrun{
-#' bfabricShiny:::.createWorkunit(login, webservicepassword, containerid=3000, applicationid=500, inputresourceid=list(1753925, 1753924))
+#' bfabricShiny:::.createWorkunit(login, webservicepassword, posturl=posturl,
+#' containerid=3000, applicationid=212, inputresourceid=list(1753925, 1753924))
 #' }
 #' 
 .createWorkunit <-
   function(login = NULL,
            webservicepassword = NULL,
+           posturl = NULL,
            containerid=NULL,
            applicationid=NULL,
            inputresourceid = NULL,
@@ -647,6 +656,7 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
     stopifnot(isFALSE(is.null(login)),
               isFALSE(is.null(webservicepassword)),
               isFALSE(is.null(containerid)),
+              isFALSE(is.null(posturl)),
               isFALSE(is.null(applicationid))
               )
     
@@ -662,30 +672,40 @@ save <- function(login, webservicepassword, endpoint = 'workunit', query){
       queryObject$inputresourceid  <- inputresourceid
     }
     
-    rv <- httr::POST('http://localhost:5000/s',
-               body = jsonlite::toJSON(
-                 list(
-                   login = login,
-                   webservicepassword = webservicepassword,
-                   endpoint = 'workunit',
-                   query = queryObject
-                 ),
-                 encode = 'json'
-               ))
+    rv <- bfabricShiny::save(login, webservicepassword,
+                             posturl = posturl,
+                             endpoint = 'workunit',
+                             query = queryObject)
+    
+    #rv <- httr::POST(paste0(posturl, '/s'),
+    #           body = jsonlite::toJSON(
+    #             list(
+    #               login = login,
+    #               webservicepassword = webservicepassword,
+    #               endpoint = 'workunit',
+    #               query = queryObject
+    #             ),
+    #             encode = 'json'
+    #           ))
     
    
-    rv <- content(rv)
-    return(rv$res)
+    #rv <- content(rv)
+    return(rv)
   }
 
 
 .saveResource <- function(login,
                          webservicepassword,
+                         posturl = NULL,
                          workunitid,
                          content,
                          name){
 
-  rv <- POST('http://localhost:5000/s',
+  stopifnot(isFALSE(is.null(login)),
+            isFALSE(is.null(webservicepassword)),
+            isFALSE(is.null(posturl)))
+            
+  rv <- POST(paste0(posturl, '/s'),
              body = toJSON(
                list(
                  login = login,
@@ -767,6 +787,7 @@ bfabric_upload_file <- function(login = NULL,
   wu[[1]]$`_id`
 }
 
+#=====uploadResource=======
 #' Generate a workunit and upload a resource (file)  to a internal bfabric
 #' storage
 #'
@@ -787,22 +808,37 @@ bfabric_upload_file <- function(login = NULL,
 #' object.
 #' @importFrom base64enc base64encode
 #' @importFrom tools file_ext
-#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2021
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2023, MdE 2023-03-17
 #' @export
+#' @examples
+#' fRp <- file.path(Sys.getenv("HOME"), ".Rprofile")
+#' source(fRp, local=TRUE)
+#' tf <- tempfile()
+#' write.csv(iris, file=tf)
+#' bfabricShiny::uploadResource(login, webservicepassword, bfabricposturl,
+#'    containerid = 3000,
+#'    status = 'PENDING',
+#'    description = "generated by a test run",
+#'    applicationid = 212,
+#'    workunitname = "bfabricShiny example",
+#'    resourcename = "R's iris data",
+#'    file = tf)
 uploadResource <- function(login = NULL,
                                 webservicepassword = NULL,
+                                posturl = NULL,
                                 containerid = 3000,
-                                applicationid = 217,
-                                status = 'pending',
+                                applicationid = 212,
+                                status = 'PENDING',
                                 description = '',
                                 inputresourceid = NULL,
-                                workunitname = 'MaxQuant result',
-                                resourcename = 'MaxQuant report',
+                                workunitname = 'bfabricShiny result',
+                                resourcename = 'bfabricShiny report',
                                 file = NULL) {
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(file)),
+            isFALSE(is.null(posturl)),
             file.exists(file)
             )
   
@@ -825,6 +861,7 @@ To help us funding further development, please cite:
     .createWorkunit(
       login = login,
       webservicepassword = webservicepassword,
+      posturl = posturl,
       containerid = containerid,
       inputresourceid = inputresourceid,
       applicationid = applicationid,
@@ -835,12 +872,13 @@ To help us funding further development, please cite:
   
   res <- 
     .saveResource(login, webservicepassword,
+                     posturl = posturl,
                      workunitid = wu[[1]]$`_id`,
                      content = fileContent,
                      name = resourcename
                   )
   
-  list(workunit=wu, resource=res)
+  list(workunit = wu, resource = res)
 }
 
 
