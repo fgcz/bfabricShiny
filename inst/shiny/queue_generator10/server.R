@@ -318,7 +318,7 @@ shinyServer(function(input, output, session) {
   })
 
 
-  #------------------------ getBfabricContent ----
+  #------------------------getBfabricContent ----
   getBfabricContent <- reactive({
 
     message(paste("System configuration:", input$area, input$instrumentControlSoftware, input$lcSystem))
@@ -331,6 +331,7 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
 
+    # TODO: howto reset upload button? at the moment only one download is possible.
     # values$wuid <- NULL
 
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -341,6 +342,7 @@ shinyServer(function(input, output, session) {
     if(is.null(res)){
       return(NULL)
     }
+    
     res[, "instrument"] <- input$instrument
 
     idx.filter <- (paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name) %in% input$sample)
