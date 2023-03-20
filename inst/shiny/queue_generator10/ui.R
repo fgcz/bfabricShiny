@@ -1,8 +1,8 @@
-
 # This is the user-interface definition of a Shiny web application.
-# You can find out more about building applications with Shiny here:
+# 
+# https://fgcz-shiny.uzh.ch/ms_queue_generator/
 #
-# https://github.com/cpanse/bfabricShiny
+# maintainer: Christian Panse <cp@fgcz.ethz.ch>
 
 shinyUI(
   fluidPage(

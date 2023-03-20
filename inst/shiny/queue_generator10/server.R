@@ -1,7 +1,6 @@
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
+# This is the server logic for a Shiny MS configuration web application.
 #
-# https://github.com/fgcz/bfabricShiny
+# maintainer: Christian Panse <cp@fgcz.ethz.ch>
 
 stopifnot(
   require(bfabricShiny),
@@ -11,6 +10,9 @@ stopifnot(
   require(DT),
   require(dplyr),
   require(XML))
+
+
+stopifnot(packageVersion('bfabricShiny') >= "0.12.13")
 
 # TODO(cp): replace with CRAN protViz functions
 source("queuetools.R", local = FALSE)
