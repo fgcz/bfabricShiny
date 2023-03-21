@@ -262,7 +262,8 @@ query <- function(login, webservicepassword,
                   endpoint = 'workunit',
                   page = 1,
                   query = list(),
-                  posturl = NULL){
+                  posturl = NULL,
+                  updateProgress = NULL){
   
   
   stopifnot(isFALSE(is.null(login)),
@@ -283,9 +284,11 @@ query <- function(login, webservicepassword,
                              ),
                              encode = 'json'))
   end_time <- Sys.time()
+
+  diff_time_msg <- paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].")
   rv <- httr::content(query_result)
   if (is.null(rv$res)){warning("query failed."); return(rv);}
- 
+
   if (interactive()) {
     if ('errorreport' %in% names(rv)){
      return(rv)
@@ -295,9 +298,14 @@ query <- function(login, webservicepassword,
                     "numberofpages: ", rv$res$numberofpages, "\n",
                     "page: ", rv$res$page)
       message(msg)
+
+      # If we were passed a progress update function, call it
+      if (is.function(updateProgress)) {
+        updateProgress(detail = paste0("read ", rv$res$page, '/', rv$res$numberofpages,
+                                       " using ", diff_time_msg))
+      }
     }
-    message(paste0("query time: ",
-                   round(difftime(end_time, start_time, units = 'secs'), 2), " [secs]."))
+    message(paste0("query time: ", diff_time_msg))
   }
   rv$res
 }
@@ -312,19 +320,22 @@ query <- function(login, webservicepassword,
 #' @param query e,g, \code{list(containerid = 3000)}
 #' @param posturl where the flask server is working
 #' @param maxpages max number of supported pages to 
+#' @param updateProgress a callback function for writing log output, e.g.,
+#' using a \code{\link[shiny]{Progress}} object,
+#' see also \url{https://shiny.rstudio.com/articles/progress.html}.
 #'
 #' @return a list
 #' @export
 #'
 #' @examples
-#' readPages(login, webservicepassword , endpoint = 'user',
+#' bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
 #' query=list(login='cpanse'))
 #' 
-#' readPages(login, webservicepassword , endpoint = 'user',
+#' bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
 #' query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
 #' 
 #' \dontrun{
-#'   fraction <- readPages(login = login,
+#'   fraction <- bfabricShiny::readPages(login = login,
 #'     webservicepassword = webservicepassword,
 #'     endpoint = 'sample',
 #'     query = list( attribute = list(name = 'fraction',
@@ -334,7 +345,8 @@ readPages <- function(login = NULL, webservicepassword = NULL,
                    endpoint = 'workunit',
                    query = list(),
                    posturl = 'http://localhost:5000/',
-                   maxpages = 10){
+                   maxpages = 10,
+                   updateProgress = NULL){
   
   
   
@@ -342,7 +354,8 @@ readPages <- function(login = NULL, webservicepassword = NULL,
               webservicepassword = webservicepassword,
               endpoint = endpoint,
               query = query,
-              posturl = posturl)
+              posturl = posturl,
+              updateProgress = updateProgress)
   
   
   # TODO(CP): too lazy to program; so start with page 1
@@ -365,7 +378,8 @@ readPages <- function(login = NULL, webservicepassword = NULL,
                  webservicepassword = webservicepassword,
                  endpoint = endpoint,
                  query = query,
-                 posturl = posturl) |> 
+                 posturl = posturl,
+                 updateProgress = updateProgress) |> 
       lapply(FUN = function(x){get(endpoint, x)}) |> 
       unlist(recursive = FALSE)
     return (rv)
@@ -449,17 +463,20 @@ read <- function(login = NULL, webservicepassword = NULL,
 }
 
 #===========.getSamples======
-#' @noRd
+#' get samples of a container as data frame object
+#' @inheritParams readPages
+#' @param containerid bfabric container id.
 #' @return a \code{data.frame}
 #' @author CP 2023-03-14
-#' examples
+#' @export
+#' @examples
 #' smp <- bfabricShiny:::.getSamples(login, webservicepassword,
 #'    posturl = bfabricposturl,
 #'    containerid = 30993)
 .getSamples <- function(login = NULL,
                         webservicepassword = NULL,
                         posturl = NULL,
-                        containerid = NULL) {
+                        containerid = NULL, updateProgress=NULL) {
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
@@ -470,7 +487,8 @@ read <- function(login = NULL, webservicepassword = NULL,
                                 webservicepassword,
                                 endpoint = 'sample',
                                 posturl = posturl,
-                                query = list(containerid = containerid))
+                                query = list(containerid = containerid),
+                                updateProgress = updateProgress)
   
   df <- data.frame(
     samples._id = sapply(rv, FUN = function(x){x$`_id`}) |> as.numeric(),

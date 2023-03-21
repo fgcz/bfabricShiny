@@ -10,7 +10,8 @@ readPages(
   endpoint = "workunit",
   query = list(),
   posturl = "http://localhost:5000/",
-  maxpages = 10
+  maxpages = 10,
+  updateProgress = NULL
 )
 }
 \arguments{
@@ -26,6 +27,10 @@ visible when you check your user details in the bfabric system.}
 \item{posturl}{where the flask server is working}
 
 \item{maxpages}{max number of supported pages to}
+
+\item{updateProgress}{a callback function for writing log output, e.g.,
+using a \code{\link[shiny]{Progress}} object,
+see also \url{https://shiny.rstudio.com/articles/progress.html}.}
 }
 \value{
 a list
@@ -34,14 +39,14 @@ a list
 read function which supports pages
 }
 \examples{
-readPages(login, webservicepassword , endpoint = 'user',
+bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
 query=list(login='cpanse'))
 
-readPages(login, webservicepassword , endpoint = 'user',
+bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
 query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
 
 \dontrun{
-  fraction <- readPages(login = login,
+  fraction <- bfabricShiny::readPages(login = login,
     webservicepassword = webservicepassword,
     endpoint = 'sample',
     query = list( attribute = list(name = 'fraction',

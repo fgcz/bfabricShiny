@@ -251,10 +251,22 @@ shinyServer(function(input, output, session) {
         progress$set(message = paste("fetching samples of container",
                                      input$container, "..."))
         on.exit(progress$close())
+        
+        updateProgress <- function(value = NULL, detail = NULL) {
+          if (is.null(value)) {
+            value <- progress$getValue()
+            value <- value + (progress$getMax() - value) / 5
+          }
+          # value = value, 
+          progress$set(detail = detail)
+        }
              
-        res <- bfabricShiny:::.getSamples(login(), webservicepassword(),
-                                   posturl = posturl(),
-                                   containerid = input$container)
+        res <- bfabricShiny::.getSamples(login(),
+                                          webservicepassword(),
+                                          posturl = posturl(),
+                                          containerid = input$container,
+                                          updateProgress = updateProgress)
+
         return(res)
       }
     } else if (input$containerType == 'order') {
