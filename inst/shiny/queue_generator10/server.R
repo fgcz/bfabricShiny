@@ -224,25 +224,16 @@ shinyServer(function(input, output, session) {
 
   # -------checkbox FGCZ naming conventions -----
   getLogin <- reactive({
-    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = "querying")
-    progress$set(message = paste("querying login data of container",
-                                 input$container, "..."))
-    on.exit(progress$close())
-
     if (is.null(input$container) || grepl(",", input$container)) {
       return(NULL)
     }else{
-      updateProgress <- function(value = NULL, detail = NULL) {
-        progress$set(detail = detail)
-      }
+      
       
       rv <- bfabricShiny::readPages(login(),
                                     webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
-                               query = list(containerid = input$container),
-                               updateProgress = updateProgress) |>
+                                    query = list(containerid = input$container)) |>
         lapply(FUN=function(x){x$login}) |>
         unlist()
       return(rv)
