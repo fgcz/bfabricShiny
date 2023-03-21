@@ -36,7 +36,7 @@ read method to access bfabric REST
 \examples{
 # ensure you have login and password
 Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-source(Rprofile)
+source(Rprofile, local = TRUE)
 
 res.sample <- bfabricShiny::read(login = login,
    webservicepassword = webservicepassword,

@@ -39,17 +39,28 @@ a list
 read function which supports pages
 }
 \examples{
-bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
-query=list(login='cpanse'))
+# ensure you have login, webservicepassword, and posturl defined
+Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+source(Rprofile, local = TRUE)
 
 bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
-query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
+query=list(login='cpanse'), posturl = bfabricposturl)
+
+bfabricShiny::readPages(login,
+  webservicepassword,
+  endpoint = 'user',
+  query=list(),
+  posturl = bfabricposturl,
+  updateProgress =  function(...){cat(...)})
+
+bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
+query=list(login='cpanse'), posturl = bfabricposturl)
 
 \dontrun{
   fraction <- bfabricShiny::readPages(login = login,
     webservicepassword = webservicepassword,
     endpoint = 'sample',
     query = list( attribute = list(name = 'fraction',
-        value = 'true'))
+        value = 'true')))
         }
 }

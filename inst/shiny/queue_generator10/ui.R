@@ -4,7 +4,9 @@
 #
 # maintainer: Christian Panse <cp@fgcz.ethz.ch>
 
+
 shinyUI(
+  
   fluidPage(
     titlePanel(paste("MS Queue Generator", packageVersion('bfabricShiny'), sep = ' - version ')),
     #copied from mockup

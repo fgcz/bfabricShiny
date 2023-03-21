@@ -258,6 +258,10 @@ query <- function(login, webservicepassword,
 
 
 ## TODO(cp): this function should replace the read function
+#' .read
+#' @inheritParams readPages
+#' @param page define requested page, default is 1
+#' @author MdE/CP 2023-03
 .read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   page = 1,
@@ -311,7 +315,7 @@ query <- function(login, webservicepassword,
   rv$res
 }
 
-
+#=======readPages======
 #' read function which supports pages
 #'
 #' @param login bfabric login
@@ -329,18 +333,29 @@ query <- function(login, webservicepassword,
 #' @export
 #'
 #' @examples
-#' bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
-#' query=list(login='cpanse'))
+#' # ensure you have login, webservicepassword, and posturl defined
+#' Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+#' source(Rprofile, local = TRUE)
 #' 
 #' bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
-#' query=list(login='cpanse'), posturl = "http://fgcz-148.uzh.ch:5000/")
+#' query=list(login='cpanse'), posturl = bfabricposturl)
+#' 
+#' bfabricShiny::readPages(login,
+#'   webservicepassword,
+#'   endpoint = 'user',
+#'   query=list(),
+#'   posturl = bfabricposturl,
+#'   updateProgress =  function(...){cat(...)})
+#' 
+#' bfabricShiny::readPages(login, webservicepassword , endpoint = 'user',
+#' query=list(login='cpanse'), posturl = bfabricposturl)
 #' 
 #' \dontrun{
 #'   fraction <- bfabricShiny::readPages(login = login,
 #'     webservicepassword = webservicepassword,
 #'     endpoint = 'sample',
 #'     query = list( attribute = list(name = 'fraction',
-#'         value = 'true'))
+#'         value = 'true')))
 #'         }
 readPages <- function(login = NULL, webservicepassword = NULL,
                    endpoint = 'workunit',
@@ -405,7 +420,7 @@ readPages <- function(login = NULL, webservicepassword = NULL,
 #' @examples
 #' # ensure you have login and password
 #' Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-#' source(Rprofile)
+#' source(Rprofile, local = TRUE)
 #' 
 #' res.sample <- bfabricShiny::read(login = login,
 #'    webservicepassword = webservicepassword,
@@ -441,7 +456,10 @@ read <- function(login = NULL, webservicepassword = NULL,
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)))
   
-  if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
+  if (interactive()) {
+    .Deprecated("bfabricShiny::readPages")
+    message(paste0("using '", posturl, "' as posturl ..."))
+    }
   
   query_result <- httr::POST(paste0(posturl, "/q"),
                        body = jsonlite::toJSON(list(login = login,
