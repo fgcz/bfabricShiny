@@ -225,16 +225,24 @@ shinyServer(function(input, output, session) {
   # -------checkbox FGCZ naming conventions -----
   getLogin <- reactive({
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = "fetching user data ...")
+    progress$set(message = "querying")
+    progress$set(message = paste("querying login data of container",
+                                 input$container, "..."))
     on.exit(progress$close())
 
     if (is.null(input$container) || grepl(",", input$container)) {
       return(NULL)
     }else{
-      rv <- bfabricShiny::readPages(login(), webservicepassword(),
+      updateProgress <- function(value = NULL, detail = NULL) {
+        progress$set(detail = detail)
+      }
+      
+      rv <- bfabricShiny::readPages(login(),
+                                    webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
-                               query = list(containerid = input$container)) |>
+                               query = list(containerid = input$container),
+                               updateProgress = updateProgress) |>
         lapply(FUN=function(x){x$login}) |>
         unlist()
       return(rv)
@@ -242,25 +250,21 @@ shinyServer(function(input, output, session) {
   })
   
   getSample <- reactive({
+
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = paste("querying container",
+                                 input$container, "..."))
+    on.exit(progress$close())
+    
+    updateProgress <- function(value = NULL, detail = NULL) {
+      progress$set(detail = detail)
+    }
+    
     if (input$containerType == 'project') {
       
       if (is.null(input$container)) {
         return(NULL)
       } else {
-        progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-        progress$set(message = paste("fetching samples of container",
-                                     input$container, "..."))
-        on.exit(progress$close())
-        
-        updateProgress <- function(value = NULL, detail = NULL) {
-          if (is.null(value)) {
-            value <- progress$getValue()
-            value <- value + (progress$getMax() - value) / 5
-          }
-          # value = value, 
-          progress$set(detail = detail)
-        }
-             
         res <- bfabricShiny::.getSamples(login(),
                                           webservicepassword(),
                                           posturl = posturl(),
@@ -280,15 +284,14 @@ shinyServer(function(input, output, session) {
         res <- containerIDs |>
           unique() |>
           lapply(FUN = function(x){
-            progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-            progress$set(message = paste("fetching samples of container",
+            progress$set(message = paste("querying container",
                                          x, "..."))
-            on.exit(progress$close())
-            
             bfabricShiny:::.getSamples(
               login = login(),
               webservicepassword = webservicepassword(),
-              posturl = posturl(), containerid=x)}
+              posturl = posturl(),
+              containerid=x,
+              updateProgress = updateProgress)}
           ) |>
           Reduce(f = rbind)
         

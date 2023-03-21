@@ -301,8 +301,9 @@ query <- function(login, webservicepassword,
 
       # If we were passed a progress update function, call it
       if (is.function(updateProgress)) {
-        updateProgress(detail = paste0("read ", rv$res$page, '/', rv$res$numberofpages,
-                                       " using ", diff_time_msg))
+        updateProgress(detail = sprintf("read %d/%d %s page(s) (%d items) in %s",
+          rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
+          diff_time_msg))
       }
     }
     message(paste0("query time: ", diff_time_msg))
@@ -502,7 +503,8 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 #' @noRd
 #' @return a vector of project ids
-.getContainers <- function(login, webservicepassword,  posturl = NULL) {
+.getContainers <- function(login, webservicepassword,  posturl = NULL,
+                           updateProgress = NULL) {
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
@@ -511,7 +513,8 @@ read <- function(login = NULL, webservicepassword = NULL,
     rv <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'user',
                                   posturl = posturl,
-                                  query = list(login = login))
+                                  query = list(login = login),
+                                  updateProgress = updateProgress)
     
     if ('errorreport' %in% names(rv)){
       return (rv)
@@ -532,7 +535,8 @@ read <- function(login = NULL, webservicepassword = NULL,
 .getWorkunits <- function(login = NULL, webservicepassword =  NULL,
                           posturl = NULL,
                           containerid = 3000,
-                         applicationid = 224){
+                          applicationid = 224,
+                          updateProgress = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
@@ -545,7 +549,8 @@ read <- function(login = NULL, webservicepassword = NULL,
                                   endpoint = 'workunit',
                                   query=list('applicationid' = applicationid,
                                              'status' = 'available',
-                                             'containerid' = containerid))
+                                             'containerid' = containerid),
+                                  updateProgress = updateProgress)
     
     if ('errorreport' %in% names(rv)){
       return (rv)
@@ -570,7 +575,8 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @return a vector of resource ids
 .getResources <- function(login=NULL, webservicepassword=NULL,
                           posturl=NULL,
-                         workunitid = NULL){
+                         workunitid = NULL,
+                         updateProgress = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
@@ -581,7 +587,9 @@ read <- function(login = NULL, webservicepassword = NULL,
   resources <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'resource',
                                   posturl = posturl,
-                                  query = list('workunitid' = workunitid))
+                                  query = list('workunitid' = workunitid),
+                                  updateProgress = updateProgress
+                                  )
  
 
   return(resources)

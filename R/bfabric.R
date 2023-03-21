@@ -103,16 +103,24 @@ bfabric <- function(input, output, session, applicationid,
 
   #=======output$containers======
   output$containers <- renderUI({
+     
     if(bfabricConnectionWorking()){
+      progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+      progress$set(message = "querying containers ...")
+      on.exit(progress$close())
+      updateProgress <- function(value = NULL, detail = NULL) {
+        progress$set(detail = detail)
+      }
       if (empdegree()){
         numericInput(ns("containerid"), "Order | project | container id:",
                      value = 3000,
                      min = 1000,
-                     max = 30000)
+                     max = 35000)
       }else{
         containers <- bfabricShiny:::.getContainers(input$login,
                                                     input$webservicepassword,
-                                                    posturl = posturl())
+                                                    posturl = posturl(),
+                                                    updateProgress = updateProgress)
         
         if ('errorreport' %in% names(containers)) {
           HTML(paste0("<b>container:</b> ", containers$errorreport))
@@ -126,6 +134,11 @@ bfabric <- function(input, output, session, applicationid,
   #=======output$workunits======
   output$workunits <- renderUI({
     if(bfabricConnectionWorking()){
+      
+      progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+      progress$set(message = "querying workunits ...")
+      on.exit(progress$close())
+      
       if (length(input$containerid) == 0){
         print("no workunits yet.")
       }else{
@@ -134,10 +147,15 @@ bfabric <- function(input, output, session, applicationid,
         }
         id <- strsplit(input$applicationid, " - ")[[1]][1]
         
-        workunits <- .getWorkunits(input$login, input$webservicepassword,
+        updateProgress <- function(value = NULL, detail = NULL) {
+          progress$set(detail = detail)
+        }
+        
+        workunits <- .getWorkunits(input$login,
+                                   input$webservicepassword,
                                    containerid = input$containerid,
                                    posturl = posturl(),
-                                   applicationid = id)
+                                   applicationid = id, updateProgress)
         
         if ('errorreport' %in% names(workunits)) {
           HTML(paste0("<b>workunit:</b> ", workunits$errorreport))
@@ -153,7 +171,9 @@ bfabric <- function(input, output, session, applicationid,
   
   #=======output$resourcess======
   output$resources <- renderUI({
-   
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "querying resources ...")
+    on.exit(progress$close())
     if (length(input$workunit) == 0){
       print("no resources yet.")
     }else{
@@ -175,7 +195,6 @@ bfabric <- function(input, output, session, applicationid,
                           .selectize-dropdown {word-wrap : break-word;} "
           )
         )
-        
       }
     }
   })
