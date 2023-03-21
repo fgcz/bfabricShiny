@@ -241,12 +241,12 @@ shinyServer(function(input, output, session) {
   })
   
   getSample <- reactive({
-
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = paste("querying container",
                                  input$container, "..."))
     on.exit(progress$close())
     
+    # define a callback function to be passed to the 'computational' method
     updateProgress <- function(value = NULL, detail = NULL) {
       progress$set(detail = detail)
     }
