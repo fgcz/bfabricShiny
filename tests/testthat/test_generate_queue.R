@@ -120,4 +120,14 @@ test_that("protViz_queue", {
     
 })
 
+
+test_that("protViz_queue_30666", {
+  S <- bfabricShiny:::.getSamples(login, webservicepassword,
+                                          posturl = bfabricposturl,
+                                          containerid = 30666)
+  
+  SS<-S |> protViz::assignPlatePosition(y=LETTERS[1:8], x=1:12, plate = 1:6) |>
+    protViz::blockRandom() |>
+    protViz::insertSamples(stdName = "clean", stdPosX = '6', stdPosY = 'F', plate = 6, begin=TRUE, howoften=4) |>
+})
   

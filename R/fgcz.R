@@ -305,9 +305,11 @@ query <- function(login, webservicepassword,
 
       # If we were passed a progress update function, call it
       if (is.function(updateProgress)) {
-        updateProgress(detail = sprintf("read %d/%d %s page(s) (%d items) in %s",
-          rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
-          diff_time_msg))
+        msg <- sprintf("read %d/%d %s page(s) (%d items) in %s",
+                       rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
+                       diff_time_msg)
+       
+        updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
       }
     }
     message(paste0("query time: ", diff_time_msg))

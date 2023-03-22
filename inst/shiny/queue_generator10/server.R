@@ -228,12 +228,22 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }else{
       
+      progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+      progress$set(message = paste("querying user of container",
+                                   input$container, "..."))
+      on.exit(progress$close())
+      
+      # define a callback function to be passed to the 'computational' method
+      updateProgress <- function(value = NULL, detail = NULL, n = NULL) {
+        progress$set(detail = detail)
+      }
       
       rv <- bfabricShiny::readPages(login(),
                                     webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
-                                    query = list(containerid = input$container)) |>
+                                    query = list(containerid = input$container),
+                                    updateProgress) |>
         lapply(FUN=function(x){x$login}) |>
         unlist()
       return(rv)
@@ -242,13 +252,15 @@ shinyServer(function(input, output, session) {
   
   getSample <- reactive({
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = paste("querying container",
+    progress$set(message = paste("querying samples of container",
                                  input$container, "..."))
     on.exit(progress$close())
     
     # define a callback function to be passed to the 'computational' method
-    updateProgress <- function(value = NULL, detail = NULL) {
-      progress$set(detail = detail)
+    updateProgress <- function(value = NULL, detail = NULL, n = NULL) {
+      value <- value * (progress$getMax() / n)
+      message(paste0("value = ", value))
+      progress$set(value = value, detail = detail)
     }
     
     if (input$containerType == 'project') {
