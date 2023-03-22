@@ -126,8 +126,8 @@ test_that("protViz_queue_30666", {
                                           posturl = bfabricposturl,
                                           containerid = 30666)
   
-  SS<-S |> protViz::assignPlatePosition(y=LETTERS[1:8], x=1:12, plate = 1:6) |>
+  SS <- S |> protViz::assignPlatePosition(y=LETTERS[1:8], x=1:12, plate = 1:6) |>
     protViz::blockRandom() |>
-    protViz::insertSamples(stdName = "clean", stdPosX = '6', stdPosY = 'F', plate = 6, begin=TRUE, howoften=4) |>
+    protViz::insertSamples(stdName = "clean", stdPosX = '6', stdPosY = 'F', plate = 6, begin=TRUE, howoften=4)
 })
   

@@ -269,10 +269,16 @@ shinyServer(function(input, output, session) {
         return(NULL)
       } else {
         res <- bfabricShiny::.getSamples(login(),
-                                          webservicepassword(),
-                                          posturl = posturl(),
-                                          containerid = input$container,
-                                          updateProgress = updateProgress)
+                                         webservicepassword(),
+                                         posturl = posturl(),
+                                         containerid = input$container,
+                                         updateProgress = function(value = NULL, detail = NULL, n = NULL) {
+                                           value <- value * (progress$getMax() / n)
+                                           progress$set(
+                                             message = "querying ...",
+                                             detail = detail,
+                                             value = value)
+                                         })
 
         return(res)
       }
