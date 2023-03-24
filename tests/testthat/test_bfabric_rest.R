@@ -23,8 +23,9 @@ test_that("test read", {
                             posturl = bfabricposturl,
                             webservicepassword = webservicepassword)
   
-  expect_equal(user[[1]]$login , "cpanse")
-  
+  testthat::expect_equal(user[[1]]$login , "cpanse")
+  testthat::expect_true('empdegree' %in% names(user[[1]]))
+
   resources <- bfabricShiny:::.getResources(login,
                                             webservicepassword,
                                             posturl = bfabricposturl,
