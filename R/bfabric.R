@@ -70,8 +70,10 @@ bfabricInput <- function(id) {
 #' @importFrom utils read.table
 #' @import PKI
 #' @export bfabric
-bfabric <- function(input, output, session, applicationid,
-                    resoucepattern = ".*", resourcemultiple=FALSE) {
+bfabric <- function(input, output, session,
+                    applicationid = NULL,
+                    resoucepattern = ".*",
+                    resourcemultiple=FALSE) {
   ns <- session$ns
 
   bfabricValues <- reactiveValues()
@@ -94,7 +96,9 @@ bfabric <- function(input, output, session, applicationid,
     package = "bfabricShiny"), "bfabricShiny.key.pub"))
 
   output$employee <- renderUI({
+    message("output$employee <- renderUI({")
     if (nchar(input$login) == 0 || nchar(input$webservicepassword) == 0){return(NULL)}
+   
     if (empdegree()){
       HTML("As an employee, you have access to all containers.")
     }
@@ -108,7 +112,7 @@ bfabric <- function(input, output, session, applicationid,
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
       progress$set(message = "querying containers ...")
       on.exit(progress$close())
-      updateProgress <- function(value = NULL, detail = NULL) {
+      updateProgress <- function(value = NULL, detail = NULL, n = NULL) {
         progress$set(detail = detail)
       }
       if (empdegree()){
@@ -147,7 +151,7 @@ bfabric <- function(input, output, session, applicationid,
         }
         id <- strsplit(input$applicationid, " - ")[[1]][1]
         
-        updateProgress <- function(value = NULL, detail = NULL) {
+        updateProgress <- function(value = NULL, detail = NULL, n = NULL) {
           progress$set(detail = detail)
         }
         
@@ -260,15 +264,15 @@ bfabric <- function(input, output, session, applicationid,
   
   
   empdegree <- reactive({
-    if(bfabricConnectionWorking()){return(FALSE)}
+    if(isFALSE(bfabricConnectionWorking())){return(FALSE)}
     
-    rv <- bfabricShiny::readPages(input$login,
+    user <- bfabricShiny::readPages(input$login,
                                   input$webservicepassword,
-                                  posturl=posturl(),
+                                  posturl  = posturl(),
                                   endpoint = 'user',
                                   query = list(login = input$login))
     
-    if('empdegree' %in% names(rv[[1]])){
+    if('empdegree' %in% names(user[[1]])){
       message("'empdegree' found.")
       return(TRUE)
     }

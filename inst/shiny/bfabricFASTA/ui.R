@@ -8,7 +8,6 @@
 #
 
 library(bfabricShiny)
-lication that draws a histogram
 shinyUI(fluidPage(
   
   # Application title

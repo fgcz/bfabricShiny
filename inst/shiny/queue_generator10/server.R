@@ -252,8 +252,6 @@ shinyServer(function(input, output, session) {
                                    input$container, "..."))
     on.exit(progress$close())
     
-  
-    
     if (input$containerType == 'project') {
       
       if (is.null(input$container)) {
@@ -284,13 +282,12 @@ shinyServer(function(input, output, session) {
         res <- containerIDs |>
           unique() |>
           lapply(FUN = function(x){
-            progress$set(message = paste("querying container",
-                                         x, "..."))
+            progress$set(message = paste("querying container", x, "..."))
             bfabricShiny:::.getSamples(
               login = login(),
               webservicepassword = webservicepassword(),
               posturl = posturl(),
-              containerid=x,
+              containerid = x,
               updateProgress = function(value = NULL, detail = NULL, n = NULL, ...) {
                                            value <- value * (progress$getMax() / n)
                                            progress$set(
@@ -300,7 +297,7 @@ shinyServer(function(input, output, session) {
                                          })}
           ) |>
           Reduce(f = rbind)
-        
+      
         return(res)
       }
     }else{
@@ -385,7 +382,7 @@ shinyServer(function(input, output, session) {
     }
     
     if (input$instrumentControlSoftware == "XCalibur" && input$area == "Proteomics"){
-      
+      print(res)
       rv <- bfabricShiny:::generate_queue_order(x = res,
                                                 foldername = input$folder,
                                                 projectid = containerid,
@@ -468,7 +465,7 @@ shinyServer(function(input, output, session) {
       
       if (input$method == 'blockrandom'){
         set.seed(1)
-        inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check=FALSE)
+        inputSampleTable <- inputSampleTable %>% .blockRandom(x = "sample_condition", check = FALSE)
       }
       print("DEBUG")
       print(input$autoQC4L)

@@ -11,7 +11,8 @@
   page = 1,
   query = list(),
   posturl = NULL,
-  updateProgress = NULL
+  updateProgress = NULL,
+  posturlsuffix = "read"
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ visible when you check your user details in the bfabric system.}
 \item{updateProgress}{a callback function for writing log output, e.g.,
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
+
+\item{posturlsuffix}{defines the method to use, e.g., read. also, save should work}
 }
 \description{
 .read

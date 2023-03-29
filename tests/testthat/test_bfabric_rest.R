@@ -6,16 +6,24 @@ test_that("test read", {
   expect_error(bfabricShiny::read(endpoint='user',
                                     query=list(login='cpanse')))
   
-  Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
   
-  expect_true(file.exists(Rprofile))
-  source(Rprofile, local = TRUE)
+  login <- bfabricShiny:::.login()
+  webservicepassword <- bfabricShiny:::.webservicepassword()
+  bfabricposturl <- bfabricShiny:::.posturl()
   
-  expect_length(login, 1)
-  expect_length(webservicepassword, 1)
-  expect_true(nchar(webservicepassword)== 32)
+  testthat::expect_length(login, 1)
+  testthat::expect_length(webservicepassword, 1)
+  testthat::expect_true(nchar(webservicepassword) == 32)
   
   # "Ensure you have REST service running on localhost:5000"
+  
+  alluser <- bfabricShiny::readPages(endpoint='user',
+                                  query = list(containerid = 3530),
+                                  login = login,
+                                  posturl = bfabricposturl,
+                                  webservicepassword = webservicepassword)
+  
+  alluser |> lapply(FUN = function(x){x$login}) |> unlist()
   
   user <- bfabricShiny::readPages(endpoint='user',
                             query = list(login = 'cpanse'),

@@ -8,7 +8,7 @@ bfabric(
   input,
   output,
   session,
-  applicationid,
+  applicationid = NULL,
   resoucepattern = ".*",
   resourcemultiple = FALSE
 )
