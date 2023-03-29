@@ -28,15 +28,15 @@ shinyServer(function(input, output, session) {
     })
 
   login <- reactive({
-    .login()
+    bfabricShiny:::.login()
   })
   
   posturl <- reactive({
-    .posturl()
+    bfabricShiny:::.posturl()
   })
 
   webservicepassword <- reactive({
-    .webservicepassword()
+    bfabricShiny:::.webservicepassword()
   })
 
   # ---- getInstruments ----
