@@ -238,14 +238,15 @@ shinyServer(function(input, output, session) {
         progress$set(detail = detail)
       }
       
-      rv <- bfabricShiny::readPages(login(),
-                                    webservicepassword(),
+      rv <- bfabricShiny::readPages(login = login(),
+                                    webservicepassword = webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
                                     query = list(containerid = input$container),
-                                    updateProgress) |>
-        lapply(FUN=function(x){x$login}) |>
+                                    updateProgress = updateProgress) |> 
+        lapply(FUN = function(x){x$login}) |>
         unlist()
+
       return(rv)
     }
   })
@@ -296,7 +297,13 @@ shinyServer(function(input, output, session) {
               webservicepassword = webservicepassword(),
               posturl = posturl(),
               containerid=x,
-              updateProgress = updateProgress)}
+              updateProgress = function(value = NULL, detail = NULL, n = NULL, ...) {
+                                           value <- value * (progress$getMax() / n)
+                                           progress$set(
+                                             message = "querying ...",
+                                             detail = detail,
+                                             value = value)
+                                         })}
           ) |>
           Reduce(f = rbind)
         
