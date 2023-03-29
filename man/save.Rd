@@ -33,8 +33,8 @@ Saves an object in bfabric
 \examples{
 \dontrun{
 bfabricShiny::save(login, webservicepassword , 'workunit',
-  posturl=bfabricposturl,
-  list(applicationid=212, description='test2', containerid=3000))
+  posturl = bfabricposturl,
+  list(applicationid = 212, description = 'test2', containerid = 3000))
 }
 }
 \author{

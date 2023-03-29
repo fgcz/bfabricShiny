@@ -261,13 +261,15 @@ query <- function(login, webservicepassword,
 #' .read
 #' @inheritParams readPages
 #' @param page define requested page, default is 1
+#' @param posturlsuffix defines the method to use, e.g., read. also, save should work
 #' @author MdE/CP 2023-03
 .read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   page = 1,
                   query = list(),
                   posturl = NULL,
-                  updateProgress = NULL){
+                  updateProgress = NULL,
+                  posturlsuffix = 'read'){
   
   
   stopifnot(isFALSE(is.null(login)),
@@ -275,7 +277,7 @@ query <- function(login, webservicepassword,
             isFALSE(is.null(posturl)),
             is.numeric(page))
   
-  posturl <- paste0(posturl, 'read')
+  posturl <- paste0(posturl, posturlsuffix)
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
   start_time <- Sys.time()
@@ -359,21 +361,21 @@ query <- function(login, webservicepassword,
 #'     query = list( attribute = list(name = 'fraction',
 #'         value = 'true')))
 #'         }
-readPages <- function(login = NULL, webservicepassword = NULL,
-                   endpoint = 'workunit',
-                   query = list(),
-                   posturl = 'http://localhost:5000/',
-                   maxpages = 10,
-                   updateProgress = NULL){
-  
-  
+readPages <- function(login = NULL,
+                      webservicepassword = NULL,
+                      endpoint = 'workunit',
+                      query = list(),
+                      posturl = 'http://localhost:5000/',
+                      maxpages = 10,
+                      updateProgress = NULL){
   
   rv <- .read(login = login,
               webservicepassword = webservicepassword,
               endpoint = endpoint,
               query = query,
               posturl = posturl,
-              updateProgress = updateProgress)
+              updateProgress = updateProgress,
+              posturlsuffix = 'read')
   
   
   # TODO(CP): too lazy to program; so start with page 1
@@ -389,15 +391,16 @@ readPages <- function(login = NULL, webservicepassword = NULL,
     if (rv$entitiesonpage == 0) return (NULL)
   }
   
-  if(rv$numberofpages > 1){
+  if(rv$numberofpages > 0){
     rv <- lapply(seq(1, min(rv$numberofpages, maxpages)),
-                 FUN=.read,
-                 login=login,
+                 FUN = .read,
+                 login = login,
                  webservicepassword = webservicepassword,
                  endpoint = endpoint,
                  query = query,
                  posturl = posturl,
-                 updateProgress = updateProgress) |> 
+                 updateProgress = updateProgress,
+                 posturlsuffix = 'read') |> 
       lapply(FUN = function(x){get(endpoint, x)}) |> 
       unlist(recursive = FALSE)
     return (rv)
@@ -529,7 +532,7 @@ read <- function(login = NULL, webservicepassword = NULL,
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
   
-  containers <- ({
+  #containers <- ({
     rv <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'user',
                                   posturl = posturl,
@@ -544,10 +547,11 @@ read <- function(login = NULL, webservicepassword = NULL,
     coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$`_id`})
     orders <- sapply(rv[[1]]$order, function(y){y$`_id`})
     
-    c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
-  })
+    containers <- c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
+  #})
   
-  containers
+ # containers
+    return(containers)
 }
 
 
@@ -648,8 +652,8 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @examples 
 #' \dontrun{
 #' bfabricShiny::save(login, webservicepassword , 'workunit',
-#'   posturl=bfabricposturl,
-#'   list(applicationid=212, description='test2', containerid=3000))
+#'   posturl = bfabricposturl,
+#'   list(applicationid = 212, description = 'test2', containerid = 3000))
 #' }
 save <- function(login = NULL,
                  webservicepassword = NULL,
@@ -657,23 +661,8 @@ save <- function(login = NULL,
                  posturl = 'http://localhost:5000/',
                  query = NULL){
   
-  stopifnot(isFALSE(is.null(query)),
-            isFALSE(is.null(posturl)))
-  
-  rv <- POST(paste0(posturl, '/s'),
-             body = toJSON(
-               list(
-                 login = login,
-                 webservicepassword = webservicepassword,
-                 endpoint = endpoint,
-                 query = query
-               ),
-               encode = 'json'
-             ))
-
-  rv <- content(rv)
- 
-  return(rv$res)
+  return(.read(login, webservicepassword, endpoint = endpoint, query = query,
+               posturl = posturl, posturlsuffix = 's'))
 }
 
 #' Create a workunit
@@ -991,3 +980,32 @@ To help us funding further development, please cite:
 
   data.frame(resourceId=inputResourcesIds, sampleId=inputSampleIds)
 }
+
+.Rprofile <- function(){ 
+  f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
+  if (file.exists(f)){ return (f) }
+  stop("no '.Rprofile'")
+}
+
+.login <- function(){
+  source(.Rprofile(), local = TRUE)
+  message(paste0("read login ", login, "."))
+  stopifnot('login' %in% ls())
+  return (login)
+}
+
+.posturl <- function(){
+  source(.Rprofile(), local = TRUE)
+  message(paste0("read bfabricposturl ", bfabricposturl, "."))
+  stopifnot('bfabricposturl' %in% ls())
+  return (bfabricposturl)
+}
+
+.webservicepassword <- function(){
+  source(.Rprofile(), local = TRUE)
+  message(paste0("read webservicepassword for login ", login, "."))
+  stopifnot('webservicepassword' %in% ls())
+  return(webservicepassword)
+}
+
+
