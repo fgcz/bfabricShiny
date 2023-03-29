@@ -28,21 +28,15 @@ shinyServer(function(input, output, session) {
     })
 
   login <- reactive({
-    source(Rprofile(), local=TRUE)
-    message(paste0("read login ", login, "."))
-    return (login)
+    .login()
   })
   
   posturl <- reactive({
-    source(Rprofile(), local=TRUE)
-    message(paste0("read bfabricposturl ", bfabricposturl, "."))
-    return (bfabricposturl)
+    .posturl()
   })
 
   webservicepassword <- reactive({
-    source(Rprofile(), local=TRUE)
-    message(paste0("read webservicepassword for login ", login, "."))
-    return(webservicepassword)
+    .webservicepassword()
   })
 
   # ---- getInstruments ----
@@ -322,7 +316,7 @@ shinyServer(function(input, output, session) {
       #idx <- rev(order(res$samples._id))
       #res <- res[idx, ]
       selectInput('sample', 'Sample:',
-                  paste0("C",res$container, "_S", res$samples._id, "-", res$samples.name),
+                  paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name),
                   size = 40, multiple = TRUE, selectize = FALSE)
     }
   })
