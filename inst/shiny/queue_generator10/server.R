@@ -251,17 +251,13 @@ shinyServer(function(input, output, session) {
   })
   
   getSample <- reactive({
+    
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = paste("querying samples of container",
-                                 input$container, "..."))
+                                   input$container, "..."))
     on.exit(progress$close())
     
-    # define a callback function to be passed to the 'computational' method
-    updateProgress <- function(value = NULL, detail = NULL, n = NULL) {
-      value <- value * (progress$getMax() / n)
-      message(paste0("value = ", value))
-      progress$set(value = value, detail = detail)
-    }
+  
     
     if (input$containerType == 'project') {
       
@@ -272,7 +268,7 @@ shinyServer(function(input, output, session) {
                                          webservicepassword(),
                                          posturl = posturl(),
                                          containerid = input$container,
-                                         updateProgress = function(value = NULL, detail = NULL, n = NULL) {
+                                         updateProgress = function(value = NULL, detail = NULL, n = NULL, ...) {
                                            value <- value * (progress$getMax() / n)
                                            progress$set(
                                              message = "querying ...",
@@ -313,7 +309,6 @@ shinyServer(function(input, output, session) {
   
   output$sample <- renderUI({
     res <- getSample()
-
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
@@ -496,8 +491,8 @@ shinyServer(function(input, output, session) {
                                   between=input$autoQC02,
                                   howoften = input$QC02o,
                                   howmany = input$QC02m,
-                                  begin = "3" %in% c(input$start1,input$start2, input$start3),
-                                  end = "3" %in% c(input$end1,input$end2, input$end3)) %>% 
+                                  begin = "2" %in% c(input$start1,input$start2, input$start3),
+                                  end = "2" %in% c(input$end1,input$end2, input$end3)) %>% 
           .insertStandardsEVOSEP(stdName = "autoQC4L",
                            between=input$autoQC4L,
                            howoften = input$QC4Lo,
