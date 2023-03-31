@@ -76,7 +76,7 @@ shinyServer(function(input, output, session) {
   
   filesystemDataDir <- filesystemDataDir[dir.exists(file.path(filesystemRoot, filesystemDataDir))]
   
-  values <- reactiveValues(pdfcontent = NULL,
+  values <- reactiveValues(gp = NULL,
                            wuid = NULL,
                            name = "rawDiag",
                            filesystemRoot=filesystemRoot,
@@ -873,7 +873,7 @@ output$qc <- renderPlot({
       message(msg)
       HTML(msg)
     }else{
-      msg <- paste0("#rows is ", nrow(rawData()))
+      msg <- paste0("#rows are ", nrow(rawData()))
       message(msg)
       HTML(msg)
     }
@@ -883,7 +883,7 @@ output$qc <- renderPlot({
     message("output$download ...")
     message(paste0("nrow(rawData()) = ", nrow(rawData())))
     
-    if(nrow(rawData()) > 0){
+    if(nrow(rawData()) > 0 & isFALSE(is.null(values$gp))){
       if (isFALSE(is.null(values$wuid))){
         message("output$download 1...")
         wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
