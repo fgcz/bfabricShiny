@@ -51,7 +51,7 @@ shinyServer(function(input, output, session) {
   v_download_links <- reactiveValues(filename = NULL)
   rv <- reactiveValues(download_flag = 0)
   
-  pdf <- reactive({tempfile(pattern = "rawDiag-", fileext = '.pdf')})
+  #pdf <- reactive({tempfile(pattern = "rawDiag-", fileext = '.pdf')})
   
   message(.GlobalEnv$.rawDiagfilesystemRoot)
   message(.GlobalEnv$.rawDiagfilesystemDataDir)
@@ -77,7 +77,7 @@ shinyServer(function(input, output, session) {
   filesystemDataDir <- filesystemDataDir[dir.exists(file.path(filesystemRoot, filesystemDataDir))]
   
   values <- reactiveValues(pdfcontent = NULL,
-                           workunitId = NULL,
+                           wuid = NULL,
                            name = "rawDiag",
                            filesystemRoot=filesystemRoot,
                            filesystemDataDir = filesystemDataDir,
@@ -669,30 +669,28 @@ output$qc <- renderPlot({
   
   # tic.basepeak ----
   output$tic.basepeak <- renderPlot({
+    values$wuid <- NULL
+    message("output$tic.basepeak <- renderPlot({")
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "tic.basepeak")
     on.exit(progress$close())
-
-    values$name <- "TIC and basepeak plot"
     
     if (nrow(rawData()) > 0){
-      
-      
+      values$name <- "TIC and basepeak plot"
       values$gp <- PlotTicBasepeak(rawData(), method = input$plottype)
       values$gp
     }
   })
   #---- scan.frequency ----
   output$scan.frequency <- renderPlot({
-    
+    values$wuid <- NULL
+    message("output$scan.frequency <- renderPlot")
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "scan.frequency")
     on.exit(progress$close())
-
-
-    values$name <- "scan frequency plot"
     
     if (nrow(rawData()) > 0){
+      values$name <- "scan frequency plot"
       #helpText("graphs scan frequency versus RT or scan frequency marginal distribution for violin."),
       values$gp <- PlotScanFrequency(rawData(), method = input$plottype)
       values$gp
@@ -700,13 +698,13 @@ output$qc <- renderPlot({
   })
   #---- scan.time ----
   output$scan.time <- renderPlot({
-    
+    values$wuid <- NULL
     values$name <- "scan time plot"
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "scan.times")
     on.exit(progress$close())
     if (nrow(rawData()) > 0){
-      
+      values$name <- "scan time plot"
       values$gp <- PlotScanTime(rawData(), method = input$plottype)
       values$gp
     }
@@ -714,6 +712,7 @@ output$qc <- renderPlot({
   
   #---- cycle.load ----
   output$cycle.load <- renderPlot({
+    values$wuid <- NULL
     values$name <- "cycle load plot"
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "cycle.load")
@@ -725,6 +724,7 @@ output$qc <- renderPlot({
   })
   #---- mass.distribution ----
   output$mass.distribution <- renderPlot({
+    values$wuid <- NULL
     values$name <- "mass distribution plot"
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "mass.distribution")
@@ -739,6 +739,7 @@ output$qc <- renderPlot({
   
   #---- lm.correction ----
   output$lm.correction <- renderPlot({
+    values$wuid <- NULL
     values$name <- "lock mass correction plot"
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "ploting", detail = "lm.correction")
@@ -752,6 +753,7 @@ output$qc <- renderPlot({
   
   #---- injection.time ----
   output$injection.time <- renderPlot({
+    values$wuid <- NULL
     values$name <- "injection time plot"
     if (nrow(rawData()) > 0){
       
@@ -766,6 +768,7 @@ output$qc <- renderPlot({
   
   #---- mass.heatmap ----
   output$mass.heatmap <- renderPlot({
+    values$wuid <- NULL
     if (nrow(rawData()) > 0){
       
       values$name <- "mass heatmap plot"
@@ -780,6 +783,7 @@ output$qc <- renderPlot({
   
   #---- precursor.heatmap ----
   output$precursor.heatmap <- renderPlot({
+    values$wuid <- NULL
     if (nrow(rawData()) > 0){
       
       values$name <- "precursor heatmap plot"
@@ -794,6 +798,7 @@ output$qc <- renderPlot({
   
   #---- cycle.time ----
   output$cycle.time <- renderPlot({
+    values$wuid <- NULL
     values$name <- "cycle time plot"
     if (nrow(rawData()) > 0){
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -806,6 +811,7 @@ output$qc <- renderPlot({
   })
   
   output$charge.state <- renderPlot({
+    values$wuid <- NULL
     values$name <- "charge state plot"
     if (nrow(rawData()) > 0){
       
@@ -821,6 +827,7 @@ output$qc <- renderPlot({
   
   #---- XIC ----
   output$xic <- renderPlot({
+    values$wuid <- NULL
     values$name <- "XIC plot"
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "plotting", detail = "XICs")
@@ -857,64 +864,77 @@ output$qc <- renderPlot({
   #---- sessionInfo ----
  
   output$sessionInfo <- renderPrint({
-   
     capture.output(sessionInfo())
   })
   
-#------------------- uploadResource --------
-  bfabricUploadResource <- observeEvent(rv$download_flag, {
-    if (rv$download_flag > 0 && input$source == 'bfabric'){
-      message("DEBUG  observeEvent rv$download_flag")
-      message(paste0("login: ",   bf$login()))
-      message(paste0("posturl: ", bf$posturl()))
-      message(paste0("pdf(): ", pdf()))
-
-      resources <- bf$resources()
-      rvupload <- bfabricShiny::uploadResource(
-        login = bf$login(),
-        webservicepassword = bf$webservicepassword(),
-        containerid = bf$containerid(),
-        posturl = bf$posturl(),
-        applicationid = 225,
-        status = "AVAILABLE",
-        description = sprintf("input files:\n%s", (input$relativepath |> format() |> paste(collapse='\n'))),
-        inputresourceid = resources$resourceid[resources$relativepath == input$relativepath],
-        workunitname = values$name,
-        resourcename = sprintf("%s.pdf", "rawDiag"),
-        file = pdf()
-      )
-      
-      values$workunitId <- rvupload$workunit[[1]]$`_id`
-      message(paste0("Uploaded workunit id is ", values$workunitId))
-    }else{
-	    print("already uploaded to bfabric")
-	    message("already uploaded to bfabric")
-    }
-  }
-  )
-  #---- downloadPDF ----
   
-  output$PDF <- renderUI({
+  output$download <- renderUI({
+    message("output$download ...")
+    message(paste0("nrow(rawData()) = ", nrow(rawData())))
+    
     if(nrow(rawData()) > 0){
-      tagList(
-        h3("PDF"),
-        downloadButton('callggsave'))
+      if (isFALSE(is.null(values$wuid))){
+        message("output$download 1...")
+        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                        values$wuid, "', '_blank')")
+        
+        actionButton("download",
+                     paste("go to B-Fabric workunit", values$wuid),
+                     onclick = wuUrl)
+      }else{
+        message("output$download 2...")
+        actionButton('generate', 'Upload MS configuration\nto B-Fabric')
+      }
+    }else{
+      message("output$download 3 ...")
+      msg <- "The download is not possible yet."
+      message(msg)
+      HTML(msg)
     }
+    message("output$download (END)...")
   })
   
-  output$callggsave = downloadHandler(
-    filename = function () { paste("rawDiag-", Sys.Date(), ".pdf", sep="")},
-    content = function(file) {
-      message("call ggsave ...")
-      rv$download_flag <- rv$download_flag + 1
-      ggsave(values$gp + labs(caption = paste("These plots were generated using the rawDiag R package version", packageVersion('rawDiag'), ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173", sep = '')),
-             file = file,
-             dpi = 600,
-             device = "pdf",
-             width = 500,
-             height = input$graphicsheight,
-             units = 'mm', limitsize = FALSE)
-      file.copy(file, pdf())
-    }
+  
+  bfabricUpload <- observeEvent(input$generate, {
+    pdfFilename <- tempfile(pattern = "rawDiag-", fileext = '.pdf')
+    
+    msg <- paste0("ggsave to file ", pdfFilename)
+    message(msg)
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = msg)
+    on.exit(progress$close())
+    
+    ggplot2::ggsave(plot = values$gp + labs(caption = paste("These plots were generated using the rawDiag R package version", packageVersion('rawDiag'), ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173", sep = '')),
+                    filename = pdfFilename,
+                    dpi = 600,
+                    device = "pdf",
+                    width = 500,
+                    height = input$graphicsheight,
+                    units = 'mm', limitsize = FALSE)
+    
+    msg <- paste0("bfabricShiny::uploadResource ...")
+    message(msg)
+    progress$set(message = msg)
+    
+    resources <- bf$resources()
+    rvupload <- bfabricShiny::uploadResource(
+      login = bf$login(),
+      webservicepassword = bf$webservicepassword(),
+      containerid = bf$containerid(),
+      posturl = bf$posturl(),
+      applicationid = 225,
+      status = "AVAILABLE",
+      description = sprintf("input files:\n%s", (input$relativepath |> format() |> paste(collapse='\n'))),
+      inputresourceid = resources$resourceid[resources$relativepath == input$relativepath],
+      workunitname = values$name,
+      resourcename = sprintf("%s.pdf", "rawDiag"),
+      file = pdf()
+    )
+    
+    values$wuid <- rvupload$workunit[[1]]$`_id`
+    msg <- paste0("The current plot is available as workunit ", values$wuid)
+    message(msg)
+    progress$set(message = msg)
+    } # bfabricUpload
   )
 })
