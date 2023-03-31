@@ -18,7 +18,7 @@ stopifnot(packageVersion('bfabricShiny') >= "0.12.18")
 source("queuetools.R", local = FALSE)
 
 shinyServer(function(input, output, session) {
-
+  autoInvalidate <- reactiveTimer(5000)
   values <- reactiveValues(wuid = NULL)
 
   Rprofile <- reactive({ 
