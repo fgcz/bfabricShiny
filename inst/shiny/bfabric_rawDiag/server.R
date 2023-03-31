@@ -868,9 +868,15 @@ output$qc <- renderPlot({
   })
   
   output$rawDataStatus <- renderUI({
-    msg <- paste0("nrow(rawData()) = ", nrow(rawData()))
-    message(msg)
-    HTML(msg)
+    if(is.null(rawData())){
+      msg <- paste0("#rows is NULL")
+      message(msg)
+      HTML(msg)
+    }else{
+      msg <- paste0("#rows is ", nrow(rawData()))
+      message(msg)
+      HTML(msg)
+    }
   })
   
   output$download <- renderUI({
