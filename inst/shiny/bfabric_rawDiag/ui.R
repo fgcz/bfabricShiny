@@ -49,8 +49,10 @@ shinyUI(fluidPage(
                    c("overlay" = "overlay",
 		     "trellis" = "trellis",
                      "violin" = "violin")),
-      htmlOutput("rawDataStatus"),
-      htmlOutput("download")
+      hr(),
+      htmlOutput("ddownload"),
+      hr(),
+      htmlOutput("rawDataStatus")
     ),
     
     # Show a plot of the generated distribution

@@ -78,6 +78,7 @@ shinyServer(function(input, output, session) {
   
   values <- reactiveValues(gp = NULL,
                            wuid = NULL,
+                           nrow = 0,
                            name = "rawDiag",
                            filesystemRoot=filesystemRoot,
                            filesystemDataDir = filesystemDataDir,
@@ -86,45 +87,49 @@ shinyServer(function(input, output, session) {
                            RDataData = c("WU163763"))
   
   output$tabs <- renderUI({
-  
-# ----tabsetPanel ----
-    tabsetPanel(
-      tabPanel("Help", list(titlePanel(paste("Help rawDiag - Diagnostic Plots for Mass Spectrometry Data", "version", packageVersion('rawDiag'))), 
-                             includeMarkdown("help.md"))),
-      tabPanel("TIC/Basepeak", list(helpText("displays the total ion  chromatogram (TIC) and the base peak chromatogram."),
-                                    plotOutput("tic.basepeak", height = input$graphicsheight))),
-      tabPanel("Scan Frequency", list(helpText("graphs scan frequency versus RT or scan frequency marginal distribution for violin."),
-                                      plotOutput("scan.frequency", height = input$graphicsheight))),
-      tabPanel("Scan Time", list(helpText("plots scan time as function of RT for each MSn level. A smooth curve displays the trend."),
-                                 plotOutput("scan.time", height = input$graphicsheight))),
-      tabPanel("Cycle Load", list(helpText("displays duty cycle load (number of MS2 scans per duty cycle) as a function of retention time (RT) (scatter plots) or its marginal distribution (violin)."),
-                                  plotOutput("cycle.load", height = input$graphicsheight))),
-      tabPanel("Mass Distribution", list(helpText("displays mass distribution using color coding according to charge state (trellis) or file (violin)."), 
-                                         plotOutput("mass.distribution", height = input$graphicsheight))),
-      tabPanel("Lock Mass Correction", list(helpText("graphs the lock mass deviations along RT (note: this example data were acquired with lock mass correction)."), 
-                                            plotOutput("lm.correction", height = input$graphicsheight))),
-      tabPanel("Injection Time", list(helpText("displays injection time as a function  of RT. A smooth curve graphs the trend. The maximum is indicated by a red dashed line."), 
-                                      plotOutput("injection.time", height = input$graphicsheight))),
-      tabPanel("Mass Heatmap", list(helpText("draws a 2D histogram of the peak count ~ charge deconvoluted mass along RT."), 
-                                    plotOutput("mass.heatmap", height = input$graphicsheight))),
-      tabPanel("Precursor Heatmap", list(helpText("draws a 2D histogram of the peak count ~ charge deconvoluted mass along RT."), 
-                                         plotOutput("precursor.heatmap", height = input$graphicsheight))),
-      tabPanel("Cycle Time", list(helpText(" displays cycle time with respect to RT (scatter plots) or its marginal distribution (violin). A smooth curve graphs the trend. The maximum is indicated by a red dashed line."), plotOutput("cycle.time", height = input$graphicsheight))),
-      tabPanel("Charge State", list(helpText("displays charge state distributions as biologist-friendly bar charts as absolute counts."), 
-                                    plotOutput("charge.state", height = input$graphicsheight))),
-      tabPanel("XICs", list(helpText("displays XICs of given masses."), 
-                                    plotOutput("xic", height = input$graphicsheight))),
-      tabPanel("QCs", list(helpText("displays quality control plots."), 
-                            plotOutput("qc", height = input$graphicsheight))),
-      tabPanel("XICs table", DT::dataTableOutput("tableXICAUC")),
-      tabPanel("Raw table", DT::dataTableOutput("table")),
-      tabPanel("Raw info", DT::dataTableOutput("tableInfo")),
-    
-      tabPanel("About", list(titlePanel(paste("About rawDiag - Diagnostic Plots for Mass Spectrometry Data", "version", packageVersion('rawDiag'))), 
-                             includeMarkdown("about.md"))),
-      tabPanel("Session Info", verbatimTextOutput("sessionInfo"))
-      
-    )
+    if(is.null(rawData())){
+      tabsetPanel(
+        tabPanel("Help", list(titlePanel(paste("Help rawDiag - Diagnostic Plots for Mass Spectrometry Data", "version", packageVersion('rawDiag'))), 
+                              includeMarkdown("help.md"))))
+    }else{
+      # ----tabsetPanel ----
+      tabsetPanel(
+        tabPanel("Help", list(titlePanel(paste("Help rawDiag - Diagnostic Plots for Mass Spectrometry Data", "version", packageVersion('rawDiag'))), 
+                              includeMarkdown("help.md"))),
+        tabPanel("TIC/Basepeak", list(helpText("displays the total ion  chromatogram (TIC) and the base peak chromatogram."),
+                                      plotOutput("tic.basepeak", height = input$graphicsheight))),
+        tabPanel("Scan Frequency", list(helpText("graphs scan frequency versus RT or scan frequency marginal distribution for violin."),
+                                        plotOutput("scan.frequency", height = input$graphicsheight))),
+        tabPanel("Scan Time", list(helpText("plots scan time as function of RT for each MSn level. A smooth curve displays the trend."),
+                                   plotOutput("scan.time", height = input$graphicsheight))),
+        tabPanel("Cycle Load", list(helpText("displays duty cycle load (number of MS2 scans per duty cycle) as a function of retention time (RT) (scatter plots) or its marginal distribution (violin)."),
+                                    plotOutput("cycle.load", height = input$graphicsheight))),
+        tabPanel("Mass Distribution", list(helpText("displays mass distribution using color coding according to charge state (trellis) or file (violin)."), 
+                                           plotOutput("mass.distribution", height = input$graphicsheight))),
+        tabPanel("Lock Mass Correction", list(helpText("graphs the lock mass deviations along RT (note: this example data were acquired with lock mass correction)."), 
+                                              plotOutput("lm.correction", height = input$graphicsheight))),
+        tabPanel("Injection Time", list(helpText("displays injection time as a function  of RT. A smooth curve graphs the trend. The maximum is indicated by a red dashed line."), 
+                                        plotOutput("injection.time", height = input$graphicsheight))),
+        tabPanel("Mass Heatmap", list(helpText("draws a 2D histogram of the peak count ~ charge deconvoluted mass along RT."), 
+                                      plotOutput("mass.heatmap", height = input$graphicsheight))),
+        tabPanel("Precursor Heatmap", list(helpText("draws a 2D histogram of the peak count ~ charge deconvoluted mass along RT."), 
+                                           plotOutput("precursor.heatmap", height = input$graphicsheight))),
+        tabPanel("Cycle Time", list(helpText(" displays cycle time with respect to RT (scatter plots) or its marginal distribution (violin). A smooth curve graphs the trend. The maximum is indicated by a red dashed line."), plotOutput("cycle.time", height = input$graphicsheight))),
+        tabPanel("Charge State", list(helpText("displays charge state distributions as biologist-friendly bar charts as absolute counts."), 
+                                      plotOutput("charge.state", height = input$graphicsheight))),
+        tabPanel("XICs", list(helpText("displays XICs of given masses."), 
+                              plotOutput("xic", height = input$graphicsheight))),
+        tabPanel("QCs", list(helpText("displays quality control plots."), 
+                             plotOutput("qc", height = input$graphicsheight))),
+        tabPanel("XICs table", DT::dataTableOutput("tableXICAUC")),
+        tabPanel("Raw table", DT::dataTableOutput("table")),
+        tabPanel("Raw info", DT::dataTableOutput("tableInfo")),
+        
+        tabPanel("About", list(titlePanel(paste("About rawDiag - Diagnostic Plots for Mass Spectrometry Data", "version", packageVersion('rawDiag'))), 
+                               includeMarkdown("about.md"))),
+        tabPanel("Session Info", verbatimTextOutput("sessionInfo"))
+        
+      )}
   })
    
  
@@ -439,7 +444,6 @@ shinyServer(function(input, output, session) {
  
   # ----- read orbitrap metadata -------
   rawData <- eventReactive(input$load, {
-    
     if (input$source == 'filesystem'){
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
       progress$set(message = paste("loading MS data from local computer"))
@@ -464,9 +468,10 @@ shinyServer(function(input, output, session) {
       rf <- resources[resources %in% input$relativepath]
       rf <- file.path(bfabricStorageRoot, rf)
       rv <- plyr::rbind.fill(
-        mclapply(rf, FUN=rawDiag::read.raw, mono = TRUE , mc.cores = input$mccores))
+        parallel::mclapply(rf, FUN = rawDiag::read.raw, mono = TRUE,
+                           mc.cores = input$mccores))
     }else{rv <- NULL}
-    
+    values$nrow = nrow(rv)
     rv
   })
 
@@ -868,22 +873,10 @@ output$qc <- renderPlot({
   })
   
   output$rawDataStatus <- renderUI({
-    if(is.null(rawData())){
-      msg <- paste0("#rows is NULL")
-      message(msg)
-      HTML(msg)
-    }else{
-      msg <- paste0("#rows are ", nrow(rawData()))
-      message(msg)
-      HTML(msg)
-    }
-  })
-  
-  output$download <- renderUI({
-    message("output$download ...")
-    message(paste0("nrow(rawData()) = ", nrow(rawData())))
-    
-    if(nrow(rawData()) > 0 & isFALSE(is.null(values$gp))){
+    msg <- paste0("#rows are ", values$nrow)
+    message(msg)
+    #HTML(msg)
+    if(values$nrow  > 0 & isFALSE(is.null(values$gp))){
       if (isFALSE(is.null(values$wuid))){
         message("output$download 1...")
         wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
@@ -897,12 +890,9 @@ output$qc <- renderPlot({
         actionButton('generate', 'Upload MS configuration\nto B-Fabric')
       }
     }else{
-      message("output$download 3 ...")
-      msg <- "The download is not possible yet."
-      message(msg)
+     
       HTML(msg)
     }
-    message("output$download (END)...")
   })
   
   
