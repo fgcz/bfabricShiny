@@ -893,6 +893,8 @@ output$qc <- renderPlot({
      
       HTML(msg)
     }
+    
+  
   })
   
   
@@ -908,13 +910,15 @@ output$qc <- renderPlot({
     gglabs <- ggplot2::labs(caption = paste0("These plots were generated using the rawDiag R package version",
                                              packageVersion('rawDiag'),
                                              ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173"))
-    rvgg <- ggplot2::ggsave(filename = pdfFilename,
-                    plot = (values$gp + gglabs),
-                    dpi = 600,
-                    device = "pdf",
-                    width = 500,
-                    height = input$graphicsheight,
-                    units = 'mm', limitsize = FALSE)
+    
+    rvgg <- ggplot2::ggsave(
+      values$gp + gglabs,
+      file = pdfFilename,
+      dpi = 600,
+      device = "pdf",
+      width = 500,
+      height = input$graphicsheight,
+      units = 'mm', limitsize = FALSE)
     
     message(rvgg)
     msg <- paste0("bfabricShiny::uploadResource ...")
