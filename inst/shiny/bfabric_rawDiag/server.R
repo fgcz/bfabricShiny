@@ -905,8 +905,8 @@ output$qc <- renderPlot({
     progress$set(message = msg)
     on.exit(progress$close())
     
-    ggplot2::ggsave(plot = values$gp + labs(caption = paste("These plots were generated using the rawDiag R package version", packageVersion('rawDiag'), ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173", sep = '')),
-                    filename = pdfFilename,
+    ggplot2::ggsave(filename = pdfFilename,
+                    plot = values$gp + labs(caption = paste("These plots were generated using the rawDiag R package version", packageVersion('rawDiag'), ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173", sep = '')),
                     dpi = 600,
                     device = "pdf",
                     width = 500,
@@ -929,7 +929,7 @@ output$qc <- renderPlot({
       inputresourceid = resources$resourceid[resources$relativepath == input$relativepath],
       workunitname = values$name,
       resourcename = sprintf("%s.pdf", "rawDiag"),
-      file = pdf()
+      file = pdfFilename
     )
     
     values$wuid <- rvupload$workunit[[1]]$`_id`
