@@ -439,7 +439,6 @@ shinyServer(function(input, output, session) {
  
   # ----- read orbitrap metadata -------
   rawData <- eventReactive(input$load, {
-  #rawData <- observeEvent(input$load, {
     
     if (input$source == 'filesystem'){
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
@@ -868,6 +867,11 @@ output$qc <- renderPlot({
     capture.output(sessionInfo())
   })
   
+  output$rawDataStatus <- renderUI({
+    msg <- paste0("nrow(rawData()) = ", nrow(rawData()))
+    message(msg)
+    HTML(msg)
+  })
   
   output$download <- renderUI({
     message("output$download ...")
