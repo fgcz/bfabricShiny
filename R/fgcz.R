@@ -303,7 +303,8 @@ query <- function(login, webservicepassword,
   
   if (interactive()) {
     
-    msg <- paste0("endpoint: ", endpoint, "\n",
+    msg <- paste0("idonly: ", idonly, "\n",
+                  "endpoint: ", endpoint, "\n",
                   "entitiesonpage: ", rv$res$entitiesonpage, "\n",
                   "numberofpages: ", rv$res$numberofpages, "\n",
                   "page: ", rv$res$page)
