@@ -913,13 +913,15 @@ output$qc <- renderPlot({
     
     rvgg <- ggplot2::ggsave(
       values$gp + gglabs,
-      file = pdfFilename,
+      filename = pdfFilename,
       dpi = 600,
       device = "pdf",
       width = 500,
       height = input$graphicsheight,
-      units = 'mm', limitsize = FALSE)
+      units = 'mm',
+      limitsize = FALSE)
     
+    message("generated pdf")
     message(rvgg)
     msg <- paste0("bfabricShiny::uploadResource ...")
     message(msg)
