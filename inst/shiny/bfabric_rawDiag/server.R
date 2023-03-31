@@ -77,7 +77,8 @@ shinyServer(function(input, output, session) {
   filesystemDataDir <- filesystemDataDir[dir.exists(file.path(filesystemRoot, filesystemDataDir))]
   
   values <- reactiveValues(pdfcontent = NULL,
-  			   name = "rawDiag",
+                           workunitId = NULL,
+                           name = "rawDiag",
                            filesystemRoot=filesystemRoot,
                            filesystemDataDir = filesystemDataDir,
                            #RDataRoot = file.path(path.package(package = "rawDiag"), "extdata"),
@@ -882,6 +883,9 @@ output$qc <- renderPlot({
         resourcename = sprintf("%s.pdf", "rawDiag"),
         file = pdf()
       )
+      
+      values$workunitId <- rvupload$workunit[[1]]$`_id`
+      message(paste0("Uploaded workunit id is ", values$workunitId))
     }else{
 	    print("already uploaded to bfabric")
 	    message("already uploaded to bfabric")
@@ -893,17 +897,15 @@ output$qc <- renderPlot({
   output$PDF <- renderUI({
     if(nrow(rawData()) > 0){
       tagList(
-        #h3("XIC"),
-        #actionButton('loadXICs', 'load XICs'),
         h3("PDF"),
-        downloadButton('foo'))
+        downloadButton('callggsave'))
     }
   })
   
-  output$foo = downloadHandler(
+  output$callggsave = downloadHandler(
     filename = function () { paste("rawDiag-", Sys.Date(), ".pdf", sep="")},
     content = function(file) {
-      print("YEAH PDF")
+      message("call ggsave ...")
       rv$download_flag <- rv$download_flag + 1
       ggsave(values$gp + labs(caption = paste("These plots were generated using the rawDiag R package version", packageVersion('rawDiag'), ". If you are using rawDiag for your work, please cite the following manuscript: C. Trachsel et al. (2018), Journal of Proteome Research doi: 10.1021/acs.jproteome.8b00173", sep = '')),
              file = file,
