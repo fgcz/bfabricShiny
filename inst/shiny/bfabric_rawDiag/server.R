@@ -1,6 +1,11 @@
 #R
 # This is the server logic of a rawDiag Shiny web application.
 
+
+stopifnot(packageVersion('bfabricShiny') >= "0.12.18",
+          packageVersion('bfabricShiny') >= "0.0.41")
+
+
 library(shiny)
 
 if (isFALSE(require("bfabricShiny"))){
@@ -45,6 +50,7 @@ shinyServer(function(input, output, session) {
   v_upload_file <- reactiveValues(data = NULL, filenam = NULL, protein = NULL, condition = NULL, inputresourceID = NULL)
   v_download_links <- reactiveValues(filename = NULL)
   rv <- reactiveValues(download_flag = 0)
+  
   pdf <- reactive({tempfile(pattern = "rawDiag-", fileext = '.pdf')})
   
   message(.GlobalEnv$.rawDiagfilesystemRoot)
@@ -457,7 +463,7 @@ shinyServer(function(input, output, session) {
       rf <- resources[resources %in% input$relativepath]
       rf <- file.path(bfabricStorageRoot, rf)
       rv <- plyr::rbind.fill(
-        mclapply(rf, FUN=read.raw, mono = TRUE , mc.cores = input$mccores))
+        mclapply(rf, FUN=rawDiag::read.raw, mono = TRUE , mc.cores = input$mccores))
     }else{rv <- NULL}
     
     rv
@@ -857,9 +863,10 @@ output$qc <- renderPlot({
 #------------------- uploadResource --------
   bfabricUploadResource <- observeEvent(rv$download_flag, {
     if (rv$download_flag > 0 && input$source == 'bfabric'){
-      message("DEBUG")
+      message("DEBUG  observeEvent rv$download_flag")
       message(paste0("login: ",   bf$login()))
       message(paste0("posturl: ", bf$posturl()))
+      message(paste0("pdf(): ", pdf()))
 
       resources <- bf$resources()
       rvupload <- bfabricShiny::uploadResource(
