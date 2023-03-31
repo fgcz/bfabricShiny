@@ -438,7 +438,8 @@ shinyServer(function(input, output, session) {
   
  
   # ----- read orbitrap metadata -------
-  rawData <- eventReactive(input$load, {
+  #rawData <- eventReactive(input$load, {
+  rawData <- observeEvent(input$load, {
     
     if (input$source == 'filesystem'){
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
