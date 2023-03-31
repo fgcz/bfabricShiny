@@ -17,11 +17,17 @@ test_that("test read", {
   
   # "Ensure you have REST service running on localhost:5000"
   
-  alluser <- bfabricShiny::readPages(endpoint='user',
+  alluser3530 <- bfabricShiny::readPages(endpoint='user',
                                   query = list(containerid = 3530),
                                   login = login,
                                   posturl = bfabricposturl,
                                   webservicepassword = webservicepassword)
+  
+  alluser <- bfabricShiny::readPages(endpoint='user',
+                                     query = list(),
+                                     login = login,
+                                     posturl = bfabricposturl,
+                                     webservicepassword = webservicepassword)
   
   alluser |> lapply(FUN = function(x){x$login}) |> unlist()
   

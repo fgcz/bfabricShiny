@@ -12,7 +12,7 @@ stopifnot(
   require(XML))
 
 
-stopifnot(packageVersion('bfabricShiny') >= "0.12.13")
+stopifnot(packageVersion('bfabricShiny') >= "0.12.18")
 
 # TODO(cp): replace with CRAN protViz functions
 source("queuetools.R", local = FALSE)

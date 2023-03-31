@@ -268,8 +268,9 @@ query <- function(login, webservicepassword,
                   page = 1,
                   query = list(),
                   posturl = NULL,
-                  updateProgress = NULL,
-                  posturlsuffix = 'read'){
+                  posturlsuffix = 'read',
+                  idonly = FALSE,
+                  updateProgress = NULL){
   
   
   stopifnot(isFALSE(is.null(login)),
@@ -286,6 +287,7 @@ query <- function(login, webservicepassword,
                                                           webservicepassword = webservicepassword,
                                                           endpoint = endpoint,
                                                           query = query,
+                                                          idonly = idonly,
                                                           page = page
                              ),
                              encode = 'json'))
@@ -294,26 +296,29 @@ query <- function(login, webservicepassword,
   diff_time_msg <- paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].")
   rv <- httr::content(query_result)
   if (is.null(rv$res)){warning("query failed."); return(rv);}
-
+  
+  if ('errorreport' %in% names(rv$res)){
+    stop(paste0("B-Fabric errorreport: ", rv$res$errorreport))
+  }
+  
   if (interactive()) {
-    if ('errorreport' %in% names(rv)){
-     return(rv)
-    }else{
-      msg <- paste0("endpoint: ", endpoint, "\n",
-                    "entitiesonpage: ", rv$res$entitiesonpage, "\n",
-                    "numberofpages: ", rv$res$numberofpages, "\n",
-                    "page: ", rv$res$page)
-      message(msg)
-
-      # If we were passed a progress update function, call it
-      if (is.function(updateProgress)) {
-        msg <- sprintf("read %d/%d %s page(s) (%d items) in %s",
-                       rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
-                       diff_time_msg)
-       
-        updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
-      }
+    
+    msg <- paste0("endpoint: ", endpoint, "\n",
+                  "entitiesonpage: ", rv$res$entitiesonpage, "\n",
+                  "numberofpages: ", rv$res$numberofpages, "\n",
+                  "page: ", rv$res$page)
+    message(msg)
+    
+    # If we were passed a progress update function, call it
+    if (is.function(updateProgress)) {
+      msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
+                     idonly,
+                     rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
+                     diff_time_msg)
+      
+      updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
     }
+    
     message(paste0("query time: ", diff_time_msg))
   }
   rv$res
@@ -373,6 +378,7 @@ readPages <- function(login = NULL,
               webservicepassword = webservicepassword,
               endpoint = endpoint,
               query = query,
+              idonly = TRUE,
               posturl = posturl,
               updateProgress = updateProgress,
               posturlsuffix = 'read')
