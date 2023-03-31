@@ -941,7 +941,7 @@ output$qc <- renderPlot({
       resourcename = sprintf("%s.pdf", "rawDiag"),
       file = pdfFilename
     )
-    
+    print(rvupload)
     values$wuid <- rvupload$workunit[[1]]$`_id`
     msg <- paste0("The current plot is available as workunit ", values$wuid)
     message(msg)
