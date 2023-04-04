@@ -337,6 +337,7 @@ bfabric <- function(input, output, session,
         return()
       }
 
+      #stopifnot(require(PKI))
       shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
       shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
       shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
@@ -370,6 +371,7 @@ bfabricInputLogin <- function(id) {
   )
 }
 
+#' @import PKI
 #' @export bfabricLogin
 bfabricLogin <- function(input, output, session) {
   ns <- session$ns
@@ -389,7 +391,7 @@ bfabricLogin <- function(input, output, session) {
                         value=isolate(input$store)$webservicepassword)
         return()
       }
-      
+      #stopifnot(require(PKI))
       shinyStore::updateStore(session, "login", isolate(input$login),
                               encrypt=pubKey)
       shinyStore::updateStore(session, "webservicepassword",

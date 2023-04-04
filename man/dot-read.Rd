@@ -11,8 +11,9 @@
   page = 1,
   query = list(),
   posturl = NULL,
-  updateProgress = NULL,
-  posturlsuffix = "read"
+  posturlsuffix = "read",
+  idonly = FALSE,
+  updateProgress = NULL
 )
 }
 \arguments{
@@ -29,11 +30,11 @@ visible when you check your user details in the bfabric system.}
 
 \item{posturl}{where the flask server is working}
 
+\item{posturlsuffix}{defines the method to use, e.g., read. also, save should work}
+
 \item{updateProgress}{a callback function for writing log output, e.g.,
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
-
-\item{posturlsuffix}{defines the method to use, e.g., read. also, save should work}
 }
 \description{
 .read

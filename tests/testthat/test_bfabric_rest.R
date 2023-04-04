@@ -15,6 +15,14 @@ test_that("test read", {
   testthat::expect_length(webservicepassword, 1)
   testthat::expect_true(nchar(webservicepassword) == 32)
   
+  
+  rv <- httr::POST('https://fgcz-c-072.uzh.ch:5002/q',
+                   body = jsonlite::toJSON(list(login=login,
+                                                webservicepassword=webservicepassword,
+                                                endpoint = 'user',
+                                                query=list('login' = 'mderrico'))),
+                   encode = 'json')
+  
   # "Ensure you have REST service running on localhost:5000"
   
   alluser3530 <- bfabricShiny::readPages(endpoint='user',

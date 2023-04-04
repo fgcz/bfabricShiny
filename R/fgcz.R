@@ -278,6 +278,7 @@ query <- function(login, webservicepassword,
             isFALSE(is.null(posturl)),
             is.numeric(page))
   
+  # message(paste("DEBUG XXX", login, webservicepassword, posturl))
   posturl <- paste0(posturl, posturlsuffix)
   
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}

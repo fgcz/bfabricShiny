@@ -7,7 +7,7 @@ Authors@R: c(person("Christian", "Trachsel",
         role = c("aut", "cre"), 
         comment = c(ORCID = "0000-0003-1975-3064")))
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
-Version: 0.12.19
+Version: 0.12.20
 Description: provides a shiny module and read, save, and delete functions to
     interact with the FGCZ's B-Fabric <https://fgcz-bfabric.uzh.ch> system
     using WSDL and REST. Also, the package contains shiny
@@ -24,7 +24,7 @@ Imports:
     magrittr,
     protViz (>= 0.7.7),
     shiny (>= 1.0),
-    shinyStore (>= 0.1),
+    shinyStore (>= 0.1.1),
     tidyr (>= 0.6),
     XML
 Suggest: 
@@ -38,7 +38,7 @@ Suggest:
     RCurl,
     xml2 (>= 1.1)
 Remotes:
-    trestletech/shinyStore
+    cpanse/shinyStore
 License: GPL-3 + file LICENSE
 LazyData: FALSE
 SystemRequirements: installed bfabricPy python3 package
