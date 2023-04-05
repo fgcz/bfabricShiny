@@ -1,3 +1,12 @@
+.privateKeyFile <- function(){
+  f <- file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key")
+  f
+}
+
+.publicKeyFile <- function(){
+  f <- file.path(system.file("keys", package = "bfabricShiny"), "bfabricShiny.key.pub.pem")
+  f
+}
 #' Defines the bfabric shiny UI module
 #'
 #' @param id shiny session id
@@ -20,9 +29,7 @@ bfabricInput <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
-  privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
-    package = "bfabricShiny"), "bfabricShiny.key"))
-
+  privKey <- PKI::PKI.load.key(file = .privateKeyFile())
 
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
@@ -92,8 +99,7 @@ bfabric <- function(input, output, session,
     return (bfabricposturl)
   })
 
-  pubKey <- PKI.load.key(file = file.path(system.file("keys",
-    package = "bfabricShiny"), "bfabricShiny.key.pub"))
+  pubKey <- PKI.load.key(file = .publicKeyFile())
 
   output$employee <- renderUI({
     message("output$employee <- renderUI({")
@@ -358,8 +364,7 @@ bfabricInputLogin <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   
-  privKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
-      package = "bfabricShiny"), "bfabricShiny.key"))
+  privKey <- PKI::PKI.load.key(file = .privateKeyFile())
   
   tagList(
     initStore(ns("store"), "shinyStore-ex2", privKey),
@@ -376,9 +381,7 @@ bfabricInputLogin <- function(id) {
 bfabricLogin <- function(input, output, session) {
   ns <- session$ns
   
-  pubKey <- PKI::PKI.load.key(file = file.path(system.file("keys",
-                                                      package = "bfabricShiny"),
-                                          "bfabricShiny.key.pub"))
+  pubKey <- PKI::PKI.load.key(file = .publicKeyFile())
   
   ## shinyStore; for login and password handling
   observe({
