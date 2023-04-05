@@ -1,11 +1,10 @@
 #!/bin/sh
 
+rm -v *.key*
 ssh-keygen -f ${PWD}/bfabricShiny.key -t rsa -m PEM -b 8192 
 echo $?
-sleep 2
 ssh-keygen -f ${PWD}/bfabricShiny.key.pub -e -m PEM > bfabricShiny.key.pub.pem
 echo $?
-sleep 2
 
 
 ## test keys
