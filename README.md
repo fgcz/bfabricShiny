@@ -249,8 +249,14 @@ shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
 ```
 #### On howto generate keys?
 
-```{sh}
+```
 cd bfabricShiny/inst/keys &&  ssh-keygen -f $PWD/bfabricShiny.key -t rsa
+
+## generate public pem key file
+ssh-keygen -f $PWD/bfabricShiny.key.pub -e -m PEM > bfabricShiny.key.pub.pem
+
+## test
+R -q -e "PKI::PKI.load.key(file = 'bfabricShiny.key.pub.pem')"
 ```
 
 ### PTM-MarkerFinder 
