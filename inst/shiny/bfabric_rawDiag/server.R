@@ -926,8 +926,10 @@ output$qc <- renderPlot({
     msg <- paste0("bfabricShiny::uploadResource ...")
     message(msg)
     progress$set(message = msg)
-    
+
+
     resources <- bf$resources()
+
     rvupload <- bfabricShiny::uploadResource(
       login = bf$login(),
       webservicepassword = bf$webservicepassword(),
@@ -941,7 +943,7 @@ output$qc <- renderPlot({
       resourcename = sprintf("%s.pdf", "rawDiag"),
       file = pdfFilename
     )
-    print(rvupload)
+    message(rvupload)
     values$wuid <- rvupload$workunit[[1]]$`_id`
     msg <- paste0("The current plot is available as workunit ", values$wuid)
     message(msg)
