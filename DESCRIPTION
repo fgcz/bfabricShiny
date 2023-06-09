@@ -7,14 +7,14 @@ Authors@R: c(person("Christian", "Trachsel",
         role = c("aut", "cre"), 
         comment = c(ORCID = "0000-0003-1975-3064")))
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
-Version: 0.12.21
+Version: 0.12.22
 Description: provides a shiny module and read, save, and delete functions to
     interact with the FGCZ's B-Fabric <https://fgcz-bfabric.uzh.ch> system
     using WSDL and REST. Also, the package contains shiny
     applications, e.g., to allow the FGCZ user to automatically generate a
     configuration of queues for Thermo Fisher Scientific and Bruker instruments. 
 Depends:
-    R (>= 4.1)
+    R (>= 4.2)
 Imports:
     PKI,
     base64enc,
