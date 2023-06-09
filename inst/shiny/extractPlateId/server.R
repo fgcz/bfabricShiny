@@ -69,11 +69,26 @@ shinyServer(function(input, output) {
                               endpoint = "sample",
                               query = list('id' = sampleid))
     if ( debugmode == TRUE ) {message(res[[1]])}
+    samplename <- res[[1]][[1]]$name
+    if (is.null(res[[1]][[1]]$parent)){
+        sampletype <- res[[1]][[1]]$type
+    } else {
+	sampletype <- read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
+    }
+    c(samplename, sampletype)
+  }
+
+  read_sampletype <- function(sampleid){
+    res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
+                              posturl = posturl(),
+                              endpoint = "sample",
+                              query = list('id' = sampleid))
+    if ( debugmode == TRUE ) {message(res[[1]])}
     if (is.null(res[[1]][[1]]$parent)){
         sampletype <- res[[1]][[1]]$type
 	return(sampletype)
     }
-    read_sample(res[[1]][[1]]$parent[[1]]$`_id`)
+    read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
   }
 
   read_plate <- reactive({
@@ -85,7 +100,9 @@ shinyServer(function(input, output) {
                               query = list('id' = input$plateID))
     sample_ids <- c()
     gridposition <- c()
+    samplename <- c()
     sampletype <- c()
+    sample_order <- c()
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]][[1]]$sample))
@@ -94,13 +111,19 @@ shinyServer(function(input, output) {
     for (r in 1:length(res[[1]][[1]]$sample)){
       sample_ids <- append(sample_ids, res[[1]][[1]]$sample[[r]]$`_id`)
       gridposition <- append(gridposition, res[[1]][[1]]$sample[[r]]$`_gridposition`)
-      sampletype <- append(sampletype, read_sample(res[[1]][[1]]$sample[[r]]$`_id`))
+      sample_info <- read_sample(res[[1]][[1]]$sample[[r]]$`_id`)
+      samplename <- append(samplename, sample_info[1])
+      sampletype <- append(sampletype, sample_info[2])
+      sample_order <- append(sample_order, r)
     }
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
-
-    list(sample_ids, gridposition, sampletype)
+    message(sampletype)
+    message(samplename)
+    message(gridposition)
+    #list(samplename, sample_ids, gridposition, sampletype)
+    list(unlist(samplename), sample_ids, gridposition, unlist(sampletype))
   })
   
   
@@ -108,8 +131,9 @@ shinyServer(function(input, output) {
     shiny::req(input$plateID)
     shiny::req(input$instrument)
     content <- read_plate()
+    message(content)
     df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("sample_id", "gridposition", "sampletype")
+    names(df) <- c("Sample Name", "Sample ID", "Position", "sampletype")
     df |>
       kableExtra::kable() |>
       kableExtra::kable_styling("striped", full_width = FALSE)
