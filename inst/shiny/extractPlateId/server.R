@@ -103,29 +103,40 @@ shinyServer(function(input, output) {
     gridposition <- c()
     samplename <- c()
     sampletype <- c()
-    sample_order <- c()
+    runnumber <- c()
     order_id <- c()
+    samplelist <- res[[1]][[1]]$sample
+    #types <- list("Control Sample" = "control", "Biological Sample - Metabolomics" = "name")
+    filename <- c()
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]][[1]]$sample))
             message(res[[1]][[1]]$sample[[2]]$`_id`)
     }
-    for (r in 1:length(res[[1]][[1]]$sample)){
+    for (r in 1:length(samplelist)){
+      currentdate <- format(Sys.time(), "%Y%m%d")
+      sampleid <- samplelist[[r]]$`_id`
       sample_ids <- append(sample_ids, res[[1]][[1]]$sample[[r]]$`_id`)
       gridposition <- append(gridposition, res[[1]][[1]]$sample[[r]]$`_gridposition`)
       sample_info <- read_sample(res[[1]][[1]]$sample[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
       sampletype <- append(sampletype, sample_info["type"])
-      sample_order <- append(sample_order, r)
+      runnumber <- r #append(runnumber, r)
       order_id <- append(order_id, sample_info["orderID"])
+      #if (sample_info["type"] %in% names(types)){
+      if (sample_info["type"] == "Control Sample"){
+	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_control"))
+      } else if (sample_info["type"] == "Biological Sample - Metabolomics"){
+	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
+      } else {
+	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_check_sample_type"))
+      }
     }
+
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
-    message(sampletype)
-    message(samplename)
-    message(gridposition)
-    list(unlist(samplename), sample_ids, gridposition, unlist(sampletype), unlist(order_id))
+    list(filename, unlist(samplename), sample_ids, gridposition, unlist(sampletype), unlist(order_id))
   })
   
   
@@ -135,7 +146,7 @@ shinyServer(function(input, output) {
     content <- read_plate()
     message(content)
     df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("Sample Name", "Sample ID", "Position", "sampletype", "order_id")
+    names(df) <- c("File Name", "Sample Name", "Sample ID", "Position", "sampletype", "order_id")
     df |>
       kableExtra::kable() |>
       kableExtra::kable_styling("striped", full_width = FALSE)
