@@ -70,12 +70,13 @@ shinyServer(function(input, output) {
                               query = list('id' = sampleid))
     if ( debugmode == TRUE ) {message(res[[1]])}
     samplename <- res[[1]][[1]]$name
+    orderid <- res[[1]][[1]]$container$`_id`
     if (is.null(res[[1]][[1]]$parent)){
         sampletype <- res[[1]][[1]]$type
     } else {
 	sampletype <- read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
     }
-    c(samplename, sampletype)
+    list("name" = samplename, "type" = sampletype, "orderID" = orderid)
   }
 
   read_sampletype <- function(sampleid){
@@ -103,6 +104,7 @@ shinyServer(function(input, output) {
     samplename <- c()
     sampletype <- c()
     sample_order <- c()
+    order_id <- c()
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]][[1]]$sample))
@@ -112,9 +114,10 @@ shinyServer(function(input, output) {
       sample_ids <- append(sample_ids, res[[1]][[1]]$sample[[r]]$`_id`)
       gridposition <- append(gridposition, res[[1]][[1]]$sample[[r]]$`_gridposition`)
       sample_info <- read_sample(res[[1]][[1]]$sample[[r]]$`_id`)
-      samplename <- append(samplename, sample_info[1])
-      sampletype <- append(sampletype, sample_info[2])
+      samplename <- append(samplename, sample_info["name"])
+      sampletype <- append(sampletype, sample_info["type"])
       sample_order <- append(sample_order, r)
+      order_id <- append(order_id, sample_info["orderID"])
     }
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
@@ -122,8 +125,7 @@ shinyServer(function(input, output) {
     message(sampletype)
     message(samplename)
     message(gridposition)
-    #list(samplename, sample_ids, gridposition, sampletype)
-    list(unlist(samplename), sample_ids, gridposition, unlist(sampletype))
+    list(unlist(samplename), sample_ids, gridposition, unlist(sampletype), unlist(order_id))
   })
   
   
@@ -133,7 +135,7 @@ shinyServer(function(input, output) {
     content <- read_plate()
     message(content)
     df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("Sample Name", "Sample ID", "Position", "sampletype")
+    names(df) <- c("Sample Name", "Sample ID", "Position", "sampletype", "order_id")
     df |>
       kableExtra::kable() |>
       kableExtra::kable_styling("striped", full_width = FALSE)
