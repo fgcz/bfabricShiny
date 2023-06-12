@@ -103,10 +103,10 @@ shinyServer(function(input, output) {
     gridposition <- c()
     samplename <- c()
     sampletype <- c()
-    runnumber <- c()
     order_id <- c()
     samplelist <- res[[1]][[1]]$sample
-    #types <- list("Control Sample" = "control", "Biological Sample - Metabolomics" = "name")
+    # order samplelist by _position to get the runnumber
+    samplelist <- samplelist[order(sapply(samplelist, function(x) as.numeric(x$`_position`)))]
     filename <- c()
     if ( debugmode==TRUE) {
 	    message("test")
@@ -114,16 +114,17 @@ shinyServer(function(input, output) {
             message(res[[1]][[1]]$sample[[2]]$`_id`)
     }
     for (r in 1:length(samplelist)){
+      message(samplelist[[r]]$`_position`)
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
-      sample_ids <- append(sample_ids, res[[1]][[1]]$sample[[r]]$`_id`)
-      gridposition <- append(gridposition, res[[1]][[1]]$sample[[r]]$`_gridposition`)
-      sample_info <- read_sample(res[[1]][[1]]$sample[[r]]$`_id`)
+      sample_ids <- append(sample_ids, samplelist[[r]]$`_id`)
+      gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
+      sample_info <- read_sample(samplelist[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
       sampletype <- append(sampletype, sample_info["type"])
-      runnumber <- r #append(runnumber, r)
+      runnumber <- r
+      runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
       order_id <- append(order_id, sample_info["orderID"])
-      #if (sample_info["type"] %in% names(types)){
       if (sample_info["type"] == "Control Sample"){
 	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_control"))
       } else if (sample_info["type"] == "Biological Sample - Metabolomics"){
