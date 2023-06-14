@@ -13,6 +13,7 @@ stopifnot(require(shiny), require(bfabricShiny))
 shinyServer(function(input, output) {
   
   debugmode <- FALSE
+  m_instruments  <- c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3")
   
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
@@ -55,11 +56,13 @@ shinyServer(function(input, output) {
   })
   
   output$instrument <- renderUI({
-    textInput(
+    selectInput(
       "instrument",
       "Instrument",
-      "",
-      width = NULL
+      m_instruments,
+      multiple = FALSE,
+      selected = "",
+      selectize = TRUE
     )
   })
   
@@ -102,13 +105,14 @@ shinyServer(function(input, output) {
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
-    sampletype <- c()
-    order_id <- c()
     samplelist <- res[[1]][[1]]$sample
     # order samplelist by _position to get the runnumber
     samplelist <- samplelist[order(sapply(samplelist, function(x) as.numeric(x$`_position`)))]
     filename <- c()
     paths <- c()
+    injvol <- rep(2, length(samplelist))
+    laboratory <- rep("FGCZ", length(samplelist))
+    instrument <- c()
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]][[1]]$sample))
@@ -117,28 +121,28 @@ shinyServer(function(input, output) {
     for (r in 1:length(samplelist)){
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
-      sample_ids <- append(sample_ids, samplelist[[r]]$`_id`)
+      sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
-      sampletype <- append(sampletype, sample_info["type"])
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-      order_id <- append(order_id, sample_info["orderID"])
       if (sample_info["type"] == "Control Sample"){
 	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_control"))
+	      instrument <- append(instrument, "C:\\Xcalibur\\methods")
       } else if (sample_info["type"] == "Biological Sample - Metabolomics"){
 	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
+	      instrument <- append(instrument, "")
       } else {
 	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_check_sample_type"))
       }
-      paths <- append(paths, paste0("D:\\Data2San\\orders\\Proteomics\\", input$instrument, "\\analytic_", currentdate))
+      paths <- append(paths, paste0("D:\\Data2San\\p", sample_info["orderID"], "\\Metabolomics\\", input$instrument, "\\analytic_", currentdate))
     }
 
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
-    list(filename, paths, unlist(samplename), sample_ids, gridposition, unlist(sampletype), unlist(order_id))
+    list(filename, paths, gridposition, injvol, laboratory, sample_ids, unlist(samplename), instrument)
   })
   
   
@@ -148,7 +152,7 @@ shinyServer(function(input, output) {
     content <- read_plate()
     message(content)
     df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("File Name", "Path", "Sample Name", "Sample ID", "Position", "sampletype", "order_id")
+    names(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
     df |>
       kableExtra::kable() |>
       kableExtra::kable_styling("striped", full_width = FALSE)
