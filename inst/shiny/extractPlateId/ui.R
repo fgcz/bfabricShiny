@@ -19,9 +19,8 @@ shinyUI(fluidPage(
     sidebarPanel(
       uiOutput("bfabricUser"),
       uiOutput("instrument"),
-      uiOutput("plateID")
-      #uiOutput("actionGenerateReportButton"),
-      #uiOutput("downloadReportButton")
+      uiOutput("plateID"),
+      uiOutput("downloadReportButton")
    ),
     
     mainPanel(

@@ -145,18 +145,58 @@ shinyServer(function(input, output) {
     list(filename, paths, gridposition, injvol, laboratory, sample_ids, unlist(samplename), instrument)
   })
   
-  
-  output$outputKable <- function(){
+
+  getTable <- reactive({
     shiny::req(input$plateID)
     shiny::req(input$instrument)
+    message(paste("Creating table for plate ID =", input$plateID))
+    showModal(modalDialog(
+             title = "FGCZ - plate info extraction",
+	      paste("Extracting samples information from plate id ", input$plateID),
+	      HTML("<br />"),
+	      #mes2,
+	      #HTML("<br />"),
+	      #mes3,
+	      easyClose = TRUE,
+	      footer = "Footer"
+	      ))
     content <- read_plate()
-    message(content)
     df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-    df |>
+    names(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
+    df
+  })
+
+  output$outputKable <- function(){
+    table <- getTable()
+    message(table)
+    table |>
       kableExtra::kable() |>
       kableExtra::kable_styling("striped", full_width = FALSE)
   }
-    
-  
+
+   csvFilename <- reactive({
+       tempdir() |>
+	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.pdf", input$instrument, input$plateID))
+   })
+
+  output$downloadReportButton <- renderUI({
+      shiny::req(input$instrument)
+      shiny::req(input$plateID)
+      downloadButton("downloadCSV", "Download CSV")
+ })
+
+
+ output$downloadCSV <- downloadHandler(
+     filename = function(){
+         basename(csvFilename())
+     },
+     content = function(file) {
+	 message("writing csv file")
+         message(getTable())
+	 rv$download_flag <- rv$download_flag + 1
+	 write.csv(getTable(), file, row.names = FALSE)
+     }
+ )
+
+
 })
