@@ -25,9 +25,7 @@ shinyUI(fluidPage(
     
     mainPanel(
       list(
-        #uiOutput("title"),
         uiOutput("outputKable")
-        #uiOutput("textTemplate")
       )
     )
   )

@@ -42,7 +42,10 @@ shinyServer(function(input, output) {
     message(paste("Request started from user", u$login))
     return(u)
   })
- 
+
+
+  orderID <- NULL
+
   output$plateID <- renderUI({
     numericInput(
       "plateID",
@@ -124,6 +127,9 @@ shinyServer(function(input, output) {
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
+      if (is.null(orderID)){
+	      orderID <- sample_info["orderID"]
+      }
       samplename <- append(samplename, sample_info["name"])
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
@@ -176,7 +182,7 @@ shinyServer(function(input, output) {
 
    csvFilename <- reactive({
        tempdir() |>
-	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.pdf", input$instrument, input$plateID))
+	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.csv",  input$instrument, input$plateID))
    })
 
   output$downloadReportButton <- renderUI({
@@ -194,9 +200,34 @@ shinyServer(function(input, output) {
 	 message("writing csv file")
          message(getTable())
 	 rv$download_flag <- rv$download_flag + 1
-	 write.csv(getTable(), file, row.names = FALSE)
+	 write.csv(getTable(), csvFilename(), row.names = FALSE)
      }
  )
+
+ bfabricUploadResource <- observeEvent(rv$download_flag, {
+    progress <- shiny::Progress$new(min = 0, max = 1)
+    progress$set(message = "upload csv file to bfabric")
+    on.exit(progress$close())
+
+    if (rv$download_flag > 0){
+        message("bfabricUpload")
+	progress$set(message = "uploading csv file with plate info to bfabric")
+	rv$bfrv2 <- bfabricShiny::uploadResource(
+             login = bf$login(),
+             webservicepassword = bf$webservicepassword(),
+             posturl = posturl(),
+	     containerid = 3000, #orderID,
+	     applicationid = 212,
+	     status = "PENDING",
+             description = "",
+             inputresourceid = rv$bfrv2$resource[[1]]$`_id`,
+	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", orderID, input$plateID),
+             resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID, format(Sys.time(), format="%Y%m%d-%H%M")),
+             file = csvFilename()
+	     )
+	     print(rv$bfrv2)
+	    }
+ })
 
 
 })
