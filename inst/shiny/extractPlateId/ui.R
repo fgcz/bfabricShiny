@@ -18,6 +18,7 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       uiOutput("bfabricUser"),
+      uiOutput("orderID"),
       uiOutput("instrument"),
       uiOutput("plateID"),
       uiOutput("downloadReportButton")

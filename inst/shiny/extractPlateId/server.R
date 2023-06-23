@@ -44,7 +44,17 @@ shinyServer(function(input, output) {
   })
 
 
-  orderID <- NULL
+  output$orderID <- renderUI({
+    numericInput(
+      "orderID",
+      "order ID",
+      "",
+      min = NA,
+      max = NA,
+      step = NA,
+      width = NULL
+    )
+  })
 
   output$plateID <- renderUI({
     numericInput(
@@ -76,13 +86,12 @@ shinyServer(function(input, output) {
                               query = list('id' = sampleid))
     if ( debugmode == TRUE ) {message(res[[1]])}
     samplename <- res[[1]][[1]]$name
-    orderid <- res[[1]][[1]]$container$`_id`
     if (is.null(res[[1]][[1]]$parent)){
         sampletype <- res[[1]][[1]]$type
     } else {
 	sampletype <- read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
     }
-    list("name" = samplename, "type" = sampletype, "orderID" = orderid)
+    list("name" = samplename, "type" = sampletype)
   }
 
   read_sampletype <- function(sampleid){
@@ -127,22 +136,19 @@ shinyServer(function(input, output) {
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
-      if (is.null(orderID)){
-	      orderID <- sample_info["orderID"]
-      }
       samplename <- append(samplename, sample_info["name"])
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
       if (sample_info["type"] == "Control Sample"){
-	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_control"))
+	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_control"))
 	      instrument <- append(instrument, "C:\\Xcalibur\\methods")
       } else if (sample_info["type"] == "Biological Sample - Metabolomics"){
-	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
+	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
 	      instrument <- append(instrument, "")
       } else {
-	      filename <- append(filename, paste0(currentdate, "_C", sample_info["orderID"], "_", runnumber, "_S", sampleid, "_check_sample_type"))
+	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_check_sample_type"))
       }
-      paths <- append(paths, paste0("D:\\Data2San\\p", sample_info["orderID"], "\\Metabolomics\\", input$instrument, "\\analytic_", currentdate))
+      paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\Metabolomics\\", input$instrument, "\\analytic_", currentdate))
     }
 
     validate(
@@ -216,12 +222,12 @@ shinyServer(function(input, output) {
              login = bf$login(),
              webservicepassword = bf$webservicepassword(),
              posturl = posturl(),
-	     containerid = 3000, #orderID,
+	     containerid = 3000, #input$orderID,
 	     applicationid = 212,
 	     status = "PENDING",
              description = "",
              inputresourceid = rv$bfrv2$resource[[1]]$`_id`,
-	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", orderID, input$plateID),
+	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID),
              resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID, format(Sys.time(), format="%Y%m%d-%H%M")),
              file = csvFilename()
 	     )
