@@ -57,15 +57,38 @@ shinyServer(function(input, output) {
   })
 
   output$plateID <- renderUI({
-    numericInput(
-      "plateID",
-      "plate ID",
-      "",
-      min = NA,
-      max = NA,
-      step = NA,
-      width = NULL
+      shiny::req(input$orderID)
+      shiny::req(read_plateid())
+      selectInput(
+          "plateID",
+          "List of available plate IDs:",
+          read_plateid(),
+          selected = "",
+          multiple = TRUE,
+          selectize = TRUE,
+          size = NULL,
+          width = NULL
     )
+  })
+
+  read_plateid <- reactive({
+	  shiny::req(user())
+	  shiny::req(input$orderID)
+	  res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
+				    posturl = posturl(),
+				    endpoint = "plate",
+				    query = list('containerid' = input$orderID))[[1]]
+	  plate_ids <- c()
+	  message(length(res))
+	  for (r in 1:length(res)){
+	          plate_ids <- append(plate_ids, res[[r]]$`_id`)
+	          message(plate_ids)
+	  }
+	  validate(
+		   need(try(length(plate_ids) > 0), "There are no plate defined for this order")
+		   )
+	  message(plate_ids)
+	  sort(plate_ids)
   })
   
   output$instrument <- renderUI({
@@ -83,13 +106,13 @@ shinyServer(function(input, output) {
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
                               endpoint = "sample",
-                              query = list('id' = sampleid))
-    if ( debugmode == TRUE ) {message(res[[1]])}
-    samplename <- res[[1]][[1]]$name
-    if (is.null(res[[1]][[1]]$parent)){
-        sampletype <- res[[1]][[1]]$type
+                              query = list('id' = sampleid))[[1]]
+    if ( debugmode == TRUE ) {message(res)}
+    samplename <- res[[1]]$name
+    if (is.null(res[[1]]$parent)){
+        sampletype <- res[[1]]$type
     } else {
-	sampletype <- read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
+	sampletype <- read_sampletype(res[[1]]$parent[[1]]$`_id`)
     }
     list("name" = samplename, "type" = sampletype)
   }
@@ -99,40 +122,42 @@ shinyServer(function(input, output) {
                               posturl = posturl(),
                               endpoint = "sample",
                               query = list('id' = sampleid))
-    if ( debugmode == TRUE ) {message(res[[1]])}
-    if (is.null(res[[1]][[1]]$parent)){
-        sampletype <- res[[1]][[1]]$type
+    if ( debugmode == TRUE ) {message(res)}
+    if (is.null(res[[1]]$parent)){
+        sampletype <- res[[1]]$type
 	return(sampletype)
     }
-    read_sampletype(res[[1]][[1]]$parent[[1]]$`_id`)
+    read_sampletype(res[[1]]$parent[[1]]$`_id`)
   }
 
-  read_plate <- reactive({
+  read_plate <- function(plateid) {
     shiny::req(user())
-    shiny::req(input$plateID)
+    message(paste("Reading plate ", plateid))
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
                               endpoint = "plate",
-                              query = list('id' = input$plateID))
+                              query = list('id' = plateid))[[1]]
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
-    samplelist <- res[[1]][[1]]$sample
+    samplelist <- res[[1]]$sample
     # order samplelist by _position to get the runnumber
     samplelist <- samplelist[order(sapply(samplelist, function(x) as.numeric(x$`_position`)))]
     filename <- c()
     paths <- c()
+    message(paste("Reading", length(samplelist), "samples"))
     injvol <- rep(2, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
     instrument <- c()
     if ( debugmode==TRUE) {
 	    message("test")
-            message(length(res[[1]][[1]]$sample))
-            message(res[[1]][[1]]$sample[[2]]$`_id`)
+            message(length(res[[1]]$sample))
+            message(res[[1]]$sample[[2]]$`_id`)
     }
     for (r in 1:length(samplelist)){
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
+      message("Reading sample ID", sampleid)
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
@@ -147,6 +172,8 @@ shinyServer(function(input, output) {
 	      instrument <- append(instrument, "")
       } else {
 	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_check_sample_type"))
+	      instrument <- append(instrument, "")
+
       }
       paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\Metabolomics\\", input$instrument, "\\analytic_", currentdate))
     }
@@ -154,17 +181,28 @@ shinyServer(function(input, output) {
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
-    list(filename, paths, gridposition, injvol, laboratory, sample_ids, unlist(samplename), instrument)
-  })
+    data.frame("file name" = filename,
+	       "path" = paths,
+	       "position" = gridposition,
+	       "inj vol" = injvol,
+	       "l3 laboratory" = laboratory,
+	       "sample id" = sample_ids,
+	       "sample name" = unlist(samplename),
+	       "instrument method" = instrument,
+               stringsAsFactors = FALSE)
+  }
   
 
   getTable <- reactive({
     shiny::req(input$plateID)
     shiny::req(input$instrument)
     message(paste("Creating table for plate ID =", input$plateID))
+    df <- data.frame(matrix(ncol = 8, nrow = 0))
+    colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
     showModal(modalDialog(
              title = "FGCZ - plate info extraction",
-	      paste("Extracting samples information from plate id ", input$plateID),
+	      #paste("Extracting samples information from plate id ", input$plateID[[1]]),
+	      paste("Extracting samples information"),
 	      HTML("<br />"),
 	      #mes2,
 	      #HTML("<br />"),
@@ -172,9 +210,12 @@ shinyServer(function(input, output) {
 	      easyClose = TRUE,
 	      footer = "Footer"
 	      ))
-    content <- read_plate()
-    df <- data.frame(content, check.names=FALSE)
-    names(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
+    L <- unique(input$plateID)
+    for (i in seq(1,length(L))){
+        df <- rbind(df , read_plate(L[[i]]))
+	message(paste("Plate", L[[i]], "added"))
+    }
+    colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
     df
   })
 
@@ -188,7 +229,7 @@ shinyServer(function(input, output) {
 
    csvFilename <- reactive({
        tempdir() |>
-	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.csv",  input$instrument, input$plateID))
+	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.csv",  input$instrument, input$plateID[[1]]))
    })
 
   output$downloadReportButton <- renderUI({
@@ -227,8 +268,8 @@ shinyServer(function(input, output) {
 	     status = "PENDING",
              description = "",
              inputresourceid = rv$bfrv2$resource[[1]]$`_id`,
-	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID),
-             resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID, format(Sys.time(), format="%Y%m%d-%H%M")),
+	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
+             resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID[[1]], format(Sys.time(), format="%Y%m%d-%H%M")),
              file = csvFilename()
 	     )
 	     print(rv$bfrv2)
