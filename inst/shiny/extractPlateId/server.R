@@ -212,7 +212,9 @@ shinyServer(function(input, output) {
 	      ))
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
-        df <- rbind(df , read_plate(L[[i]]))
+	plate_info <- read_plate(L[[i]])
+        plate_info$position <- paste0(i,":",plate_info$position)
+        df <- rbind(df , plate_info)
 	message(paste("Plate", L[[i]], "added"))
     }
     colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
