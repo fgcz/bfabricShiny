@@ -141,8 +141,8 @@ shinyServer(function(input, output) {
     gridposition <- c()
     samplename <- c()
     samplelist <- res[[1]]$sample
-    # order samplelist by _position to get the runnumber
-    samplelist <- samplelist[order(sapply(samplelist, function(x) as.numeric(x$`_position`)))]
+    order_idx <- get_reshuffled_position(samplelist)
+    samplelist <- samplelist[c(unlist(order_idx["bio_sample"]), unlist(order_idx["control"]))]
     filename <- c()
     paths <- c()
     message(paste("Reading", length(samplelist), "samples"))
@@ -192,6 +192,24 @@ shinyServer(function(input, output) {
                stringsAsFactors = FALSE)
   }
   
+
+  get_reshuffled_position <- function(samplelist){
+       # order samplelist by _position to get the runnumber
+       order_by_position <- order(sapply(samplelist, function(x) as.numeric(x$`_position`)))
+       set.seed(872436)
+       control_raw <- "H"
+       order_sample <- c()
+       order_control <- c()
+       for (f in order_by_position){
+           if (grepl(control_raw, samplelist[[f]]$`_gridposition`, fixed=TRUE)){
+               order_control <- append(order_control, f)
+           } else {
+               order_sample <- append(order_sample, f)
+           }
+       }
+       order_sample_rand <- sample(order_sample)
+       list("bio_sample" = order_sample_rand, "control" = order_control)
+  }
 
   getTable <- reactive({
     shiny::req(input$plateID)
