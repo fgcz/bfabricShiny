@@ -19,8 +19,10 @@ shinyUI(fluidPage(
     sidebarPanel(
       uiOutput("bfabricUser"),
       uiOutput("orderID"),
+      uiOutput("area"),
       uiOutput("instrument"),
       uiOutput("plateID"),
+      uiOutput("injvol"),
       uiOutput("downloadReportButton")
    ),
     

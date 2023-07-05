@@ -45,6 +45,7 @@ shinyServer(function(input, output) {
 
 
   output$orderID <- renderUI({
+    shiny::req(user())
     numericInput(
       "orderID",
       "order ID",
@@ -71,6 +72,21 @@ shinyServer(function(input, output) {
     )
   })
 
+  output$injvol <- renderUI({
+    shiny::req(input$orderID)
+    shiny::req(read_plateid())
+    numericInput(
+      "injvol",
+      "Inj Vol",
+      "",
+      min = NA,
+      max = NA,
+      step = NA,
+      width = NULL
+    )
+  })
+
+
   read_plateid <- reactive({
 	  shiny::req(user())
 	  shiny::req(input$orderID)
@@ -92,6 +108,7 @@ shinyServer(function(input, output) {
   })
   
   output$instrument <- renderUI({
+    shiny::req(input$orderID)
     selectInput(
       "instrument",
       "Instrument",
@@ -146,7 +163,7 @@ shinyServer(function(input, output) {
     filename <- c()
     paths <- c()
     message(paste("Reading", length(samplelist), "samples"))
-    injvol <- rep(2, length(samplelist))
+    injvol <- rep(input$injvol, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
     instrument <- c()
     if ( debugmode==TRUE) {
@@ -157,7 +174,7 @@ shinyServer(function(input, output) {
     for (r in 1:length(samplelist)){
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
-      message("Reading sample ID", sampleid)
+      message("Reading sample ID ", sampleid)
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
@@ -212,8 +229,9 @@ shinyServer(function(input, output) {
   }
 
   getTable <- reactive({
-    shiny::req(input$plateID)
     shiny::req(input$instrument)
+    shiny::req(input$injvol)
+    shiny::req(input$plateID)
     message(paste("Creating table for plate ID =", input$plateID))
     df <- data.frame(matrix(ncol = 8, nrow = 0))
     colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
