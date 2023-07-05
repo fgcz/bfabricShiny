@@ -13,7 +13,8 @@ stopifnot(require(shiny), require(bfabricShiny))
 shinyServer(function(input, output) {
   
   debugmode <- FALSE
-  m_instruments  <- c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3")
+  instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3"),
+		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2"))
   
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
@@ -107,12 +108,25 @@ shinyServer(function(input, output) {
 	  sort(plate_ids)
   })
   
+  output$area <- renderUI({
+    shiny::req(input$orderID)
+    selectInput(
+      "area",
+      "Area",
+      c("Proteomics","Metabolomics"),
+      multiple = FALSE,
+      selected = "",
+      selectize = TRUE
+    )
+  })
+
   output$instrument <- renderUI({
     shiny::req(input$orderID)
+    shiny::req(input$area)
     selectInput(
       "instrument",
       "Instrument",
-      m_instruments,
+      instruments[input$area],
       multiple = FALSE,
       selected = "",
       selectize = TRUE
@@ -142,7 +156,11 @@ shinyServer(function(input, output) {
     if ( debugmode == TRUE ) {message(res)}
     if (is.null(res[[1]]$parent)){
         sampletype <- res[[1]]$type
-	return(sampletype)
+        if (is.null(sampletype)){
+            return("Unknown")
+	} else {
+	    return(sampletype)
+	}
     }
     read_sampletype(res[[1]]$parent[[1]]$`_id`)
   }
@@ -157,12 +175,12 @@ shinyServer(function(input, output) {
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
+    sampletype <- c()
     samplelist <- res[[1]]$sample
     order_idx <- get_reshuffled_position(samplelist)
     samplelist <- samplelist[c(unlist(order_idx["bio_sample"]), unlist(order_idx["control"]))]
     filename <- c()
     paths <- c()
-    message(paste("Reading", length(samplelist), "samples"))
     injvol <- rep(input$injvol, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
     instrument <- c()
@@ -171,6 +189,7 @@ shinyServer(function(input, output) {
             message(length(res[[1]]$sample))
             message(res[[1]]$sample[[2]]$`_id`)
     }
+    message(paste("Reading", length(samplelist), "samples"))
     for (r in 1:length(samplelist)){
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
@@ -179,6 +198,9 @@ shinyServer(function(input, output) {
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
       sample_info <- read_sample(samplelist[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
+      sampletype <- append(sampletype, sample_info["type"])
+      message(samplename)
+      message(sampletype)
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
       if (sample_info["type"] == "Control Sample"){
@@ -198,14 +220,15 @@ shinyServer(function(input, output) {
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
-    data.frame("file name" = filename,
-	       "path" = paths,
-	       "position" = gridposition,
-	       "inj vol" = injvol,
-	       "l3 laboratory" = laboratory,
-	       "sample id" = sample_ids,
-	       "sample name" = unlist(samplename),
-	       "instrument method" = instrument,
+    data.frame("File Name" = filename,
+	       "Path" = paths,
+	       "Position" = gridposition,
+	       "Inj Vol" = injvol,
+	       "L3 Laboratory" = laboratory,
+	       "Sample ID" = sample_ids,
+	       "Sample Name" = unlist(samplename),
+	       "Instrument Method" = instrument,
+	       "Sample Type" = unlist(sampletype),
                stringsAsFactors = FALSE)
   }
   
@@ -233,8 +256,8 @@ shinyServer(function(input, output) {
     shiny::req(input$injvol)
     shiny::req(input$plateID)
     message(paste("Creating table for plate ID =", input$plateID))
-    df <- data.frame(matrix(ncol = 8, nrow = 0))
-    colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
+    df <- data.frame(matrix(ncol = 9, nrow = 0))
+    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
     showModal(modalDialog(
              title = "FGCZ - plate info extraction",
 	      #paste("Extracting samples information from plate id ", input$plateID[[1]]),
@@ -249,11 +272,12 @@ shinyServer(function(input, output) {
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
 	plate_info <- read_plate(L[[i]])
-        plate_info$position <- paste0(i,":",plate_info$position)
+        message(plate_info)
+        plate_info$Position <- paste0(i,":",plate_info$Position)
         df <- rbind(df , plate_info)
 	message(paste("Plate", L[[i]], "added"))
     }
-    colnames(df) <- c("file name", "path", "position", "inj vol", "l3 laboratory", "sample id", "sample name", "instrument method")
+    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
     df
   })
 
@@ -273,6 +297,7 @@ shinyServer(function(input, output) {
   output$downloadReportButton <- renderUI({
       shiny::req(input$instrument)
       shiny::req(input$plateID)
+      shiny::req(input$injvol)
       downloadButton("downloadCSV", "Download CSV")
  })
 
