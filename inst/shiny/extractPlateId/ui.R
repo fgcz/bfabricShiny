@@ -23,6 +23,7 @@ shinyUI(fluidPage(
       uiOutput("instrument"),
       uiOutput("plateID"),
       uiOutput("injvol"),
+      uiOutput('run'),
       uiOutput("downloadReportButton")
    ),
     

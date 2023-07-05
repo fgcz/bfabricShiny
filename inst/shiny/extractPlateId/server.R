@@ -96,10 +96,8 @@ shinyServer(function(input, output) {
 				    endpoint = "plate",
 				    query = list('containerid' = input$orderID))[[1]]
 	  plate_ids <- c()
-	  message(length(res))
 	  for (r in 1:length(res)){
 	          plate_ids <- append(plate_ids, res[[r]]$`_id`)
-	          message(plate_ids)
 	  }
 	  validate(
 		   need(try(length(plate_ids) > 0), "There are no plate defined for this order")
@@ -190,6 +188,7 @@ shinyServer(function(input, output) {
             message(res[[1]]$sample[[2]]$`_id`)
     }
     message(paste("Reading", length(samplelist), "samples"))
+    showNotification(paste("Reading", length(samplelist), "samples"))
     for (r in 1:length(samplelist)){
       currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
@@ -199,8 +198,6 @@ shinyServer(function(input, output) {
       sample_info <- read_sample(samplelist[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
       sampletype <- append(sampletype, sample_info["type"])
-      message(samplename)
-      message(sampletype)
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
       if (sample_info["type"] == "Control Sample"){
@@ -258,17 +255,6 @@ shinyServer(function(input, output) {
     message(paste("Creating table for plate ID =", input$plateID))
     df <- data.frame(matrix(ncol = 9, nrow = 0))
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
-    showModal(modalDialog(
-             title = "FGCZ - plate info extraction",
-	      #paste("Extracting samples information from plate id ", input$plateID[[1]]),
-	      paste("Extracting samples information"),
-	      HTML("<br />"),
-	      #mes2,
-	      #HTML("<br />"),
-	      #mes3,
-	      easyClose = TRUE,
-	      footer = "Footer"
-	      ))
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
 	plate_info <- read_plate(L[[i]])
@@ -281,18 +267,29 @@ shinyServer(function(input, output) {
     df
   })
 
-  output$outputKable <- function(){
-    table <- getTable()
-    message(table)
-    table |>
-      kableExtra::kable() |>
-      kableExtra::kable_styling("striped", full_width = FALSE)
-  }
+  observeEvent(input$run,{
+      showNotification("Extracting plate information")
+      output$outputKable <- function(){
+        table <- getTable()
+        message(table)
+        table |>
+          kableExtra::kable() |>
+          kableExtra::kable_styling("striped", full_width = FALSE)
+      }
+  })
 
    csvFilename <- reactive({
        tempdir() |>
 	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.csv",  input$instrument, input$plateID[[1]]))
    })
+
+  output$run <- renderUI({
+      shiny::req(input$instrument)
+      shiny::req(input$plateID)
+      shiny::req(input$injvol)
+     # rv$run_table <- 1
+      actionButton("run", "Create table")
+ })
 
   output$downloadReportButton <- renderUI({
       shiny::req(input$instrument)
