@@ -199,9 +199,8 @@ shinyServer(function(input, output) {
       sample_info <- read_sample(samplelist[[r]]$`_id`)
       samplename <- append(samplename, sample_info["name"])
       sampletype <- append(sampletype, sample_info["type"])
-      runnumber <- r
-      runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
+      # the run number is added to the file name in the final data frame
+      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", sampleid, "_", sample_info["name"]))
       paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
     }
 
@@ -260,6 +259,11 @@ shinyServer(function(input, output) {
 	message(paste("Plate", L[[i]], "added"))
     }
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
+    # adding the run number to the file name
+    filename_split <- unlist(strsplit(df[["File Name"]], "_"))
+    runnumber <- 1:nrow(df)
+    runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
+    df[["File Name"]] <- paste(filename_split[[1]], filename_split[[2]], runnumber, filename_split[[3]], filename_split[[4]], sep = "_")
     df
   })
 
