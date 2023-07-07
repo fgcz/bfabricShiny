@@ -228,11 +228,12 @@ shinyServer(function(input, output) {
        # order samplelist by _position to get the runnumber
        order_by_position <- order(sapply(samplelist, function(x) as.numeric(x$`_position`)))
        set.seed(872436)
-       control_raw <- "H"
+       # control_row depends on the type of plate Layout
+       control_row <- "H"
        order_sample <- c()
        order_control <- c()
        for (f in order_by_position){
-           if (grepl(control_raw, samplelist[[f]]$`_gridposition`, fixed=TRUE)){
+           if (grepl(control_row, samplelist[[f]]$`_gridposition`, fixed=TRUE)){
                order_control <- append(order_control, f)
            } else {
                order_sample <- append(order_sample, f)
