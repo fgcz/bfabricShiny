@@ -171,6 +171,7 @@ shinyServer(function(input, output) {
                               posturl = posturl(),
                               endpoint = "plate",
                               query = list('id' = plateid))[[1]]
+    currentdate <- format(Sys.time(), "%Y%m%d")
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
@@ -180,9 +181,14 @@ shinyServer(function(input, output) {
     samplelist <- samplelist[c(unlist(order_idx["bio_sample"]), unlist(order_idx["control"]))]
     filename <- c()
     paths <- c()
+    paths <- rep(paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate), length(samplelist))
     injvol <- rep(input$injvol, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
-    instrument <- rep("", length(samplelist))
+    if (input$area == "Proteomics"){
+        instrument <- rep("", length(samplelist))
+    } else {
+	instrument <- rep(paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\methods"), length(samplelist))
+    }
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]]$sample))
@@ -191,7 +197,6 @@ shinyServer(function(input, output) {
     message(paste("Reading", length(samplelist), "samples"))
     showNotification(paste("Reading", length(samplelist), "samples"))
     for (r in 1:length(samplelist)){
-      currentdate <- format(Sys.time(), "%Y%m%d")
       sampleid <- samplelist[[r]]$`_id`
       message("Reading sample ID ", sampleid)
       sample_ids <- append(sample_ids, sampleid)
@@ -201,7 +206,6 @@ shinyServer(function(input, output) {
       sampletype <- append(sampletype, sample_info["type"])
       # the run number is added to the file name in the final data frame
       filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", sampleid, "_", sample_info["name"]))
-      paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
     }
 
     validate(
