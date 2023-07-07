@@ -15,7 +15,8 @@ shinyServer(function(input, output) {
   debugmode <- FALSE
   instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3"),
 		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2"))
-  
+  plate_idx <- c("Y", "G", "R", "B")
+
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
   rv <- reactiveValues(download_flag = 0)
@@ -249,7 +250,12 @@ shinyServer(function(input, output) {
     for (i in seq(1,length(L))){
 	plate_info <- read_plate(L[[i]])
         message(plate_info)
-        plate_info$Position <- paste0(i,":",plate_info$Position)
+	if (input$area == "Proteomics"){
+            plate_info$Position <- paste(substr(plate_info$Position,1,1),substr(plate_info$Position,2,nchar(L)),sep = ",")
+	    plate_info$Position <- paste0(i,":",plate_info$Position)
+	} else {
+            plate_info$Position <- paste0(plate_idx[[i]],":",plate_info$Position)
+	}
         df <- rbind(df , plate_info)
 	message(paste("Plate", L[[i]], "added"))
     }
