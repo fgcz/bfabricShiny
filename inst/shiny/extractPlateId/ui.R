@@ -13,7 +13,7 @@ stopifnot(require(shiny), require(bfabricShiny))
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel(sprintf("FGCZ Metabolomics - plate info extraction")),
+  titlePanel(sprintf("MS Queue Generator - using Plate IDs as input")),
   
   sidebarLayout(
     sidebarPanel(
