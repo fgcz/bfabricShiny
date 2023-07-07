@@ -16,6 +16,7 @@ shinyServer(function(input, output) {
   instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3"),
 		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2"))
   plate_idx <- c("Y", "G", "R", "B")
+  currentdate <- format(Sys.time(), "%Y%m%d")
 
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
@@ -89,6 +90,7 @@ shinyServer(function(input, output) {
   })
 
 
+
   read_plateid <- reactive({
 	  shiny::req(user())
 	  shiny::req(input$orderID)
@@ -132,6 +134,21 @@ shinyServer(function(input, output) {
     )
   })
   
+  output$extratext <- renderUI({
+    shiny::req(input$orderID)
+    shiny::req(read_plateid())
+    shiny::req(input$area)
+    shiny::req(input$instrument)
+    list(textInput(
+              "extratext",
+              "(Optional) Additional text to append to the folder name in Data2San:",
+              "",
+              width = NULL
+	      ),
+	 helpText(paste0("if empty, the file path will be the following one: D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
+	 )
+  })
+
   read_sample <- function(sampleid){
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
@@ -171,7 +188,6 @@ shinyServer(function(input, output) {
                               posturl = posturl(),
                               endpoint = "plate",
                               query = list('id' = plateid))[[1]]
-    currentdate <- format(Sys.time(), "%Y%m%d")
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
@@ -181,7 +197,11 @@ shinyServer(function(input, output) {
     samplelist <- samplelist[c(unlist(order_idx["bio_sample"]), unlist(order_idx["control"]))]
     filename <- c()
     paths <- c()
-    paths <- rep(paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate), length(samplelist))
+    if (input$extratext == ""){
+	    paths <- rep(paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate), length(samplelist))
+    } else {
+	    paths <- rep(paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate, "_", input$extratext), length(samplelist))
+    }
     injvol <- rep(input$injvol, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
     if (input$area == "Proteomics"){
