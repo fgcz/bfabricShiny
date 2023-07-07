@@ -181,7 +181,7 @@ shinyServer(function(input, output) {
     paths <- c()
     injvol <- rep(input$injvol, length(samplelist))
     laboratory <- rep("FGCZ", length(samplelist))
-    instrument <- c()
+    instrument <- rep("", length(samplelist))
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]]$sample))
@@ -200,18 +200,8 @@ shinyServer(function(input, output) {
       sampletype <- append(sampletype, sample_info["type"])
       runnumber <- r
       runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-      if (sample_info["type"] == "Control Sample"){
-	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_control"))
-	      instrument <- append(instrument, "C:\\Xcalibur\\methods")
-      } else if (sample_info["type"] == "Biological Sample - Metabolomics"){
-	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
-	      instrument <- append(instrument, "")
-      } else {
-	      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_check_sample_type"))
-	      instrument <- append(instrument, "")
-
-      }
-      paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\Metabolomics\\", input$instrument, "\\analytic_", currentdate))
+      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_", runnumber, "_S", sampleid, "_", sample_info["name"]))
+      paths <- append(paths, paste0("D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
     }
 
     validate(
