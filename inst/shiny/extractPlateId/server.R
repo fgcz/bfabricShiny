@@ -318,7 +318,7 @@ shinyServer(function(input, output) {
     filename_split <- unlist(strsplit(df[["File Name"]], "_"))
     runnumber <- 1:nrow(df)
     runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-    df[["File Name"]] <- paste(filename_split[[1]], filename_split[[2]], runnumber, filename_split[[3]], filename_split[[4]], sep = "_")
+    df[["File Name"]] <- paste(c(filename_split[c(1:2)], runnumber, filename_split[c(3:length(filename_split))]), collapse = "_")
     df
   })
 
