@@ -13,6 +13,7 @@ stopifnot(require(shiny), require(bfabricShiny))
 shinyServer(function(input, output) {
   
   debugmode <- FALSE
+  TIMEdebugmode <- FALSE
   instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3"),
 		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2"))
   plate_idx <- c("Y", "G", "R", "B")
@@ -94,10 +95,14 @@ shinyServer(function(input, output) {
   read_plateid <- reactive({
 	  shiny::req(user())
 	  shiny::req(input$orderID)
+	  start_plate <- Sys.time()
+          message(paste("TIME info current before reading plate ID from order ID:", Sys.time()))
 	  res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
 				    posturl = posturl(),
 				    endpoint = "plate",
 				    query = list('containerid' = input$orderID))[[1]]
+	  end_plate <- Sys.time()
+          if ( TIMEdebugmode == TRUE ) { message(paste("TIME to read plateIDs from order ID ", input$orderID, end_plate-start_plate))}
 	  plate_ids <- c()
 	  for (r in 1:length(res)){
 	          plate_ids <- append(plate_ids, res[[r]]$`_id`)
@@ -105,7 +110,7 @@ shinyServer(function(input, output) {
 	  validate(
 		   need(try(length(plate_ids) > 0), "There are no plate defined for this order")
 		   )
-	  message(plate_ids)
+	  message(paste("TIME info for plate ID", plate_ids, Sys.time()-end_plate))
 	  sort(plate_ids)
   })
   
@@ -149,20 +154,32 @@ shinyServer(function(input, output) {
 	 )
   })
 
-  read_sample <- function(sampleid){
+  read_sample <- function(samplelist){
+    start_fullquery <- Sys.time()
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
                               endpoint = "sample",
-                              query = list('id' = sampleid))[[1]]
-    if ( debugmode == TRUE ) {message(res)}
-    samplename <- res[[1]]$name
-    if (is.null(res[[1]]$parent)){
-        sampletype <- res[[1]]$type
-    } else {
-	sampletype <- read_sampletype(res[[1]]$parent[[1]]$`_id`)
+                              query = list('id' = samplelist))[[1]]
+    end_fullquery <- Sys.time()
+    message(paste("TIME info loop processing full loop:", end_fullquery-start_fullquery))
+    if ( debugmode == TRUE ) {message(res[[1]])}
+    samplename <- c()
+    sampletype <- c()
+    filename <- c()
+    for (r in 1:length(res)){
+      samplename <- append(samplename, res[[r]]$name)
+      if (is.null(res[[r]]$parent)){
+          sampletype <- append(sampletype, res[[r]]$type)
+      } else {
+	  message(paste("Enter recursive function for sample ID", res[[r]]$parent[[1]]$`_id`, ": parent info present."))
+	  sampletype <- append(sampletype, read_sampletype(res[[r]]$parent[[1]]$`_id`))
+      }
+      # the run number is added to the file name in the final data frame
+      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", res[[r]]$`_id`, "_", res[[r]]$name))
     }
-    list("name" = samplename, "type" = sampletype)
+    list("samplename" = samplename, "sampletype" = sampletype, "filename" = filename)
   }
+
 
   read_sampletype <- function(sampleid){
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
@@ -184,10 +201,13 @@ shinyServer(function(input, output) {
   read_plate <- function(plateid) {
     shiny::req(user())
     message(paste("Reading plate ", plateid))
+    start_sample <- Sys.time()
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
                               endpoint = "plate",
                               query = list('id' = plateid))[[1]]
+    end_sample <- Sys.time()
+    if ( TIMEdebugmode == TRUE ) {message(paste("TIME info - querying the plate ID:", end_sample-start_sample))}
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
@@ -212,21 +232,28 @@ shinyServer(function(input, output) {
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]]$sample))
-            message(res[[1]]$sample[[2]]$`_id`)
+            message(res[[1]]$sample[[1]]$`_id`)
     }
     message(paste("Reading", length(samplelist), "samples"))
     showNotification(paste("Reading", length(samplelist), "samples"))
+    if ( TIMEdebugmode == TRUE ) {message(paste("TIME info about starting sample info processing", Sys.time() - end_sample))}
+    start_loop <- Sys.time()
     for (r in 1:length(samplelist)){
       sampleid <- samplelist[[r]]$`_id`
       message("Reading sample ID ", sampleid)
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
-      sample_info <- read_sample(samplelist[[r]]$`_id`)
-      samplename <- append(samplename, sample_info["name"])
-      sampletype <- append(sampletype, sample_info["type"])
-      # the run number is added to the file name in the final data frame
-      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", sampleid, "_", sample_info["name"]))
     }
+    start_sampleinfo <- Sys.time()
+    sample_info <- read_sample(sapply(samplelist, function(x) as.numeric(x$`_id`)))
+    end_sampleinfo <- Sys.time()
+    read_sample_info_time <- end_sampleinfo - start_sampleinfo
+    samplename <- sample_info["samplename"]
+    sampletype <- sample_info["sampletype"]
+    filename <- sample_info["filename"]
+
+    end_loop <- Sys.time()
+    message(paste("TIME info about loop processing:", as.numeric(end_loop-start_loop, units = "secs"), "VS read_sample function:", read_sample_info_time))
 
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
@@ -237,9 +264,9 @@ shinyServer(function(input, output) {
 	       "Inj Vol" = injvol,
 	       "L3 Laboratory" = laboratory,
 	       "Sample ID" = sample_ids,
-	       "Sample Name" = unlist(samplename),
+	       "Sample Name" = samplename,
 	       "Instrument Method" = instrument,
-	       "Sample Type" = unlist(sampletype),
+	       "Sample Type" = sampletype,
                stringsAsFactors = FALSE)
   }
   
@@ -273,7 +300,8 @@ shinyServer(function(input, output) {
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
 	plate_info <- read_plate(L[[i]])
-        message(plate_info)
+        if ( debugmode == TRUE ) {message(plate_info)}
+	start_postprocessing <- Sys.time()
 	if (input$area == "Proteomics"){
             plate_info$Position <- paste(substr(plate_info$Position,1,1),substr(plate_info$Position,2,nchar(L)),sep = ",")
 	    plate_info$Position <- paste0(i,":",plate_info$Position)
@@ -282,6 +310,8 @@ shinyServer(function(input, output) {
 	}
         df <- rbind(df , plate_info)
 	message(paste("Plate", L[[i]], "added"))
+        if ( TIMEdebugmode == TRUE ) {message(paste("TIME info for sample info post-processing:", as.numeric(Sys.time()-start_postprocessing, units="secs")))}
+	message(paste("TIME info current after plate ID ", L[[i]], "is processed:", Sys.time()))
     }
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
     # adding the run number to the file name
@@ -296,7 +326,8 @@ shinyServer(function(input, output) {
       showNotification("Extracting plate information")
       output$outputKable <- function(){
         table <- getTable()
-        message(table)
+        if ( debugmode == TRUE ) {message(table)}
+        message(paste("TIME info current after table creation:", Sys.time()))
         table |>
           kableExtra::kable() |>
           kableExtra::kable_styling("striped", full_width = FALSE)
@@ -312,7 +343,6 @@ shinyServer(function(input, output) {
       shiny::req(input$instrument)
       shiny::req(input$plateID)
       shiny::req(input$injvol)
-     # rv$run_table <- 1
       actionButton("run", "Create table")
  })
 
