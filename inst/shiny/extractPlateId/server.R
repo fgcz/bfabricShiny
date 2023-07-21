@@ -164,20 +164,21 @@ shinyServer(function(input, output) {
     message(paste("TIME info loop processing full loop:", end_fullquery-start_fullquery))
     if ( debugmode == TRUE ) {message(res[[1]])}
     samplename <- c()
-    sampletype <- c()
+    #sampletype <- c()
     filename <- c()
     for (r in 1:length(res)){
       samplename <- append(samplename, res[[r]]$name)
-      if (is.null(res[[r]]$parent)){
-          sampletype <- append(sampletype, res[[r]]$type)
-      } else {
-	  message(paste("Enter recursive function for sample ID", res[[r]]$parent[[1]]$`_id`, ": parent info present."))
-	  sampletype <- append(sampletype, read_sampletype(res[[r]]$parent[[1]]$`_id`))
-      }
+      #if (is.null(res[[r]]$parent)){
+      #    sampletype <- append(sampletype, res[[r]]$type)
+      #} else {
+      #    message(paste("Enter recursive function for sample ID", res[[r]]$parent[[1]]$`_id`, ": parent info present."))
+      #	  sampletype <- append(sampletype, read_sampletype(res[[r]]$parent[[1]]$`_id`))
+      #}
       # the run number is added to the file name in the final data frame
       filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", res[[r]]$`_id`, "_", res[[r]]$name))
     }
-    list("samplename" = samplename, "sampletype" = sampletype, "filename" = filename)
+    #list("samplename" = samplename, "sampletype" = sampletype, "filename" = filename)
+    list("samplename" = samplename, "filename" = filename)
   }
 
 
@@ -211,7 +212,7 @@ shinyServer(function(input, output) {
     sample_ids <- c()
     gridposition <- c()
     samplename <- c()
-    sampletype <- c()
+    #sampletype <- c()
     samplelist <- res[[1]]$sample
     order_idx <- get_reshuffled_position(samplelist)
     samplelist <- samplelist[c(unlist(order_idx["bio_sample"]), unlist(order_idx["control"]))]
@@ -249,7 +250,7 @@ shinyServer(function(input, output) {
     end_sampleinfo <- Sys.time()
     read_sample_info_time <- end_sampleinfo - start_sampleinfo
     samplename <- sample_info["samplename"]
-    sampletype <- sample_info["sampletype"]
+    #sampletype <- sample_info["sampletype"]
     filename <- sample_info["filename"]
 
     end_loop <- Sys.time()
@@ -266,7 +267,7 @@ shinyServer(function(input, output) {
 	       "Sample ID" = sample_ids,
 	       "Sample Name" = samplename,
 	       "Instrument Method" = instrument,
-	       "Sample Type" = sampletype,
+	       #"Sample Type" = sampletype,
                stringsAsFactors = FALSE)
   }
   
@@ -295,8 +296,10 @@ shinyServer(function(input, output) {
     shiny::req(input$injvol)
     shiny::req(input$plateID)
     message(paste("Creating table for plate ID =", input$plateID))
-    df <- data.frame(matrix(ncol = 9, nrow = 0))
-    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
+    #df <- data.frame(matrix(ncol = 9, nrow = 0))
+    #colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
+    df <- data.frame(matrix(ncol = 8, nrow = 0))
+    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
 	plate_info <- read_plate(L[[i]])
@@ -313,12 +316,15 @@ shinyServer(function(input, output) {
         if ( TIMEdebugmode == TRUE ) {message(paste("TIME info for sample info post-processing:", as.numeric(Sys.time()-start_postprocessing, units="secs")))}
 	message(paste("TIME info current after plate ID ", L[[i]], "is processed:", Sys.time()))
     }
-    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
+    #colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
+    colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
     # adding the run number to the file name
-    filename_split <- unlist(strsplit(df[["File Name"]], "_"))
-    runnumber <- 1:nrow(df)
-    runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-    df[["File Name"]] <- paste(c(filename_split[c(1:2)], runnumber, filename_split[c(3:length(filename_split))]), collapse = "_")
+    df[["File Name"]] <- lapply(df[["File Name"]], function(x) {
+	   filename_split <- unlist(strsplit(x, "_"))
+	   runnumber <- match(x,df[["File Name"]])
+	   runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
+	   paste(c(filename_split[c(1:2)], runnumber, filename_split[c(3:length(filename_split))]), collapse = "_")
+	 })
     df
   })
 
