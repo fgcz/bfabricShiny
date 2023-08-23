@@ -146,13 +146,29 @@ shinyServer(function(input, output) {
     shiny::req(input$instrument)
     list(textInput(
               "extratext",
-              "(Optional) Additional text to append to the folder name in Data2San:",
+              "(Optional) Suffix to the folder name in Data2San:",
               "",
               width = NULL
 	      ),
 	 helpText(paste0("if empty, the file path will be the following one: D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
 	 )
   })
+
+
+  output$extrameasurement <- renderUI({
+    shiny::req(input$orderID)
+    shiny::req(read_plateid())
+    shiny::req(input$area)
+    shiny::req(input$instrument)
+    list(textInput(
+      "extrameasurement",
+      "(Optional) Suffix to the file name in case of duplicate measurements on the same samples:",
+      "",
+      width = NULL
+    ),
+    helpText("Note that the suffix above is applied to all samples for all selected plates"))
+  })
+
 
   read_sample <- function(samplelist){
     start_fullquery <- Sys.time()
@@ -302,19 +318,26 @@ shinyServer(function(input, output) {
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
     L <- unique(input$plateID)
     for (i in seq(1,length(L))){
-	plate_info <- read_plate(L[[i]])
-        if ( debugmode == TRUE ) {message(plate_info)}
-	start_postprocessing <- Sys.time()
-	if (input$area == "Proteomics"){
-            plate_info$Position <- paste(substr(plate_info$Position,1,1),substr(plate_info$Position,2,nchar(L)),sep = ",")
-	    plate_info$Position <- paste0(i,":",plate_info$Position)
-	} else {
-            plate_info$Position <- paste0(plate_idx[[i]],":",plate_info$Position)
-	}
+      plate_info <- read_plate(L[[i]])
+      if ( debugmode == TRUE ) {message(plate_info)}
+      start_postprocessing <- Sys.time()
+      if (input$area == "Proteomics"){
+        plate_info$Position <- paste(substr(plate_info$Position,1,1),substr(plate_info$Position,2,nchar(L)),sep = ",")
+        plate_info$Position <- paste0(i,":",plate_info$Position)
+        } else {
+          plate_info$Position <- paste0(plate_idx[[i]],":",plate_info$Position)
+          }
+      df <- rbind(df , plate_info)
+      if (input$extrameasurement != ""){
+        plate_info$filename <- lapply(plate_info$filename, function(x) {
+          paste0(x, "_", input$extrameasurement)})
+        plate_info$Path <- lapply(plate_info$Path, function(x) {
+          paste0(x, "_", input$extrameasurement)})
         df <- rbind(df , plate_info)
-	message(paste("Plate", L[[i]], "added"))
-        if ( TIMEdebugmode == TRUE ) {message(paste("TIME info for sample info post-processing:", as.numeric(Sys.time()-start_postprocessing, units="secs")))}
-	message(paste("TIME info current after plate ID ", L[[i]], "is processed:", Sys.time()))
+      }
+      message(paste("Plate", L[[i]], "added"))
+      if ( TIMEdebugmode == TRUE ) {message(paste("TIME info for sample info post-processing:", as.numeric(Sys.time()-start_postprocessing, units="secs")))}
+      message(paste("TIME info current after plate ID ", L[[i]], "is processed:", Sys.time()))
     }
     #colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")

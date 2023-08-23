@@ -24,6 +24,7 @@ shinyUI(fluidPage(
       uiOutput("plateID"),
       uiOutput("injvol"),
       uiOutput("extratext"),
+      uiOutput("extrameasurement"),
       uiOutput('run'),
       uiOutput("downloadReportButton")
    ),
