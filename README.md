@@ -2,6 +2,7 @@
 
 [![JIB](https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen)](https://doi.org/10.1515/jib-2022-0031)
 [![codecov](https://codecov.io/gh/fgcz/bfabricShiny/branch/bfabric11/graph/badge.svg?token=Q9G0WFEH6K)](https://codecov.io/gh/fgcz/bfabricShiny)
+![Downloads](https://img.shields.io/github/downloads/fgcz/bfabricShiny/total)
 
 
 # bfabricShiny R package
