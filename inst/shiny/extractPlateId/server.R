@@ -348,6 +348,7 @@ shinyServer(function(input, output) {
 	   runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
 	   paste(c(filename_split[c(1:2)], runnumber, filename_split[c(3:length(filename_split))]), collapse = "_")
 	 })
+    df[["File Name"]] <- sapply(df[["File Name"]], as.character)
     df
   })
 
@@ -383,41 +384,46 @@ shinyServer(function(input, output) {
  })
 
 
- output$downloadCSV <- downloadHandler(
-     filename = function(){
-         basename(csvFilename())
-     },
-     content = function(file) {
-	 message("writing csv file")
-         message(getTable())
-	 rv$download_flag <- rv$download_flag + 1
-	 write.csv(getTable(), csvFilename(), row.names = FALSE)
-     }
- )
+  output$downloadCSV <- downloadHandler(
+      filename = function(){
+          basename(csvFilename())
+      },
+      content = function(file) {
+          
+          rv$download_flag <- rv$download_flag + 1
+          utils::write.csv(getTable(), file, row.names = FALSE)
+      }
+  )
 
  bfabricUploadResource <- observeEvent(rv$download_flag, {
-    progress <- shiny::Progress$new(min = 0, max = 1)
-    progress$set(message = "upload csv file to bfabric")
-    on.exit(progress$close())
-
-    if (rv$download_flag > 0){
-        message("bfabricUpload")
-	progress$set(message = "uploading csv file with plate info to bfabric")
-	rv$bfrv2 <- bfabricShiny::uploadResource(
+     progress <- shiny::Progress$new(min = 0, max = 1)
+     progress$set(message = "upload csv file to bfabric")
+     on.exit(progress$close())
+     
+     if (rv$download_flag > 0){
+         message(paste0("writing csv file ", csvFilename()," ..."))
+         S <- getTable()
+         base::save(S, file = "/tmp/SSS.RData")
+         
+         utils::write.csv(getTable(), csvFilename(), row.names = FALSE)
+         message("uploading to bfabric ...")
+         progress$set(message = "uploading csv file with plate info to bfabric")
+         rv$bfrv2 <- bfabricShiny::uploadResource(
              login = bf$login(),
              webservicepassword = bf$webservicepassword(),
              posturl = posturl(),
-	     containerid = 3000, #input$orderID,
-	     applicationid = 212,
-	     status = "PENDING",
+             containerid = input$orderID,
+             applicationid = 319,
+             status = "PENDING",
              description = "",
              inputresourceid = rv$bfrv2$resource[[1]]$`_id`,
-	     workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
+             workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
              resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID[[1]], format(Sys.time(), format="%Y%m%d-%H%M")),
              file = csvFilename()
-	     )
-	     print(rv$bfrv2)
-	    }
+         )
+         print("bfabric return value:")
+         print(rv$bfrv2)
+     }
  })
 
 
