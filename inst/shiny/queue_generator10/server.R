@@ -43,6 +43,7 @@ shinyServer(function(input, output, session) {
   
   .getMetabolomicsInstrument <- function(){
     list(
+      QEXACTIVEHF_2 = 'Xcalibur',
       QUANTIVA_1 = 'Xcalibur',
       QEXACTIVE_2 = 'Xcalibur',
       QEXACTIVE_3 = 'Xcalibur'

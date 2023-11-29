@@ -2,6 +2,7 @@
 
 [![JIB](https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen)](https://doi.org/10.1515/jib-2022-0031)
 [![codecov](https://codecov.io/gh/fgcz/bfabricShiny/branch/bfabric11/graph/badge.svg?token=Q9G0WFEH6K)](https://codecov.io/gh/fgcz/bfabricShiny)
+![Downloads](https://img.shields.io/github/downloads/fgcz/bfabricShiny/total)
 
 
 # bfabricShiny R package
@@ -111,11 +112,26 @@ system.file("shiny", "queue_generator10", package = "bfabricShiny") |>
 ```{bash}
 python3 bfabric_flask.py 
 ```
+If a certified key is available, Flask will use SSL certificate and run on port 5001. Otherwise it will run using http and port 5000.
+Note that the port configuration can be changed in the bfabric\_flask.py script.
+```{python}
+# code snippet from bfabric_flask.py:
+if exists('/etc/ssl/fgcz-host.pem') and exists('/etc/ssl/private/fgcz-host_key.pem'):    
+    app.run(debug=False, host="0.0.0.0", port=5001, ssl_context=('/etc/ssl/fgcz-host.pem', '/etc/ssl/private/fgcz-host_key.pem'))
+else:
+   app.run(debug=False, host="127.0.0.1", port=5000)
+```
+See [bfabric\_flask.py on GitHub](https://github.com/fgcz/bfabricPy/blob/bfabric12/bfabric/scripts/bfabric_flask.py) for more details.
 
-- simple json test 
+- simple tests 
 
 ```{bash}
 curl http://127.0.0.1:5000/sample/1
+```
+```{r}
+# R
+rv <- httr::POST("https://host:5001/read", body = jsonlite::toJSON(list(login = "login", webservicepassword = "webservicepassword", endpoint = "user", query = list("login" = "cpanse"))), encode = "json")
+httr::content(rv)
 ```
 
 ## Sample Query
