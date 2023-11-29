@@ -680,6 +680,7 @@ generate_queue_order <- function(x,
                                  method = 'default',
                                  pathprefix = "D:\\Data2San",
                                  pathprefixsep = "\\",
+                                 acquisitionType = "DDA",
                                  DEBUG = FALSE,
                                  startpos = list(row = 1, col = "A", plate = 1)){
 
@@ -723,6 +724,7 @@ generate_queue_order <- function(x,
                      method = method,
                      pathprefix = pathprefix,
                      pathprefixsep = pathprefixsep,
+                     acquisitionType  = acquisitionType,
                      order = order,
                      startpos = startpos)
     print(res$nextpos)
@@ -836,6 +838,7 @@ generate_queue <- function(x,
                            method = 'default',
                            pathprefix = "D:\\Data2San",
                            pathprefixsep = "\\",
+                           acquisitionType = "DDA",
                            DEBUG = FALSE,
                            order = TRUE,
                            startpos = list(row = 1, col = "A", plate = 1)
@@ -952,6 +955,13 @@ generate_queue <- function(x,
   rv$"Instrument Method"[grep("_autoQC02", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC02"
   rv$"Instrument Method"[grep("_autoQC4L", rv$"File Name")] <- "C:\\Xcalibur\\methods\\__autoQC\\trap\\autoQC4L"
 
+
+  ## TODO(cpanse): needs to be refactored some day!
+  ## 20231129 - replace autoQC4L by autoQC03 in 'File Name' and 'Instrument Method'
+  idx <- grep("_autoQC4L", rv$"File Name")
+  rv[idx, 'File Name' ] <- gsub("autoQC4L", paste0("autoQC03", acquisitionType), rv[idx, 'File Name' ])
+  rv[idx, 'Instrument Method' ] <- gsub("autoQC4L", paste0("autoQC03", acquisitionType), rv[idx, 'Instrument Method' ])
+  rv[idx, 'Sample Name'] <- gsub("autoQC4L", "autoQC03", rv[idx, 'Sample Name' ])
 
   if (DEBUG) {
     rv <- merge(rv, x, by.x = "Sample ID", by.y = "extract.id", all = TRUE)

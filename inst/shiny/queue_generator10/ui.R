@@ -33,7 +33,8 @@ shinyUI(
                       tags$h3("LC-MS configuration:"),
                       fluidRow(
                         column(4, htmlOutput("instrumentControlSoftware")),
-                        column(4, htmlOutput("lcSystem"))
+                        column(4, htmlOutput("lcSystem")),
+                        column(4, htmlOutput("acquisitionType"))
                       ),
                       tags$h3("Select options for your queue:"),
                       radioButtons(

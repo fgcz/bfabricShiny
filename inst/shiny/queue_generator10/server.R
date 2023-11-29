@@ -87,6 +87,16 @@ shinyServer(function(input, output, session) {
     }
   }))
 
+  output$acquisitionType <- renderUI({
+    acquisitionType <- c("DDA", "DIA")
+    
+    selectInput('acquisitionType', 'acquisition type:',
+                acquisitionType ,
+                multiple = FALSE,
+                selected = acquisitionType[1])
+  }
+  )
+  
   
   ## ========== output$area 
   output$area <- renderUI(({
@@ -412,7 +422,8 @@ shinyServer(function(input, output, session) {
                                                 end2 = as.numeric(input$end2),
                                                 end3 = as.numeric(input$end3),
                                                 lists = input$targets,
-                                                startposition = input$startposition)
+                                                startposition = input$startposition,
+                                                acquisitionType = input$acquisitionType)
       
       # TODO(cp): add an addidtional parameter
       idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_", rv['Path'])
@@ -470,41 +481,41 @@ shinyServer(function(input, output, session) {
       }
       print("DEBUG")
       print(input$autoQC4L)
-      ## TODO method files only for clean|autoQC4L|autoQC01
+      ## TODO method files only for clean|autoQC03|autoQC01
       if (input$lcSystem == "EVOSEP1x12x8"){
-         rv <- inputSampleTable %>%
+         rv <- inputSampleTable |>
           .insertStandardsEVOSEP(stdName = "clean", 
                            between=input$clean,
                            howoften = input$cleano,
                            howmany = input$cleanm,
                            volume = 4,
-                           begin = "4" %in% c(input$start1,input$start2, input$start3),
-                           end = "4" %in% c(input$end1,input$end2, input$end3)) %>% 
+                           begin = "4" %in% c(input$start1, input$start2, input$start3),
+                           end = "4" %in% c(input$end1,input$end2, input$end3)) |>
           .insertStandardsEVOSEP(stdName = "autoQC01",
                            between=input$autoQC01,
                            howoften = input$QC01o,
                            howmany = input$QC01m,
-                           begin = "1" %in% c(input$start1,input$start2, input$start3),
-                           end = "1" %in% c(input$end1,input$end2, input$end3)) %>% 
+                           begin = "1" %in% c(input$start1, input$start2, input$start3),
+                           end = "1" %in% c(input$end1, input$end2, input$end3)) |>
            .insertStandardsEVOSEP(stdName = "autoQC02",
                                   between=input$autoQC02,
                                   howoften = input$QC02o,
                                   howmany = input$QC02m,
                                   begin = "2" %in% c(input$start1,input$start2, input$start3),
-                                  end = "2" %in% c(input$end1,input$end2, input$end3)) %>% 
-          .insertStandardsEVOSEP(stdName = "autoQC4L",
+                                  end = "2" %in% c(input$end1,input$end2, input$end3)) |> 
+          .insertStandardsEVOSEP(stdName = paste0("autoQC03", input$acquisitionType),
                            between=input$autoQC4L,
                            howoften = input$QC4Lo,
                            howmany = input$QC4Lm,
                            begin = "3" %in% c(input$start1,input$start2, input$start3),
-                           end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) %>% 
-          .mapPlatePositionEVOSEP(volume = 1) %>%
+                           end = "3" %in% c(input$end1,input$end2, input$end3), volume = 2) |>
+          .mapPlatePositionEVOSEP(volume = 1) |>
           .formatHyStar(dataPath = paste0("D:\\Data2San\\p", input$container, "\\",
                                                 input$area, "\\",
                                                 input$instrument, "\\",
                                                 input$login,"_",format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
-                        Method_Set="D:\\Methods\\autoQC\\evosepOne\\autoQC4L.m",
-                        FUN=function(x,y,plate){paste0("S",plate,"-", y, x)}) 
+                        Method_Set = paste0("D:\\Methods\\autoQC\\evosepOne\\autoQC03", input$acquisitionType, ".m"),
+                        FUN = function(x, y, plate){paste0("S", plate, "-", y, x)}) 
           return(rv)
         
       }else{
@@ -540,7 +551,7 @@ shinyServer(function(input, output, session) {
                                           input$area, "\\",
                                           input$instrument, "\\",
                                           input$login,"_", format(Sys.Date(), format = "%Y%m%d"), "_", note, "\\"),
-                        Method_Set="D:\\Methods\\autoQC\\nanoElute\\autoQC4L.m",
+                        Method_Set=paste0("D:\\Methods\\autoQC\\nanoElute\\autoQC03", input$acquisitionType,".m"),
                         FUN=function(x, y, plate){paste0( "Slot", plate,":", x)})
         
         #rv <- .blockRandom(rv, x = "sample_condition")
