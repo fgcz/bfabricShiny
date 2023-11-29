@@ -2,8 +2,7 @@
 # This is the server logic of a rawDiag Shiny web application.
 
 
-stopifnot(packageVersion('bfabricShiny') >= "0.12.18",
-          packageVersion('bfabricShiny') >= "0.0.41")
+stopifnot(packageVersion('bfabricShiny') >= "0.12.20")
 
 
 library(shiny)
@@ -35,12 +34,12 @@ stopifnot(
 
 shinyServer(function(input, output, session) {
 # ----check bfabricShinyModule---- 
-  if (require("bfabricShiny") && require("PKI")){
-    bf <- callModule(bfabric, "bfabric8",
-                     applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214, 232, 248, 268, 269, 301, 309),
-                     resoucepattern = 'raw$|RAW$',
-                     resourcemultiple = TRUE)
-  }
+ 
+  bf <- callModule(bfabric, "bfabric8",
+                   applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214, 232, 248, 268, 269, 301, 309),
+                   resoucepattern = 'raw$|RAW$',
+                   resourcemultiple = TRUE)
+  
   
   autoInvalidate <- reactiveTimer(2000)
 # ----Configuration---- 
@@ -626,7 +625,7 @@ PlotXIC <- function(x, method = 'trellis'){
     labs(title = "XIC plot") +
     labs(subtitle = "Plotting XIC intensity against retention time. Facets are ordered by SSRC.") +
     labs(x = "Retention Time [min]", y = "Intensity Counts [arb. unit]") +
-    theme_light()
+    ggplot2::theme_light()
   
   figure <- figure + facet_wrap(~  x$label, ncol = 1,  scales = "free") 
   
@@ -887,7 +886,7 @@ output$qc <- renderPlot({
                      onclick = wuUrl)
       }else{
         message("output$download 2...")
-        actionButton('generate', 'Upload MS configuration\nto B-Fabric')
+        actionButton('generate', 'Upload PDF\nto B-Fabric')
       }
     }else{
      
