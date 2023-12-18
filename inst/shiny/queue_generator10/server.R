@@ -88,7 +88,7 @@ shinyServer(function(input, output, session) {
   }))
 
   output$acquisitionType <- renderUI({
-    acquisitionType <- c("DDA", "DIA")
+    acquisitionType <- c("dda", "dia")
     
     selectInput('acquisitionType', 'acquisition type:',
                 acquisitionType ,
