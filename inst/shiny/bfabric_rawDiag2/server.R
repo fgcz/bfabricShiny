@@ -47,14 +47,19 @@ shinyServer(function(input, output, session) {
                  resources <- bf$resources()$relativepath
                  resourcesSelected <- resources[resources %in% input$relativepath] 
                  
-                 file.path('/Users/cp/Downloads/dump', resourcesSelected) -> resourcesSelected
-                 idx <- resourcesSelected |> Reduce(f = file.exists)
+                 c('/srv/www/htdocs/', '/Users/cp/Downloads/dump') |>
+                   Filter(f = dir.exists) -> rootdir
                  
-                 msg <- paste0("resources:\n",
-                               paste0(resourcesSelected[idx], collapse = ",\n"))
-                 message(msg)
+                 stopifnot(length(rootdir) >= 1)
+                 file.path(rootdir[1], resourcesSelected) -> resourcesSelected
+              
+                 # message("resources: ", paste0(resources, collapse = ",\n\t"))
+                 message("resourcesSelected: ", paste0(resourcesSelected, collapse = ", "))
                  
-                 vals$rawfile <- resourcesSelected[idx]
+                 vals$rawfile <- resourcesSelected |>
+                   Filter(f = file.exists)
+                 
+                 message("vals$rawfile: ", paste0( vals$rawfile, collapse = ",\n\t"))
                })
 
   bfabricUpload <- observeEvent(input$generate, {
