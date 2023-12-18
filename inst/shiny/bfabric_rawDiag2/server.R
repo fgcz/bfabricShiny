@@ -1,0 +1,117 @@
+#R
+# This is the server logic of a rawDiag Shiny web application version 2.
+
+stopifnot(
+  require(rawDiag),
+  require(bfabricShiny),
+  packageVersion('bfabricShiny') >= "0.12.20",
+  packageVersion('rawDiag') >= "0.99.0"
+)
+
+shinyServer(function(input, output, session) {
+
+  vals <- reactiveValues(
+    generatePDF = 0,
+    rawfile  = NA,
+    gp = NULL,
+    pdfFileName = NULL,
+    name = "",
+    plot = NULL,
+    bfabricWorkunitId = NULL)
+  
+  rawDiag:::rawDiagServer("OrbitrapFun02", vals)
+  
+  bf <- callModule(bfabric, "bfabric13",
+                   applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214,
+                                     232, 248, 268, 269, 301, 309, 333),
+                   resoucepattern = "raw$|RAW$",
+                   resourcemultiple = TRUE)
+  
+  .resetVals <- function(){
+    vals$bfabricWorkunitId <- NULL
+    vals$gp <- NULL
+    vals$pdfFileName <- NULL
+  }
+  
+  observeEvent(input$generatePDF, {
+    vals$generatePDF <- vals$generatePDF + 1
+    })
+  
+
+  observeEvent(input$bfabricWorkunitId,
+               {vals$bfabricWorkunitId <- NULL})
+  observeEvent(input$load,
+               {
+                 .resetVals()
+                 
+                 resources <- bf$resources()$relativepath
+                 resourcesSelected <- resources[resources %in% input$relativepath] 
+                 
+                 file.path('/Users/cp/Downloads/dump', resourcesSelected) -> resourcesSelected
+                 idx <- resourcesSelected |> Reduce(f = file.exists)
+                 
+                 msg <- paste0("resources:\n",
+                               paste0(resourcesSelected[idx], collapse = ",\n"))
+                 message(msg)
+                 
+                 vals$rawfile <- resourcesSelected[idx]
+               })
+
+  bfabricUpload <- observeEvent(input$generate, {
+    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    progress$set(message = "uploading to B-Fabric ...")
+    on.exit(progress$close())
+    
+    resources <- bf$resources()
+    rvUpload <- bfabricShiny::uploadResource(
+      login = bf$login(),
+      webservicepassword = bf$webservicepassword(),
+      containerid = bf$containerid(),
+      posturl = bf$posturl(),
+      applicationid = 225,
+      status = "AVAILABLE",
+      description = sprintf("input files:\n%s", (input$relativepath |> format() |> paste(collapse='\n'))),
+      inputresourceid = resources$resourceid[resources$relativepath == input$relativepath],
+      workunitname = vals$plot,
+      resourcename = sprintf("%s.pdf", "rawDiag"),
+      file = vals$pdfFileName
+    )
+    
+    vals$bfabricWorkunitId <- rvUpload$workunit[[1]]$`_id`
+    msg <- paste0("The current plot is available as workunit ", vals$bfabricWorkunitId, ".")
+    message(msg)
+    progress$set(message = msg)
+  })
+  
+  observeEvent(vals$plot,{
+    vals$bfabricWorkunitId <- NULL
+  })
+  
+  observeEvent(input$resetBfabricWorkunitId, {
+    vals$bfabricWorkunitId <- NULL
+  })
+  
+  output$bfabricWorkunitId <- renderUI({
+    if(isFALSE(is.null(vals$gp))){
+      ## displays the button linking to the B-Fabric workunit iff 
+      if (isFALSE(is.null(vals$bfabricWorkunitId))){
+        
+        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                        vals$bfabricWorkunitId, "', '_blank')")
+        message("Rendering actionButton to link workunit ", vals$bfabricWorkunitId, " in B-Fabric.")
+        actionButton(inputId = "B-FabricDownload",
+                     label = paste("b-fabric download workunit", vals$bfabricWorkunitId),
+                     onclick = wuUrl)
+
+      }else if (isFALSE(is.null(vals$pdfFileName))){
+      #(file.exists(vals$pdfFileName)){
+        actionButton('generate', 'Upload PDF\nto B-Fabric')
+      } else{
+        HTML("Opps, something went wrong.\nPlease contact <cp@fgcz.ethz.ch>.")
+      }
+    }else{
+      HTML("no pdf.")
+    }
+  })
+})
+
