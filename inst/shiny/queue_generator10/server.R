@@ -159,7 +159,7 @@ shinyServer(function(input, output, session) {
       if (input$instrumentControlSoftware == "HyStar"){
         res.instrument <- names(list(
           TIMSTOF_1 = 'HyStar',
-          TIMSTOFLEX_1 = 'HyStar'
+          TIMSTOFFLEX_1 = 'HyStar'
         ))
       }
 
