@@ -43,17 +43,33 @@ shinyServer(function(input, output, session) {
   
   .getMetabolomicsInstrument <- function(){
     list(
+      ASTRAL_1 = 'Xcalibur',
+      EXPLORIS_3 = 'Xcalibur',
       QEXACTIVEHF_2 = 'Xcalibur',
       QUANTIVA_1 = 'Xcalibur',
       QEXACTIVE_2 = 'Xcalibur',
       QEXACTIVE_3 = 'Xcalibur'
     )}
+
+    .getProteomicsInstrument <- function(){
+  list(
+    ASTRAL_1 = 'Xcalibur',
+    QEXACTIVE_2 = 'Xcalibur',
+    QEXACTIVEHF_2 = 'Xcalibur',
+    QEXACTIVEHF_4 = 'Xcalibur',
+    FUSION_2 =  'Xcalibur',
+    EXPLORIS_1 = 'Xcalibur',
+    EXPLORIS_2 = 'Xcalibur',
+    LUMOS_1 = 'Xcalibur',
+    LUMOS_2 = 'Xcalibur'
+  )}
+
   
   getInstrument <- reactive({
     if (input$area == "Metabolomics") {
       .getMetabolomicsInstrument()
     }else{
-      bfabricShiny:::.getInstrument()
+      .getProteomicsInstrument()
     }
   })
 
@@ -141,10 +157,15 @@ shinyServer(function(input, output, session) {
       }
 
       if (input$instrumentControlSoftware == "HyStar"){
-        res.instrument <- names(list(TIMSTOF_1 = input$instrumentControlSoftware))
+        res.instrument <- names(list(
+          TIMSTOF_1 = 'HyStar',
+          TIMSTOFLEX_1 = 'HyStar'
+        ))
       }
 
-      selectInput('instrument', 'Instrument:', res.instrument, multiple = FALSE, selected = res.instrument[1])
+      selectInput('instrument', 'Instrument:',
+                  res.instrument,
+                  multiple = FALSE, selected = res.instrument[1])
     }
   })
 
