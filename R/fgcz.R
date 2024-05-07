@@ -384,7 +384,7 @@ readPages <- function(login = NULL,
                       updateProgress = NULL){
   # TODO early stopping if results are empty (maybe a for loop is better here)
   offsets <- (seq(1, ceiling(maxitems/itemsperpage)) - 1) * itemsperpage
-  rv <- sapply(
+  rv <- lapply(
     offsets,
     FUN = function(offset) {
       .read(
@@ -399,7 +399,7 @@ readPages <- function(login = NULL,
         posturlsuffix = 'read'
       )
     }
-  )
+  ) |> unlist(recursive = FALSE)
   return(rv)
 }
   
