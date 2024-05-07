@@ -151,7 +151,8 @@
                               endpoint = 'workunit',
                               query=list('applicationid' = 168,
                                          "containerid" = 1000))),
-             encode = 'json')
+             encode = 'json',
+             auto_unbox = TRUE)
 
   rv <- content(rv)
 }
@@ -166,7 +167,8 @@
                               endpoint = 'workunit',
                               query=list('applicationid' = 168,
                                          "containerid" = 1000))),
-             encode = 'json')
+             encode = 'json',
+             auto_unbox = TRUE)
 
   rv <- content(rv)
 }
@@ -246,7 +248,8 @@ query <- function(login, webservicepassword,
                                   endpoint = endpoint,
                                   query = query
                ),
-               encode = 'json'))
+               encode = 'json',
+               auto_unbox = TRUE))
 
   rv <- content(query_result)
   if(as_data_frame){
@@ -265,18 +268,20 @@ query <- function(login, webservicepassword,
 #' @author MdE/CP 2023-03
 .read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
-                  page = 1,
+                  #page = 1,
+                  offset = 0,
+                  maxitems = 100,
                   query = list(),
                   posturl = NULL,
                   posturlsuffix = 'read',
                   idonly = FALSE,
                   updateProgress = NULL){
   
-  
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)),
-            is.numeric(page))
+            is.numeric(offset),
+            is.numeric(maxitems))
   
   # message(paste("DEBUG XXX", login, webservicepassword, posturl))
   posturl <- paste0(posturl, posturlsuffix)
@@ -284,35 +289,36 @@ query <- function(login, webservicepassword,
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
   start_time <- Sys.time()
   query_result <- httr::POST(posturl,
-                             body = jsonlite::toJSON(list(login = login,
-                                                          webservicepassword = webservicepassword,
-                                                          endpoint = endpoint,
-                                                          query = query,
-                                                          idonly = idonly,
-                                                          page = page
+                             body = list(login = login,
+                                         webservicepassword = webservicepassword,
+                                         endpoint = endpoint,
+                                         query = query,
+                                         idonly = idonly,
+                                         offset = offset,
+                                         maxitems = maxitems
                              ),
-                             encode = 'json'))
+                             encode = 'json')
   end_time <- Sys.time()
 
   diff_time_msg <- paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].")
   rv <- httr::content(query_result)
-  if (is.null(rv$res)){warning("query failed."); return(rv);}
+  if (is.null(rv$res)){warning("query failed."); message(rv); return(rv);}
   
   if ('errorreport' %in% names(rv$res)){
     stop(paste0("B-Fabric errorreport: ", rv$res$errorreport))
   }
   
   if (interactive()) {
-    
     msg <- paste0("idonly: ", idonly, "\n",
                   "endpoint: ", endpoint, "\n",
-                  "entitiesonpage: ", rv$res$entitiesonpage, "\n",
-                  "numberofpages: ", rv$res$numberofpages, "\n",
+                  #"entitiesonpage: ", rv$res$entitiesonpage, "\n",
+                  #"numberofpages: ", rv$res$numberofpages, "\n",
                   "page: ", rv$res$page)
     message(msg)
     
     # If we were passed a progress update function, call it
     if (is.function(updateProgress)) {
+      # TODO
       msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
                      idonly,
                      rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
@@ -373,49 +379,27 @@ readPages <- function(login = NULL,
                       endpoint = 'workunit',
                       query = list(),
                       posturl = 'http://localhost:5000/',
-                      maxpages = 10,
+                      maxitems = 100,
+                      itemsperpage = 100,
                       updateProgress = NULL){
-  
-  rv <- .read(login = login,
-              webservicepassword = webservicepassword,
-              endpoint = endpoint,
-              query = query,
-              idonly = TRUE,
-              posturl = posturl,
-              updateProgress = updateProgress,
-              posturlsuffix = 'read')
-  
-  
-  # TODO(CP): too lazy to program; so start with page 1
-  if ('errorreport' %in% names(rv)){
-    return(rv)
-  }
-  
-  if ('status' %in% names(rv)){
-    return(rv)
-  }
-  
-  if ('entitiesonpage' %in% names(rv)){
-    if (rv$entitiesonpage == 0) return (NULL)
-  }
-  
-  if(rv$numberofpages > 0){
-    rv <- lapply(seq(1, min(rv$numberofpages, maxpages)),
-                 FUN = .read,
-                 login = login,
-                 webservicepassword = webservicepassword,
-                 endpoint = endpoint,
-                 query = query,
-                 posturl = posturl,
-                 updateProgress = updateProgress,
-                 posturlsuffix = 'read') |> 
-      lapply(FUN = function(x){get(endpoint, x)}) |> 
-      unlist(recursive = FALSE)
-    return (rv)
-  }else{
-    return(get(endpoint, rv))
-  }
-  
+  # TODO early stopping if results are empty (maybe a for loop is better here)
+  offsets <- (seq(1, ceiling(maxitems/itemsperpage)) - 1) * itemsperpage
+  rv <- sapply(
+    offsets,
+    FUN = function(offset) {
+      .read(
+        login = login,
+        webservicepassword = webservicepassword,
+        endpoint = endpoint,
+        query = query,
+        posturl = posturl,
+        maxitems = maxitems,
+        offset = offset,
+        updateProgress = updateProgress,
+        posturlsuffix = 'read'
+      )
+    }
+  )
   return(rv)
 }
   
@@ -480,7 +464,7 @@ read <- function(login = NULL, webservicepassword = NULL,
                                           endpoint = endpoint,
                                           query = query
                        ),
-                       encode = 'json'))
+                       encode = 'json', auto_unbox = TRUE))
 
   rv <- httr::content(query_result)
   if (is.null(rv$res)){warning("query failed."); return(rv);}
@@ -761,7 +745,8 @@ save <- function(login = NULL,
                    'base64' = content
                  )
                ),
-               encode = 'json'
+               encode = 'json',
+               auto_unbox = TRUE,
              ))
 
   rv <- content(rv)
