@@ -297,7 +297,7 @@ bfabric <- function(input, output, session,
       }else{
         A <- .getApplications(input$login, input$webservicepassword,
                               posturl = posturl())
-        bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}), name = sapply(A, function(x){x$name}))
+        bfabricApplication <- data.frame(id = sapply(A, function(x){x$id}), name = sapply(A, function(x){x$name}))
         applications <- bfabricApplication[order(bfabricApplication$id),]
         return(applications)
         
@@ -314,7 +314,7 @@ bfabric <- function(input, output, session,
                              posturl = posturl(),
                              workunitid = strsplit(input$workunit, " - ")[[1]][1])
         
-        resourceid <- sapply(res, function(y){y$`_id`})
+        resourceid <- sapply(res, function(y){y$id})
         relativepath <- sapply(res, function(y){y$relativepath})
         
         df <- data.frame(resourceid = resourceid, relativepath = relativepath)
