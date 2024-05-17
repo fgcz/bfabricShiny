@@ -107,7 +107,7 @@ test_that("test read", {
              query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'))[[1]][['filechecksum']] == '127f0c5b6352a326f9a6c8458d59d921')
 
 
-  Xuser <- bfabricShiny:::.read(login = "XXX",
+  Xuser <- bfabricShiny:::read(login = "XXX",
                                 webservicepassword = webservicepassword,
                                 endpoint = 'user',
                                 posturl = bfabricposturl,
