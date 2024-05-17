@@ -122,6 +122,10 @@ test_that("protViz_queue", {
 
 
 test_that("protViz_queue_30666", {
+  login <- bfabricShiny:::.login()
+  webservicepassword <- bfabricShiny:::.webservicepassword()
+  bfabricposturl <- bfabricShiny:::.posturl()
+
   S <- bfabricShiny:::.getSamples(login, webservicepassword,
                                           posturl = bfabricposturl,
                                           containerid = 30666)
