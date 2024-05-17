@@ -294,8 +294,8 @@ query <- function(login, webservicepassword,
                                          endpoint = endpoint,
                                          query = query,
                                          idonly = idonly,
-                                         offset = offset,
-                                         maxitems = maxitems
+                                         page_offset = offset,
+                                         page_max_results = maxitems
                              ),
                              encode = 'json')
   end_time <- Sys.time()
@@ -309,23 +309,23 @@ query <- function(login, webservicepassword,
   }
   
   if (interactive()) {
-    msg <- paste0("idonly: ", idonly, "\n",
-                  "endpoint: ", endpoint, "\n",
-                  #"entitiesonpage: ", rv$res$entitiesonpage, "\n",
-                  #"numberofpages: ", rv$res$numberofpages, "\n",
-                  "page: ", rv$res$page)
-    message(msg)
+    #msg <- paste0("idonly: ", idonly, "\n",
+    #              "endpoint: ", endpoint, "\n")
+    #              #"entitiesonpage: ", rv$res$entitiesonpage, "\n",
+    #              #"numberofpages: ", rv$res$numberofpages, "\n",
+    #              #"page: ", rv$res$page)
+    #message(msg)
     
-    # If we were passed a progress update function, call it
-    if (is.function(updateProgress)) {
-      # TODO
-      msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
-                     idonly,
-                     rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
-                     diff_time_msg)
-      
-      updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
-    }
+    ## If we were passed a progress update function, call it
+    #if (is.function(updateProgress)) {
+    #  # TODO
+    #  msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
+    #                 idonly,
+    #                 rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
+    #                 diff_time_msg)
+    #  
+    #  updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
+    #}
     
     message(paste0("query time: ", diff_time_msg))
   }
@@ -380,27 +380,20 @@ readPages <- function(login = NULL,
                       query = list(),
                       posturl = 'http://localhost:5000/',
                       maxitems = 100,
-                      itemsperpage = 100,
+                      offset = 0,
                       updateProgress = NULL){
-  # TODO early stopping if results are empty (maybe a for loop is better here)
-  offsets <- (seq(1, ceiling(maxitems/itemsperpage)) - 1) * itemsperpage
-  rv <- lapply(
-    offsets,
-    FUN = function(offset) {
-      .read(
-        login = login,
-        webservicepassword = webservicepassword,
-        endpoint = endpoint,
-        query = query,
-        posturl = posturl,
-        maxitems = maxitems,
-        offset = offset,
-        updateProgress = updateProgress,
-        posturlsuffix = 'read'
-      )
-    }
-  ) |> unlist(recursive = FALSE)
-  return(rv)
+  .read(
+    login = login,
+    webservicepassword = webservicepassword,
+    endpoint = endpoint,
+    query = query,
+    posturl = posturl,
+    maxitems = maxitems,
+    offset = offset,
+    updateProgress = updateProgress,
+    posturlsuffix = 'read'
+  )
+
 }
   
 #' read method to access bfabric REST
@@ -552,20 +545,26 @@ read <- function(login = NULL, webservicepassword = NULL,
                           posturl = NULL,
                           containerid = 3000,
                           applicationid = 224,
-                          updateProgress = NULL){
+                          updateProgress = NULL,
+                          createdbefore = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
   
+  query <- list('applicationid' = applicationid,
+                'status' = 'available',
+                'containerid' = containerid)
+  if (!is.null(createdbefore)) {
+    query$createdbefore <- createdbefore
+  }
+
    workunits <- ({
     rv <- bfabricShiny::readPages(login = login,
                                   webservicepassword = webservicepassword,
                                   posturl = posturl,
                                   endpoint = 'workunit',
-                                  query=list('applicationid' = applicationid,
-                                             'status' = 'available',
-                                             'containerid' = containerid),
+                                  query=query,
                                   updateProgress = updateProgress)
     
     if ('errorreport' %in% names(rv)){
@@ -573,7 +572,7 @@ read <- function(login = NULL, webservicepassword = NULL,
     }
     
     if (is.null(rv)) return(NULL)
-    rv <- sapply(rv, function(y){paste(y$`_id`, y$name, sep=" - ")})
+    rv <- sapply(rv, function(y){paste(y$id, y$name, sep=" - ")})
 
     if (length(rv) > 0){
       rv <- sort(rv, decreasing = TRUE)
@@ -591,19 +590,24 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @return a vector of resource ids
 .getResources <- function(login=NULL, webservicepassword=NULL,
                           posturl=NULL,
-                         workunitid = NULL,
-                         updateProgress = NULL){
+                          workunitid = NULL,
+                          updateProgress = NULL,
+                          createdbefore = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)),
             isFALSE(is.null(workunitid)))
   
-  
+  query <- list('workunitid' = workunitid)
+  if (!is.null(createdbefore)){
+    query$createdbefore <- createdbefore
+  }
+
   resources <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'resource',
                                   posturl = posturl,
-                                  query = list('workunitid' = workunitid),
+                                  query = query,
                                   updateProgress = updateProgress
                                   )
  
