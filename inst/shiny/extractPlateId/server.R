@@ -1,4 +1,4 @@
-#
+# 
 # This is the server logic of a Shiny web application. You can run the
 # application by clicking 'Run App' above.
 #
@@ -36,18 +36,22 @@ shinyServer(function(input, output) {
   user <- reactive({
     shiny::req(bf$login())
     shiny::req(bf$webservicepassword())
+ 
     try(
-      u <- bfabricShiny::read(bf$login(),
-                              bf$webservicepassword(),
+      u <- bfabricShiny::read(login = bf$login(),
+                              webservicepassword = bf$webservicepassword(),
                               posturl = posturl(),
-                              endpoint='user',
-                              list(login=bf$login()))$res[[1]])
-    validate(shiny::need(try(u$login == bf$login()), "Please provide valid bfabric login and webservicepassword."))
+                              endpoint = 'user',
+                              query = list(login = bf$login()))$res[[1]])
+    validate(shiny::need(try(u$login == bf$login()),
+                         "Please provide valid bfabric login and webservicepassword."))
     message(paste("Request started from user", u$login))
+    
+    #browser()
     return(u)
   })
 
-
+ 
   output$orderID <- renderUI({
     shiny::req(user())
     numericInput(
@@ -97,15 +101,17 @@ shinyServer(function(input, output) {
 	  shiny::req(input$orderID)
 	  start_plate <- Sys.time()
           message(paste("TIME info current before reading plate ID from order ID:", Sys.time()))
-	  res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
+	  res <- bfabricShiny::read(bf$login(),
+	                            bf$webservicepassword(),
 				    posturl = posturl(),
 				    endpoint = "plate",
-				    query = list('containerid' = input$orderID))[[1]]
+				    query = list('containerid' = input$orderID))$res
+	  
 	  end_plate <- Sys.time()
           if ( TIMEdebugmode == TRUE ) { message(paste("TIME to read plateIDs from order ID ", input$orderID, end_plate-start_plate))}
 	  plate_ids <- c()
 	  for (r in 1:length(res)){
-	          plate_ids <- append(plate_ids, res[[r]]$`_id`)
+	          plate_ids <- append(plate_ids, res[[r]]$id)
 	  }
 	  validate(
 		   need(try(length(plate_ids) > 0), "There are no plate defined for this order")
@@ -187,11 +193,11 @@ shinyServer(function(input, output) {
       #if (is.null(res[[r]]$parent)){
       #    sampletype <- append(sampletype, res[[r]]$type)
       #} else {
-      #    message(paste("Enter recursive function for sample ID", res[[r]]$parent[[1]]$`_id`, ": parent info present."))
-      #	  sampletype <- append(sampletype, read_sampletype(res[[r]]$parent[[1]]$`_id`))
+      #    message(paste("Enter recursive function for sample ID", res[[r]]$parent[[1]]$id, ": parent info present."))
+      #	  sampletype <- append(sampletype, read_sampletype(res[[r]]$parent[[1]]$id))
       #}
       # the run number is added to the file name in the final data frame
-      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", res[[r]]$`_id`, "_", res[[r]]$name))
+      filename <- append(filename, paste0(currentdate, "_C", input$orderID, "_S", res[[r]]$id, "_", res[[r]]$name))
     }
     #list("samplename" = samplename, "sampletype" = sampletype, "filename" = filename)
     list("samplename" = samplename, "filename" = filename)
@@ -212,7 +218,7 @@ shinyServer(function(input, output) {
 	    return(sampletype)
 	}
     }
-    read_sampletype(res[[1]]$parent[[1]]$`_id`)
+    read_sampletype(res[[1]]$parent[[1]]$id)
   }
 
   read_plate <- function(plateid) {
@@ -249,20 +255,20 @@ shinyServer(function(input, output) {
     if ( debugmode==TRUE) {
 	    message("test")
             message(length(res[[1]]$sample))
-            message(res[[1]]$sample[[1]]$`_id`)
+            message(res[[1]]$sample[[1]]$id)
     }
     message(paste("Reading", length(samplelist), "samples"))
     showNotification(paste("Reading", length(samplelist), "samples"))
     if ( TIMEdebugmode == TRUE ) {message(paste("TIME info about starting sample info processing", Sys.time() - end_sample))}
     start_loop <- Sys.time()
     for (r in 1:length(samplelist)){
-      sampleid <- samplelist[[r]]$`_id`
+      sampleid <- samplelist[[r]]$id
       message("Reading sample ID ", sampleid)
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
     }
     start_sampleinfo <- Sys.time()
-    sample_info <- read_sample(sapply(samplelist, function(x) as.numeric(x$`_id`)))
+    sample_info <- read_sample(sapply(samplelist, function(x) as.numeric(x$id)))
     end_sampleinfo <- Sys.time()
     read_sample_info_time <- end_sampleinfo - start_sampleinfo
     samplename <- sample_info["samplename"]
@@ -403,7 +409,7 @@ shinyServer(function(input, output) {
      if (rv$download_flag > 0){
          message(paste0("writing csv file ", csvFilename()," ..."))
          S <- getTable()
-         base::save(S, file = "/tmp/SSS.RData")
+         #base::save(S, file = "/tmp/SSS.RData")
          
          utils::write.csv(getTable(), csvFilename(), row.names = FALSE)
          message("uploading to bfabric ...")
@@ -416,7 +422,7 @@ shinyServer(function(input, output) {
              applicationid = 319,
              status = "PENDING",
              description = "",
-             inputresourceid = rv$bfrv2$resource[[1]]$`_id`,
+             inputresourceid = rv$bfrv2$resource[[1]]$id,
              workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
              resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID[[1]], format(Sys.time(), format="%Y%m%d-%H%M")),
              file = csvFilename()

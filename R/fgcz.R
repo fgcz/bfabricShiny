@@ -329,7 +329,7 @@ read <- function(login = NULL, webservicepassword = NULL,
     
     message(paste0("query time: ", diff_time_msg))
   }
-  rv$res
+  rv
 }
 
 #=======readPages======
@@ -637,8 +637,8 @@ save <- function(login = NULL,
                  posturl = 'http://localhost:5000/',
                  query = NULL){
   
-  return(.read(login, webservicepassword, endpoint = endpoint, query = query,
-               posturl = posturl, posturlsuffix = 's'))
+  return(read(login, webservicepassword, endpoint = endpoint, query = query,
+               posturl = posturl, posturlsuffix = 'save'))
 }
 
 #' Create a workunit
@@ -716,7 +716,8 @@ save <- function(login = NULL,
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
             
-  rv <- POST(paste0(posturl, '/s'),
+  
+  rv <- POST(paste0(posturl, '/save'),
              body = toJSON(
                list(
                  login = login,
@@ -732,9 +733,9 @@ save <- function(login = NULL,
                encode = 'json',
                auto_unbox = TRUE,
              ))
-
   rv <- content(rv)
-  return(rv$res)
+
+  return(rv$res)  
 }
 
 #' Generate a workunit and upload a resource (file) to an internal bfabric
@@ -884,13 +885,25 @@ To help us funding further development, please cite:
       description = description
     )
   
-  res <- 
-    .saveResource(login, webservicepassword,
-                     posturl = posturl,
-                     workunitid = wu[[1]]$id,
-                     content = fileContent,
-                     name = resourcename
-                  )
+  #res <- 
+  #  .saveResource(login, webservicepassword,
+  #                   posturl = posturl,
+  #                   workunitid = wu[[1]]$id,
+  #                   content = fileContent,
+  #                   name = resourcename
+  #
+  workunitid <- wu$res[[1]]$id
+  res <- save(login, webservicepassword,
+              posturl = posturl,
+              endpoint = 'resource',
+              query = list(
+                'name' = sprintf("WU%s-%s-%s",workunitid,
+                                 format(Sys.time(), format="%Y%m%d-%H%M"), resourcename),
+                'workunitid' = workunitid,
+                'base64' = fileContent
+              )
+              
+  )
   
   list(workunit = wu, resource = res)
 }
