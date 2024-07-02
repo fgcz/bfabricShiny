@@ -79,7 +79,7 @@ if (!requireNamespace("devtools", quietly = TRUE))
 if (!requireNamespace("PKI", quietly = TRUE))
     install.packages('PKI')
 
-devtools::install_github("trestletech/shinyStore")
+devtools::install_github("cpanse/shinyStore")
 devtools::install_github('fgcz/bfabricShiny', build_vignettes = FALSE,
   quiet = FALSE)
 ```

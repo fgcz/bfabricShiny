@@ -151,7 +151,8 @@
                               endpoint = 'workunit',
                               query=list('applicationid' = 168,
                                          "containerid" = 1000))),
-             encode = 'json')
+             encode = 'json',
+             auto_unbox = TRUE)
 
   rv <- content(rv)
 }
@@ -166,7 +167,8 @@
                               endpoint = 'workunit',
                               query=list('applicationid' = 168,
                                          "containerid" = 1000))),
-             encode = 'json')
+             encode = 'json',
+             auto_unbox = TRUE)
 
   rv <- content(rv)
 }
@@ -246,7 +248,8 @@ query <- function(login, webservicepassword,
                                   endpoint = endpoint,
                                   query = query
                ),
-               encode = 'json'))
+               encode = 'json',
+               auto_unbox = TRUE))
 
   rv <- content(query_result)
   if(as_data_frame){
@@ -263,20 +266,22 @@ query <- function(login, webservicepassword,
 #' @param page define requested page, default is 1
 #' @param posturlsuffix defines the method to use, e.g., read. also, save should work
 #' @author MdE/CP 2023-03
-.read <- function(login = NULL, webservicepassword = NULL,
+read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
-                  page = 1,
+                  #page = 1,
+                  offset = 0,
+                  maxitems = 100,
                   query = list(),
                   posturl = NULL,
                   posturlsuffix = 'read',
                   idonly = FALSE,
                   updateProgress = NULL){
   
-  
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)),
-            is.numeric(page))
+            is.numeric(offset),
+            is.numeric(maxitems))
   
   # message(paste("DEBUG XXX", login, webservicepassword, posturl))
   posturl <- paste0(posturl, posturlsuffix)
@@ -284,42 +289,43 @@ query <- function(login, webservicepassword,
   if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
   start_time <- Sys.time()
   query_result <- httr::POST(posturl,
-                             body = jsonlite::toJSON(list(login = login,
-                                                          webservicepassword = webservicepassword,
-                                                          endpoint = endpoint,
-                                                          query = query,
-                                                          idonly = idonly,
-                                                          page = page
+                             body = list(login = login,
+                                         webservicepassword = webservicepassword,
+                                         endpoint = endpoint,
+                                         query = query,
+                                         idonly = idonly,
+                                         page_offset = offset,
+                                         page_max_results = maxitems
                              ),
-                             encode = 'json'))
+                             encode = 'json')
   end_time <- Sys.time()
 
   diff_time_msg <- paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].")
   rv <- httr::content(query_result)
-  if (is.null(rv$res)){warning("query failed."); return(rv);}
+  if (is.null(rv$res)){warning("query failed."); message(rv); return(rv);}
   
   if ('errorreport' %in% names(rv$res)){
     stop(paste0("B-Fabric errorreport: ", rv$res$errorreport))
   }
   
   if (interactive()) {
+    #msg <- paste0("idonly: ", idonly, "\n",
+    #              "endpoint: ", endpoint, "\n")
+    #              #"entitiesonpage: ", rv$res$entitiesonpage, "\n",
+    #              #"numberofpages: ", rv$res$numberofpages, "\n",
+    #              #"page: ", rv$res$page)
+    #message(msg)
     
-    msg <- paste0("idonly: ", idonly, "\n",
-                  "endpoint: ", endpoint, "\n",
-                  "entitiesonpage: ", rv$res$entitiesonpage, "\n",
-                  "numberofpages: ", rv$res$numberofpages, "\n",
-                  "page: ", rv$res$page)
-    message(msg)
-    
-    # If we were passed a progress update function, call it
-    if (is.function(updateProgress)) {
-      msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
-                     idonly,
-                     rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
-                     diff_time_msg)
-      
-      updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
-    }
+    ## If we were passed a progress update function, call it
+    #if (is.function(updateProgress)) {
+    #  # TODO
+    #  msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
+    #                 idonly,
+    #                 rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
+    #                 diff_time_msg)
+    #  
+    #  updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
+    #}
     
     message(paste0("query time: ", diff_time_msg))
   }
@@ -368,56 +374,7 @@ query <- function(login, webservicepassword,
 #'     query = list( attribute = list(name = 'fraction',
 #'         value = 'true')))
 #'         }
-readPages <- function(login = NULL,
-                      webservicepassword = NULL,
-                      endpoint = 'workunit',
-                      query = list(),
-                      posturl = 'http://localhost:5000/',
-                      maxpages = 10,
-                      updateProgress = NULL){
-  
-  rv <- .read(login = login,
-              webservicepassword = webservicepassword,
-              endpoint = endpoint,
-              query = query,
-              idonly = TRUE,
-              posturl = posturl,
-              updateProgress = updateProgress,
-              posturlsuffix = 'read')
-  
-  
-  # TODO(CP): too lazy to program; so start with page 1
-  if ('errorreport' %in% names(rv)){
-    return(rv)
-  }
-  
-  if ('status' %in% names(rv)){
-    return(rv)
-  }
-  
-  if ('entitiesonpage' %in% names(rv)){
-    if (rv$entitiesonpage == 0) return (NULL)
-  }
-  
-  if(rv$numberofpages > 0){
-    rv <- lapply(seq(1, min(rv$numberofpages, maxpages)),
-                 FUN = .read,
-                 login = login,
-                 webservicepassword = webservicepassword,
-                 endpoint = endpoint,
-                 query = query,
-                 posturl = posturl,
-                 updateProgress = updateProgress,
-                 posturlsuffix = 'read') |> 
-      lapply(FUN = function(x){get(endpoint, x)}) |> 
-      unlist(recursive = FALSE)
-    return (rv)
-  }else{
-    return(get(endpoint, rv))
-  }
-  
-  return(rv)
-}
+readPages <- read
   
 #' read method to access bfabric REST
 #'
@@ -459,40 +416,40 @@ readPages <- function(login = NULL,
 #'    endpoint = 'resource',
 #'    query = list('workunitid' = 163763))
 #'    
-read <- function(login = NULL, webservicepassword = NULL,
-                  endpoint = 'workunit',
-                  query,
-                  posturl = 'http://localhost:5000/',
-                  as_data_frame = FALSE){
-  
-
-  stopifnot(isFALSE(is.null(login)),
-            isFALSE(is.null(webservicepassword)))
-  
-  if (interactive()) {
-    .Deprecated("bfabricShiny::readPages")
-    message(paste0("using '", posturl, "' as posturl ..."))
-    }
-  
-  query_result <- httr::POST(paste0(posturl, "/q"),
-                       body = jsonlite::toJSON(list(login = login,
-                                          webservicepassword = webservicepassword,
-                                          endpoint = endpoint,
-                                          query = query
-                       ),
-                       encode = 'json'))
-
-  rv <- httr::content(query_result)
-  if (is.null(rv$res)){warning("query failed."); return(rv);}
-  if(as_data_frame){
-    if (interactive()) {message("reshaping list to data.frame object ...")}
-    rv <- Reduce(rbind, rv$res) |>
-      as.data.frame() |>
-      apply(1, unlist) |>
-      t()
-  }
-  rv
-}
+#read <- function(login = NULL, webservicepassword = NULL,
+#                  endpoint = 'workunit',
+#                  query,
+#                  posturl = 'http://localhost:5000/',
+#                  as_data_frame = FALSE){
+#  
+#
+#  stopifnot(isFALSE(is.null(login)),
+#            isFALSE(is.null(webservicepassword)))
+#  
+#  if (interactive()) {
+#    .Deprecated("bfabricShiny::readPages")
+#    message(paste0("using '", posturl, "' as posturl ..."))
+#    }
+#  
+#  query_result <- httr::POST(paste0(posturl, "/q"),
+#                       body = jsonlite::toJSON(list(login = login,
+#                                          webservicepassword = webservicepassword,
+#                                          endpoint = endpoint,
+#                                          query = query
+#                       ),
+#                       encode = 'json', auto_unbox = TRUE))
+#
+#  rv <- httr::content(query_result)
+#  if (is.null(rv$res)){warning("query failed."); return(rv);}
+#  if(as_data_frame){
+#    if (interactive()) {message("reshaping list to data.frame object ...")}
+#    rv <- Reduce(rbind, rv$res) |>
+#      as.data.frame() |>
+#      apply(1, unlist) |>
+#      t()
+#  }
+#  rv
+#}
 
 #===========.getSamples======
 #' get samples of a container as data frame object
@@ -523,11 +480,11 @@ read <- function(login = NULL, webservicepassword = NULL,
                                 updateProgress = updateProgress)
   
   df <- data.frame(
-    samples._id = sapply(rv, FUN = function(x){x$`_id`}) |> as.numeric(),
+    samples._id = sapply(rv, FUN = function(x){x$id}) |> as.numeric(),
     samples.name = sapply(rv, FUN = function(x){x$name}),
     samples.condition = lapply(rv, FUN = function(x){x$grouping$name}) |>
       sapply(FUN = function(x){if (is.null(x)){"N/A"}else{x}}),
-    containerid = sapply(rv, FUN = function(x){x$container$`_id`})) 
+    containerid = sapply(rv, FUN = function(x){x$container$id})) 
   
   return(df[order(df$samples._id), ])
 }
@@ -551,9 +508,9 @@ read <- function(login = NULL, webservicepassword = NULL,
       return (rv)
     }
     
-    projetcs <- sapply(rv[[1]]$project, function(y){y$`_id`})
-    coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$`_id`})
-    orders <- sapply(rv[[1]]$order, function(y){y$`_id`})
+    projetcs <- sapply(rv[[1]]$project, function(y){y$id})
+    coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$id})
+    orders <- sapply(rv[[1]]$order, function(y){y$id})
     
     containers <- c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
   #})
@@ -568,20 +525,26 @@ read <- function(login = NULL, webservicepassword = NULL,
                           posturl = NULL,
                           containerid = 3000,
                           applicationid = 224,
-                          updateProgress = NULL){
+                          updateProgress = NULL,
+                          createdbefore = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
   
+  query <- list('applicationid' = applicationid,
+                'status' = 'available',
+                'containerid' = containerid)
+  if (!is.null(createdbefore)) {
+    query$createdbefore <- createdbefore
+  }
+
    workunits <- ({
     rv <- bfabricShiny::readPages(login = login,
                                   webservicepassword = webservicepassword,
                                   posturl = posturl,
                                   endpoint = 'workunit',
-                                  query=list('applicationid' = applicationid,
-                                             'status' = 'available',
-                                             'containerid' = containerid),
+                                  query=query,
                                   updateProgress = updateProgress)
     
     if ('errorreport' %in% names(rv)){
@@ -589,7 +552,7 @@ read <- function(login = NULL, webservicepassword = NULL,
     }
     
     if (is.null(rv)) return(NULL)
-    rv <- sapply(rv, function(y){paste(y$`_id`, y$name, sep=" - ")})
+    rv <- sapply(rv, function(y){paste(y$id, y$name, sep=" - ")})
 
     if (length(rv) > 0){
       rv <- sort(rv, decreasing = TRUE)
@@ -607,19 +570,24 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @return a vector of resource ids
 .getResources <- function(login=NULL, webservicepassword=NULL,
                           posturl=NULL,
-                         workunitid = NULL,
-                         updateProgress = NULL){
+                          workunitid = NULL,
+                          updateProgress = NULL,
+                          createdbefore = NULL){
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)),
             isFALSE(is.null(workunitid)))
   
-  
+  query <- list('workunitid' = workunitid)
+  if (!is.null(createdbefore)){
+    query$createdbefore <- createdbefore
+  }
+
   resources <- bfabricShiny::readPages(login, webservicepassword,
                                   endpoint = 'resource',
                                   posturl = posturl,
-                                  query = list('workunitid' = workunitid),
+                                  query = query,
                                   updateProgress = updateProgress
                                   )
  
@@ -636,7 +604,7 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' \dontrun{
 #' library(bfabricShiny)
 #' A <- .getApplications(login, webservicepassword)
-#' bfabricApplication <- data.frame(id = sapply(A, function(x){x$`_id`}),
+#' bfabricApplication <- data.frame(id = sapply(A, function(x){x$id}),
 #'  name = sapply(A, function(x){x$name}))
 #' bfabricApplication <- bfabricApplication[order(bfabricApplication$id),]
 #' write.table(bfabricApplication, file="./inst/extdata/application.csv",
@@ -761,7 +729,8 @@ save <- function(login = NULL,
                    'base64' = content
                  )
                ),
-               encode = 'json'
+               encode = 'json',
+               auto_unbox = TRUE,
              ))
 
   rv <- content(rv)
@@ -823,11 +792,11 @@ bfabric_upload_file <- function(login = NULL,
 
 
   r <- .saveResource(login, webservicepassword,
-                     workunitid = wu[[1]]$`_id`,
+                     workunitid = wu[[1]]$id,
                     content = file_content,
                     name = resourcename)
 
-  wu[[1]]$`_id`
+  wu[[1]]$id
 }
 
 #=====uploadResource=======
@@ -918,7 +887,7 @@ To help us funding further development, please cite:
   res <- 
     .saveResource(login, webservicepassword,
                      posturl = posturl,
-                     workunitid = wu[[1]]$`_id`,
+                     workunitid = wu[[1]]$id,
                      content = fileContent,
                      name = resourcename
                   )
@@ -953,7 +922,7 @@ To help us funding further development, please cite:
                                          description = 'AAA sanity check output',
                                          workunitname = "AAA report",
                                          resourcename = 'html report',
-                                         inputresourceid = wu1$resource[[1]]$`_id`,
+                                         inputresourceid = wu1$resource[[1]]$id,
                                          file = inputfile2)
 }
 
@@ -975,7 +944,7 @@ To help us funding further development, please cite:
 
   inputSampleIds <-  vapply(inputResourcesIds, function(x){
     read(login, webservicepassword, endpoint = 'resource',
-         query = list(id=x))[[1]][[1]]$sample$`_id`
+         query = list(id=x))[[1]][[1]]$sample$id
     }, FUN.VALUE = 202691)
 
 

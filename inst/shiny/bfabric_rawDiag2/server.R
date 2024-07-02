@@ -5,7 +5,7 @@ stopifnot(
   require(rawDiag),
   require(bfabricShiny),
   packageVersion('bfabricShiny') >= "0.12.20",
-  packageVersion('rawDiag') >= "0.99.0"
+  packageVersion('rawDiag') >= "0.99.30"
 )
 
 shinyServer(function(input, output, session) {
@@ -81,7 +81,7 @@ shinyServer(function(input, output, session) {
       resourcename = sprintf("%s.pdf", "rawDiag"),
       file = vals$pdfFileName
     )
-    
+    print( rvUpload )
     vals$bfabricWorkunitId <- rvUpload$workunit[[1]]$`_id`
     msg <- paste0("The current plot is available as workunit ", vals$bfabricWorkunitId, ".")
     message(msg)
@@ -104,13 +104,17 @@ shinyServer(function(input, output, session) {
         wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
                         vals$bfabricWorkunitId, "', '_blank')")
         message("Rendering actionButton to link workunit ", vals$bfabricWorkunitId, " in B-Fabric.")
-        actionButton(inputId = "B-FabricDownload",
-                     label = paste("b-fabric download workunit", vals$bfabricWorkunitId),
-                     onclick = wuUrl)
+        tagList(
+          shiny::helpText(paste0("The current plot '", vals$pdfFileName, "' is available as workunit in B-Fabric.")),
+          actionButton(inputId = "B-FabricDownload",
+                       label = paste("b-fabric download workunit", vals$bfabricWorkunitId),
+                       onclick = wuUrl))
 
       }else if (isFALSE(is.null(vals$pdfFileName))){
-      #(file.exists(vals$pdfFileName)){
-        actionButton('generate', 'Upload PDF\nto B-Fabric')
+        tagList(
+          shiny::helpText(paste0("Upload the current plot '", vals$pdfFileName, "' to B-Fabric.")),
+          actionButton('generate', 'Upload PDF\nto B-Fabric')
+        )
       } else{
         HTML("Opps, something went wrong.\nPlease contact <cp@fgcz.ethz.ch>.")
       }
