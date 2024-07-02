@@ -94,7 +94,9 @@ shinyServer(function(input, output) {
     )
   })
 
-
+  output$randomization <- renderUI({
+    shiny::checkboxInput("randomization", "randomization", value = FALSE)
+  })
 
   read_plateid <- reactive({
 	  shiny::req(user())
@@ -309,14 +311,28 @@ shinyServer(function(input, output) {
                order_sample <- append(order_sample, f)
            }
        }
-       order_sample_rand <- sample(order_sample)
+       
+       ## TODO(cp): make the check for the randomization more sophisticated; so 
+       ## that it does not require to query bfabric again
+       if (input$randomization){
+         order_sample_rand <- sample(order_sample)
+       }else{
+         order_sample_rand <- order_sample
+       }
+       #browser()
        list("bio_sample" = order_sample_rand, "control" = order_control)
+  }
+  
+  .cleanAutoQC03 <- function(df){
+    base::save(df, file='/tmp/debug.RData')
+    df
   }
 
   getTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
     shiny::req(input$plateID)
+    
     message(paste("Creating table for plate ID =", input$plateID))
     #df <- data.frame(matrix(ncol = 9, nrow = 0))
     #colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
@@ -352,10 +368,10 @@ shinyServer(function(input, output) {
 	   filename_split <- unlist(strsplit(x, "_"))
 	   runnumber <- match(x,df[["File Name"]])
 	   runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-	   paste(c(filename_split[c(1:2)], runnumber, filename_split[c(3:length(filename_split))]), collapse = "_")
+	   paste(c(filename_split[1], runnumber, filename_split[2], filename_split[c(3:length(filename_split))]), collapse = "_")
 	 })
     df[["File Name"]] <- sapply(df[["File Name"]], as.character)
-    df
+    df |> .cleanAutoQC03()
   })
 
   observeEvent(input$run,{
