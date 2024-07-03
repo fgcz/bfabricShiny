@@ -23,6 +23,7 @@ shinyUI(fluidPage(
       uiOutput("instrument"),
       uiOutput("plateID"),
       uiOutput("injvol"),
+      uiOutput("randomization"),
       uiOutput("extratext"),
       uiOutput("extrameasurement"),
       uiOutput('run'),
