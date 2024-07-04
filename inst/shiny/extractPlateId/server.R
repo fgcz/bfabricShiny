@@ -178,12 +178,13 @@ shinyServer(function(input, output) {
   })
 
 
-  read_sample <- function(samplelist){
+  read_sample_ <- function(samplelist){
     start_fullquery <- Sys.time()
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
                               endpoint = "sample",
                               query = list('id' = samplelist))[[1]]
+    browser()
     end_fullquery <- Sys.time()
     message(paste("TIME info loop processing full loop:", end_fullquery-start_fullquery))
     if ( debugmode == TRUE ) {message(res[[1]])}
@@ -204,7 +205,21 @@ shinyServer(function(input, output) {
     #list("samplename" = samplename, "sampletype" = sampletype, "filename" = filename)
     list("samplename" = samplename, "filename" = filename)
   }
-
+  read_sample <- function(samplelist){
+    start_fullquery <- Sys.time()
+    res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
+                              posturl = posturl(),
+                              endpoint = "sample",
+                              query = list('id' = samplelist))[[1]]
+    
+    samplename <- sapply(res, function(x)x$name)
+    sampleId <- sapply(res, function(x)x$id)
+    #rdf <- data.frame(sampleId = samplelist)
+    data.frame(samplename = samplename,
+               filename = paste0(currentdate, "_@@@_C", input$orderID, "_S", sampleId, "_", samplename),
+               sampleId = sampleId, stringsAsFactors = TRUE) -> df
+    df[order(df$sampleId),]
+  }
 
   read_sampletype <- function(sampleid){
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
@@ -269,13 +284,14 @@ shinyServer(function(input, output) {
       sample_ids <- append(sample_ids, sampleid)
       gridposition <- append(gridposition, samplelist[[r]]$`_gridposition`)
     }
+    idx <- order(sample_ids)
     start_sampleinfo <- Sys.time()
     sample_info <- read_sample(sapply(samplelist, function(x) as.numeric(x$id)))
     end_sampleinfo <- Sys.time()
     read_sample_info_time <- end_sampleinfo - start_sampleinfo
-    samplename <- sample_info["samplename"]
+    samplename <- sample_info$samplename
     #sampletype <- sample_info["sampletype"]
-    filename <- sample_info["filename"]
+    filename <- sample_info$filename
 
     end_loop <- Sys.time()
     message(paste("TIME info about loop processing:", as.numeric(end_loop-start_loop, units = "secs"), "VS read_sample function:", read_sample_info_time))
@@ -283,12 +299,14 @@ shinyServer(function(input, output) {
     validate(
       need(try(length(sample_ids) > 0), "There are no sample defined for this plate id")
     )
+    
+    # browser()
     data.frame("File Name" = filename,
 	       "Path" = paths,
-	       "Position" = gridposition,
+	       "Position" = gridposition[idx],
 	       "Inj Vol" = injvol,
 	       "L3 Laboratory" = laboratory,
-	       "Sample ID" = sample_ids,
+	       "Sample ID" = sample_ids[idx],
 	       "Sample Name" = samplename,
 	       "Instrument Method" = instrument,
 	       #"Sample Type" = sampletype,
@@ -364,14 +382,14 @@ shinyServer(function(input, output) {
     #colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method", "Sample Type")
     colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
     # adding the run number to the file name
-    df[["File Name"]] <- lapply(df[["File Name"]], function(x) {
-	   filename_split <- unlist(strsplit(x, "_"))
-	   runnumber <- match(x,df[["File Name"]])
-	   runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
-	   paste(c(filename_split[1], runnumber, filename_split[2], filename_split[c(3:length(filename_split))]), collapse = "_")
-	 })
-    df[["File Name"]] <- sapply(df[["File Name"]], as.character)
-    df |> .cleanAutoQC03()
+    #df[["File Name"]] <- lapply(df[["File Name"]], function(x) {
+	 #  filename_split <- unlist(strsplit(x, "_"))
+	 #  runnumber <- match(x,df[["File Name"]])
+	 ##  runnumber <- formatC(runnumber, width = 3, format = "d", flag = "0")
+	 #  paste(c(filename_split[1], runnumber, filename_split[2], filename_split[c(3:length(filename_split))]), collapse = "_")
+	 #})
+    #df[["File Name"]] <- sapply(df[["File Name"]], as.character)
+    df 
   })
 
   observeEvent(input$run,{
