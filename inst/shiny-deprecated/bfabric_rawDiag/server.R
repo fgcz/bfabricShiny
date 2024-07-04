@@ -943,7 +943,7 @@ output$qc <- renderPlot({
       file = pdfFilename
     )
     message(rvupload)
-    values$wuid <- rvupload$workunit[[1]]$`_id`
+    values$wuid <- rvupload$workunit[[1]]$id
     msg <- paste0("The current plot is available as workunit ", values$wuid)
     message(msg)
     progress$set(message = msg)

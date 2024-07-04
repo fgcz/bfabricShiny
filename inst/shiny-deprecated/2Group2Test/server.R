@@ -438,7 +438,7 @@ shinyServer( function(input, output, session) {
 
         bfabricShiny:::.saveResource(login = bf$login(),
                                      webservicepassword = bf$webservicepassword(),
-                                     workunitid = rv$bfrv1$workunit[[1]]$`_id`,
+                                     workunitid = rv$bfrv1$workunit[[1]]$id,
                                      content = file_csv_content,
                                      name =  sprintf("%s.txt", input$experimentID))
       }else{
