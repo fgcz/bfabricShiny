@@ -82,7 +82,7 @@ shinyServer(function(input, output, session) {
       file = vals$pdfFileName
     )
     print( rvUpload )
-    vals$bfabricWorkunitId <- rvUpload$workunit[[1]]$`_id`
+    vals$bfabricWorkunitId <- rvUpload$workunit[[1]]$id
     msg <- paste0("The current plot is available as workunit ", vals$bfabricWorkunitId, ".")
     message(msg)
     progress$set(message = msg)

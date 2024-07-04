@@ -680,7 +680,7 @@ shinyServer(function(input, output, session) {
                                      file = fn)
         
       })
-      values$wuid <- rv[[1]]$workunit[[1]]$`_id`
+      values$wuid <- rv[[1]]$workunit[[1]]$id
     } else if (input$instrumentControlSoftware == "HyStar"){
       #=====write HyStar MS configuration to bfabric=========
       fn <- tempfile(tmpdir = tempdir(), fileext = ".xml") 
@@ -725,8 +725,8 @@ shinyServer(function(input, output, session) {
       
       message(paste0("DEBUG: wuid=", values$wuid))
       
-      values$wuid <- rv[[1]]$workunit[[1]]$`_id`
-      message(paste0("DEBUG: rv wuid=", rv[[1]]$workunit[[1]]$`_id`))
+      values$wuid <- rv[[1]]$workunit[[1]]$id
+      message(paste0("DEBUG: rv wuid=", rv[[1]]$workunit[[1]]$id))
       message(paste0("DEBUG: wuid=", values$wuid))
     }else{
       warning("Hit else block of bfabricUpload!")
