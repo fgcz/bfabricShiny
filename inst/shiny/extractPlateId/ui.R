@@ -13,7 +13,7 @@ stopifnot(require(shiny), require(bfabricShiny))
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel(sprintf("MS Queue Generator - using Plate IDs as input")),
+  titlePanel(sprintf("MS Queue Generator - using b-fabric plates")),
   
   sidebarLayout(
     sidebarPanel(
@@ -24,6 +24,7 @@ shinyUI(fluidPage(
       uiOutput("plateID"),
       uiOutput("injvol"),
       uiOutput("randomization"),
+      uiOutput("selectqFUN"),
       uiOutput("extratext"),
       uiOutput("extrameasurement"),
       uiOutput('run'),

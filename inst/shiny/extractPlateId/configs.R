@@ -108,8 +108,74 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
 # Metabolomics ========================================
 
-qconfigMetabolomics <- function(df){
-  colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
+.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sample = NA){
   
-  df
+ # if (is.na(sample)){
+#    stop("No sample name provided")
+ # }
+  
+  output <- data.frame(matrix(ncol = ncol(x), nrow = 0))
+  colnames(output) <- colnames(x)
+  
+  if (is.na(where)){
+    for (i in 1:nrow(x)){
+      if (i %% howOften == 0){
+        rbind(output, sample) -> output
+      }
+      rbind(output, x[i, ]) -> output
+    }
+  }else if (where == 0){
+    rbind(sample, x) ->  output
+  }else if (where > nrow(x)){
+    rbind(x, sample) ->  output
+  }else{stop("Invalid arguments")}
+  
+  output
+}
+
+.pooledQC <- function(x){
+  data.frame(matrix(NA, ncol = ncol(x), nrow = 2)) -> pool
+  colnames(pool) <- colnames(x)
+  
+  
+  pool[1, 1] <- "pooledQC_@@@_"
+  pool[2, 1] <- "blank_@@@_"
+  
+  pool
+}
+
+.pooledQCDil <- function(x){
+  data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
+  colnames(pool) <- colnames(x)
+  
+  
+  pool[1, 1] <- "pooledQCDil1_@@@_"
+  pool[2, 1] <- "pooledQCDil2_@@@_"
+  pool[3, 1] <- "pooledQCDil3_@@@_"
+  pool[4, 1] <- "pooledQCDil4_@@@_"
+  pool[5, 1] <- "pooledQCDil5_@@@_"
+  pool[6, 1] <- "pooledQCDil6_@@@_"
+  pool[7, 1] <- "pooledQCDil7_@@@_"
+  pool[8, 1] <- "blank_@@@_"
+  
+  pool
+}
+
+#' qconfigMetabolomics
+#'
+#' @param df 
+#' 
+#' @describeIn
+#' as defined my MZ
+#' @return data.frame
+qconfigMetabolomics <- function(x){
+  colnames(x) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
+                   "Sample ID", "Sample Name", "Instrument Method")
+  x |> .insertSample(howOften = 24, sample = .pooledQC(x)) -> x
+  
+  x |> .insertSample(where = 0, sample = .pooledQCDil(x)) -> x
+  
+  x |> .insertSample(where = (nrow(x) + 1), sample = .pooledQCDil(x)) -> x
+  
+  x
 }

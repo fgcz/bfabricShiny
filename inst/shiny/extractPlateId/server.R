@@ -10,11 +10,18 @@ if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queu
 
 # Define server logic required
 shinyServer(function(input, output) {
-  # Reactive ===============
+ 
   debugmode <- FALSE
   TIMEdebugmode <- FALSE
-  instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3", "ASTRAL_1"),
-		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2", "TIMSTOFFLEX_1"))
+  
+  
+  instruments <- list(
+    Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2",
+                     "QEXACTIVE_3", "ASTRAL_1"),
+    Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2",
+                   "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2",
+                   "TIMSTOFFLEX_1"))
+  
   plate_idx <- c("Y", "G", "R", "B")
   currentdate <- format(Sys.time(), "%Y%m%d")
 
@@ -55,9 +62,22 @@ shinyServer(function(input, output) {
  # UI ==========
   output$orderID <- renderUI({
     shiny::req(user())
+  
+    if (user()$login == 'cpanse'){
+     return( selectInput(
+        "orderID",
+        "Order ID:",
+        c("31741", "35116"),
+        selected = "31741",
+        multiple = FALSE,
+        selectize = FALSE
+      ))
+      
+    }
+    
     numericInput(
       "orderID",
-      "order ID",
+      "order ID:",
       "",
       min = NA,
       max = NA,
@@ -69,6 +89,9 @@ shinyServer(function(input, output) {
   output$plateID <- renderUI({
       shiny::req(input$orderID)
       shiny::req(read_plateid())
+      shiny::req(user())
+      
+      
       selectInput(
           "plateID",
           "List of available plate IDs:",
@@ -79,6 +102,9 @@ shinyServer(function(input, output) {
           size = NULL,
           width = NULL
     )
+      
+    
+    
   })
 
   output$injvol <- renderUI({
@@ -340,7 +366,8 @@ shinyServer(function(input, output) {
       df[sample(nrow(df)), ] -> df
     }
   
-    do.call(what = input$qFUN, args = list(df)) |> .replaceRunIds()
+    do.call(what = input$qFUN, args = list(df)) |>
+      .replaceRunIds()
   })
 
   # Events ======
