@@ -108,7 +108,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
 # Metabolomics ========================================
 
-.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sample = NA){
+.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sample = NA, path=NA){
   
  # if (is.na(sample)){
 #    stop("No sample name provided")
@@ -130,30 +130,41 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
     rbind(x, sample) ->  output
   }else{stop("Invalid arguments")}
   
+  output$Path <- path
   output
 }
 
-.pooledQC <- function(x){
-  data.frame(matrix(NA, ncol = ncol(x), nrow = 2)) -> pool
+.pooledQC <- function(x, plateId = "Y"){
+  data.frame(matrix(NA, ncol = ncol(x), nrow = 3)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   pool[1, 1] <- sprintf("%s_@@@_poolQC", currentdate)
-  pool[2, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool[2, 1] <- sprintf("%s_@@@_150mix", currentdate)
+  pool[3, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool$Position[3] <- sprintf("%s:H%d", plateId, 1)
+  pool$`Sample Name`[3] <- sprintf("clean")
   
+  pool$`Inj Vol` <- 3.5
   pool
 }
 
-.pooledQCDil <- function(x){
+.pooledQCDil <- function(x, plateId = "Y"){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
+  
   for (i in 1:7){
     pool[i, 1] <- sprintf("%s_@@@_pooledQCDil%d", currentdate, i)
+    pool$Position[i] <- sprintf("%s:H%d", plateId, i + 1)
+    pool$`Sample Name`[i] <- sprintf("QC dil%d", i)
+    pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
 
   pool[8, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool$Position[8] <- sprintf("%s:H%d", plateId, 1)
   
+  pool$`Inj Vol` <- 3.5
   pool
 }
 
@@ -164,18 +175,34 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 #' @describeIn
 #' as defined my MZ
 #' @return data.frame
+#' 
+#' 
+## TODOs(cp):
+## 1. take clean dil qcs only from plateId H?
+## 2. insert tube ID.
+## 3. dir for instrument method
 qconfigMetabolomics <- function(x){
   colnames(x) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
                    "Sample ID", "Sample Name", "Instrument Method")
   
+  # base::save(x, file="/tmp/mx.RData")
+  
   # ignore H row
-  x[grepl(x$Position, ":[ABCDEFG],")] -> x
+  x[grepl(pattern = ":[ABCDEFG][1-9]", x = x$Position), ] -> x
   
-  x |> .insertSample(howOften = 24, sample = .pooledQC(x)) -> x
+  x |> .insertSample(howOften = 24, sample = .pooledQC(x), path = x$Path[1]) -> x
   
-  x |> .insertSample(where = 0, sample = .pooledQCDil(x)) -> x
+  x |> .insertSample(where = 0, sample = .pooledQCDil(x), path = x$Path[1]) -> x
   
-  x |> .insertSample(where = (nrow(x) + 1), sample = .pooledQCDil(x)) -> x
+  x |> .insertSample(where = (nrow(x) + 1), sample = .pooledQCDil(x), path = x$Path[1]) -> x
+  
+  x$`L3 Laboratory` <- "FGCZ"
   
   x
 }
+
+ttt <- function(){
+  load("/tmp/mx.RData")
+  x |> qconfigMetabolomics() |> .replaceRunIds()
+}
+  
