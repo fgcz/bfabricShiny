@@ -136,10 +136,10 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 .pooledQC <- function(x){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 2)) -> pool
   colnames(pool) <- colnames(x)
+  currentdate <- format(Sys.time(), "%Y%m%d")
   
-  
-  pool[1, 1] <- "pooledQC_@@@_"
-  pool[2, 1] <- "blank_@@@_"
+  pool[1, 1] <- sprintf("%s_@@@_poolQC", currentdate)
+  pool[2, 1] <- sprintf("%s_@@@_clean", currentdate)
   
   pool
 }
@@ -147,16 +147,12 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 .pooledQCDil <- function(x){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
   colnames(pool) <- colnames(x)
-  
-  
-  pool[1, 1] <- "pooledQCDil1_@@@_"
-  pool[2, 1] <- "pooledQCDil2_@@@_"
-  pool[3, 1] <- "pooledQCDil3_@@@_"
-  pool[4, 1] <- "pooledQCDil4_@@@_"
-  pool[5, 1] <- "pooledQCDil5_@@@_"
-  pool[6, 1] <- "pooledQCDil6_@@@_"
-  pool[7, 1] <- "pooledQCDil7_@@@_"
-  pool[8, 1] <- "blank_@@@_"
+  currentdate <- format(Sys.time(), "%Y%m%d")
+  for (i in 1:7){
+    pool[i, 1] <- sprintf("%s_@@@_pooledQCDil%d", currentdate, i)
+  }
+
+  pool[8, 1] <- sprintf("%s_@@@_clean", currentdate)
   
   pool
 }
@@ -171,6 +167,10 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 qconfigMetabolomics <- function(x){
   colnames(x) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
                    "Sample ID", "Sample Name", "Instrument Method")
+  
+  # ignore H row
+  x[grepl(x$Position, ":[ABCDEFG],")] -> x
+  
   x |> .insertSample(howOften = 24, sample = .pooledQC(x)) -> x
   
   x |> .insertSample(where = 0, sample = .pooledQCDil(x)) -> x
