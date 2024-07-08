@@ -10,11 +10,11 @@ if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queu
 
 # Define server logic required
 shinyServer(function(input, output) {
-  
+  # Reactive ===============
   debugmode <- FALSE
   TIMEdebugmode <- FALSE
-  instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3"),
-		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2"))
+  instruments <- list(Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2", "QEXACTIVE_3", "ASTRAL_1"),
+		      Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2", "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2", "TIMSTOFFLEX_1"))
   plate_idx <- c("Y", "G", "R", "B")
   currentdate <- format(Sys.time(), "%Y%m%d")
 
@@ -22,6 +22,8 @@ shinyServer(function(input, output) {
                    "bfabric8")
   rv <- reactiveValues(download_flag = 0)
   
+  
+   
   output$bfabricUser <- renderUI({
     if (require("bfabricShiny")){
       bfabricInput("bfabric8")
@@ -50,7 +52,7 @@ shinyServer(function(input, output) {
     return(u)
   })
 
- 
+ # UI ==========
   output$orderID <- renderUI({
     shiny::req(user())
     numericInput(
@@ -94,13 +96,24 @@ shinyServer(function(input, output) {
   })
 
   output$randomization <- renderUI({
-    shiny::checkboxInput("randomization", "randomization", value = FALSE)
-    radioButtons("randomization", "Randomization:",
+    shiny::radioButtons("randomization", "Randomization:",
                  c("no" = "no",
                    "plate" = "plate",
                    "all" = "all"))
   })
-
+  
+  # selectqFUN ------------
+  output$selectqFUN <- renderUI({
+    
+    qc <- c("qconfigEVOSEP6x12x8Hystar", "qconfigMetabolomics")
+    shiny::selectInput(inputId = "qFUN", 
+                       label = "Queue configuration:",
+                       choices = qc,
+                       multiple = FALSE,
+                       selected = qc[1],
+                       selectize = FALSE)
+  })
+  
   read_plateid <- reactive({
 	  shiny::req(user())
 	  shiny::req(input$orderID)
@@ -129,7 +142,7 @@ shinyServer(function(input, output) {
     shiny::req(input$orderID)
     selectInput(
       "area",
-      "Area",
+      "Area:",
       c("Proteomics","Metabolomics"),
       multiple = FALSE,
       selected = "",
@@ -142,7 +155,7 @@ shinyServer(function(input, output) {
     shiny::req(input$area)
     selectInput(
       "instrument",
-      "Instrument",
+      "Instrument:",
       instruments[input$area],
       multiple = FALSE,
       selected = "",
@@ -180,6 +193,8 @@ shinyServer(function(input, output) {
     helpText("Note that the suffix above is applied to all samples for all selected plates"))
   })
 
+  
+  # READ ==========================
   readSample <- function(samplelist){
     start_fullquery <- Sys.time()
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
@@ -213,6 +228,7 @@ shinyServer(function(input, output) {
     read_sampletype(res[[1]]$parent[[1]]$id)
   }
 
+  
   readPlate <- function(plateid) {
     shiny::req(user())
     message(sprintf("Reading plate %s ...", plateid))
@@ -287,10 +303,12 @@ shinyServer(function(input, output) {
     df
   }
 
+  # Output Table --------
   getTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
     shiny::req(input$plateID)
+    shiny::req(input$qFUN)
     
     message(paste("Creating table for plate ID =", input$plateID))
     df <- data.frame(matrix(ncol = 8, nrow = 0))
@@ -317,16 +335,15 @@ shinyServer(function(input, output) {
       }
      }
     
-    # colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-    
     if(input$randomization == "all"){
       set.seed(872436)
       df[sample(nrow(df)), ] -> df
     }
   
-    df |> configEVOSEP6x12x8Hystar() |> .replaceRunIds() 
+    do.call(what = input$qFUN, args = list(df)) |> .replaceRunIds()
   })
 
+  # Events ======
   observeEvent(input$run,{
       showNotification("Extracting plate information")
       output$outputKable <- function(){
