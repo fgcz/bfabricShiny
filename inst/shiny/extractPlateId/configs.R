@@ -34,7 +34,10 @@
 	x
 }
 
-configEVOSEP6x12x8Hystar <- function(df){
+
+# Proteomics ========================================
+
+qconfigEVOSEP6x12x8Hystar <- function(df){
 
 	Y <- c('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
 	
@@ -100,4 +103,13 @@ configEVOSEP6x12x8Hystar <- function(df){
 	  
 	}
 	output 
+}
+
+
+# Metabolomics ========================================
+
+qconfigMetabolomics <- function(df){
+  colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
+  
+  df
 }
