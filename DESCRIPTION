@@ -29,14 +29,15 @@ Imports:
     XML
 Suggest: 
     DT,
+    RCurl,
     ggplot2 (>= 2.2),
+    kableExtra,
     protViz (>= 0.7),
     rmarkdown,
     roxygen2 (>= 6.0),
     testthat,
     tidyverse,
-    RCurl,
-    xml2 (>= 1.1)
+    xml2 (>= 1.1),
 Remotes:
     cpanse/shinyStore
 License: GPL-3 + file LICENSE
