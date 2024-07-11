@@ -27,7 +27,7 @@ Imports:
     shinyStore (>= 0.1.1),
     tidyr (>= 0.6),
     XML
-Suggest: 
+Suggests: 
     DT,
     RCurl,
     ggplot2 (>= 2.2),
