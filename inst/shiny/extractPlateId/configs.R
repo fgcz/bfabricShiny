@@ -149,6 +149,20 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   pool
 }
 
+.clean <- function(x, plateId = "Y"){
+  data.frame(matrix(NA, ncol = ncol(x), nrow = 1)) -> pool
+  colnames(pool) <- colnames(x)
+  currentdate <- format(Sys.time(), "%Y%m%d")
+  
+  pool[1, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool$Position[1] <- sprintf("%s:H%d", plateId, 1)
+  pool$`Sample Name`[1] <- sprintf("clean")
+  
+  pool$`Inj Vol` <- 3.5
+  pool
+}
+
+
 .pooledQCDil <- function(x, plateId = "Y"){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
   colnames(pool) <- colnames(x)
@@ -163,6 +177,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
   pool[8, 1] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[8] <- sprintf("%s:H%d", plateId, 1)
+  pool$`Sample Name`[8] <- "clean"
   
   pool$`Inj Vol` <- 3.5
   pool
@@ -190,13 +205,22 @@ qconfigMetabolomics <- function(x){
   # ignore H row
   x[grepl(pattern = ":[ABCDEFG][1-9]", x = x$Position), ] -> x
   
+  message(x$Path[1])
+  im <- paste0(x$Path[1], "\\methods\\")
+  
+  
   x |> .insertSample(howOften = 24, sample = .pooledQC(x), path = x$Path[1]) -> x
   
   x |> .insertSample(where = 0, sample = .pooledQCDil(x), path = x$Path[1]) -> x
+  x |> .insertSample(where = 0, sample = .clean(x), path = x$Path[1]) -> x
+  x |> .insertSample(where = 0, sample = .clean(x), path = x$Path[1]) -> x
   
   x |> .insertSample(where = (nrow(x) + 1), sample = .pooledQCDil(x), path = x$Path[1]) -> x
   
+  
   x$`L3 Laboratory` <- "FGCZ"
+  
+  x$`Instrument Method` <- im
   
   x
 }

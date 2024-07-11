@@ -42,8 +42,8 @@ readPlate <- function(plateid, login, webservicepassword, posturl) {
   readSample(dfPlate$"SampleID", login, webservicepassword, posturl) -> dfSample
   # browser()
   stopifnot(nrow(dfPlate) == nrow(dfSample))
-  merge(dfSample, dfPlate, by = 'SampleID') ->df
-  colnames(df) <- c("Sample ID" ,  "Sample Name", "Position")
+  merge(dfSample, dfPlate, by = 'SampleID') -> df
+  colnames(df) <- c("Sample ID" ,  "Sample Name", "Tube ID", "Position")
   df
 }
 

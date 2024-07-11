@@ -277,7 +277,7 @@ shinyServer(function(input, output) {
         
         p$"L3 Laboratory" <- "FGCZ"
         
-        p$"Instrument Method" <- NA
+        p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
         
         if (input$randomization == "plate"){
           set.seed(872436)
@@ -293,6 +293,7 @@ shinyServer(function(input, output) {
       set.seed(872436)
       df[sample(nrow(df)), ] -> df
     }
+    
     
     do.call(what = input$qFUN, args = list(df)) |>
       .replaceRunIds()
