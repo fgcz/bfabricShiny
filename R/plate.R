@@ -4,6 +4,7 @@
 #' Read sample
 #' @param samplelist list of sample ids
 #' @value data.frame containing: sample name, filename, sample ID
+#' @export
 readSample <- function(sampleIds, login, webservicepassword, posturl){
   res <- bfabricShiny::read(login, webservicepassword, posturl = posturl,
                             endpoint = "sample",
@@ -19,8 +20,9 @@ readSample <- function(sampleIds, login, webservicepassword, posturl){
 }
 
 
-
+#' Read plate
 #' @example readPlate(plateid = 2616, login, webservicepassword, bfabricposturl)
+#' @export
 readPlate <- function(plateid, login, webservicepassword, posturl) {
   message(sprintf("Reading plate %s ...", plateid))
   

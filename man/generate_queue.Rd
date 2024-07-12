@@ -37,6 +37,7 @@ generate_queue(
   method = "default",
   pathprefix = "D:\\\\Data2San",
   pathprefixsep = "\\\\",
+  acquisitionType = "DDA",
   DEBUG = FALSE,
   order = TRUE,
   startpos = list(row = 1, col = "A", plate = 1)

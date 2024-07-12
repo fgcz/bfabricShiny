@@ -7,7 +7,7 @@ stopifnot(require(shiny),
           require(stringr))
 
 if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queue configs.")}
-if (file.exists("configs.R")){ source("helper.R") }else{stop("can not load queue helper.")}
+#if (file.exists("configs.R")){ source("helper.R") }else{stop("can not load queue helper.")}
 
 # Define server logic required
 shinyServer(function(input, output) {
@@ -39,9 +39,7 @@ shinyServer(function(input, output) {
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
   rv <- reactiveValues(download_flag = 0)
-  
-  
-   
+
   output$bfabricUser <- renderUI({
     if (require("bfabricShiny")){
       bfabricInput("bfabric8")
@@ -293,7 +291,6 @@ shinyServer(function(input, output) {
       set.seed(872436)
       df[sample(nrow(df)), ] -> df
     }
-    
     
     do.call(what = input$qFUN, args = list(df)) |>
       .replaceRunIds()

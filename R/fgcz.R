@@ -477,8 +477,8 @@ readPages <- read
                                 endpoint = 'sample',
                                 posturl = posturl,
                                 query = list(containerid = containerid),
-                                updateProgress = updateProgress)
-  
+                                updateProgress = updateProgress)[[1]]
+  #browser()
   df <- data.frame(
     samples._id = sapply(rv, FUN = function(x){x$id}) |> as.numeric(),
     samples.name = sapply(rv, FUN = function(x){x$name}),

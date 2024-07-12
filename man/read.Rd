@@ -2,15 +2,19 @@
 % Please edit documentation in R/fgcz.R
 \name{read}
 \alias{read}
-\title{read method to access bfabric REST}
+\title{.read}
 \usage{
 read(
   login = NULL,
   webservicepassword = NULL,
   endpoint = "workunit",
-  query,
-  posturl = "http://localhost:5000/",
-  as_data_frame = FALSE
+  offset = 0,
+  maxitems = 100,
+  query = list(),
+  posturl = NULL,
+  posturlsuffix = "read",
+  idonly = FALSE,
+  updateProgress = NULL
 )
 }
 \arguments{
@@ -23,43 +27,19 @@ visible when you check your user details in the bfabric system.}
 
 \item{query}{e,g, \code{list(containerid = 3000)}}
 
-\item{posturl}{POST url, default is \code{'http://localhost:5000/q'}.}
+\item{posturl}{where the flask server is working}
 
-\item{as_data_frame}{if TRUE it returns a data.frame object.}
-}
-\value{
-a nested list object
+\item{posturlsuffix}{defines the method to use, e.g., read. also, save should work}
+
+\item{updateProgress}{a callback function for writing log output, e.g.,
+using a \code{\link[shiny]{Progress}} object,
+see also \url{https://shiny.rstudio.com/articles/progress.html}.}
+
+\item{page}{define requested page, default is 1}
 }
 \description{
-read method to access bfabric REST
+.read
 }
-\examples{
-# ensure you have login and password
-Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-source(Rprofile, local = TRUE)
-
-res.sample <- bfabricShiny::read(login = login,
-   webservicepassword = webservicepassword,
-   endpoint = 'sample',
-   query = list(containerid = 27053),
-   as_data_frame = TRUE)
-   
-res.sample |> subset(select=c("_id", "name", "groupingvar.name"))
-   
-res.file <- bfabricShiny::read(login, webservicepassword,
-  endpoint = 'resource',
-  query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
-  )
-  
-res.workunit <- bfabricShiny::read(login, webservicepassword, 
-    endpoint='workunit',
-    query = list('status' = 'pending'),
-    as_data_frame = TRUE)
-      
-
- ## query metadata
- Q <- bfabricShiny::read(login, webservicepassword,
-   endpoint = 'resource',
-   query = list('workunitid' = 163763))
-   
+\author{
+MdE/CP 2023-03
 }

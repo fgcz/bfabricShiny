@@ -8,9 +8,12 @@ readPages(
   login = NULL,
   webservicepassword = NULL,
   endpoint = "workunit",
+  offset = 0,
+  maxitems = 100,
   query = list(),
-  posturl = "http://localhost:5000/",
-  maxpages = 10,
+  posturl = NULL,
+  posturlsuffix = "read",
+  idonly = FALSE,
   updateProgress = NULL
 )
 }
@@ -26,11 +29,11 @@ visible when you check your user details in the bfabric system.}
 
 \item{posturl}{where the flask server is working}
 
-\item{maxpages}{max number of supported pages to}
-
 \item{updateProgress}{a callback function for writing log output, e.g.,
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
+
+\item{maxpages}{max number of supported pages to}
 }
 \value{
 a list

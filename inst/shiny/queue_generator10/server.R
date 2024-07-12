@@ -91,7 +91,7 @@ shinyServer(function(input, output, session) {
     lcSystem <- c("nanoElute54_54", "M-CLASS48_48",  "EVOSEP1x12x8")
     if (!is.null(input$instrumentControlSoftware)){
       if (input$instrumentControlSoftware == "XCalibur"){
-        lcSystem <- c("M-CLASS48_48")
+        lcSystem <- c("M-CLASS48_48", "Vanquish")
       }
       else if (input$instrumentControlSoftware == "HyStar"){
         lcSystem <- c("nanoElute54_54", "EVOSEP1x12x8")
@@ -300,7 +300,6 @@ shinyServer(function(input, output, session) {
                                              detail = detail,
                                              value = value)
                                          })
-
         return(res)
       }
     } else if (input$containerType == 'order') {
@@ -415,6 +414,7 @@ shinyServer(function(input, output, session) {
     
     if (input$instrumentControlSoftware == "XCalibur" && input$area == "Proteomics"){
       print(res)
+      
       rv <- bfabricShiny:::generate_queue_order(x = res,
                                                 foldername = input$folder,
                                                 projectid = containerid,
@@ -445,7 +445,7 @@ shinyServer(function(input, output, session) {
                                                 lists = input$targets,
                                                 startposition = input$startposition,
                                                 acquisitionType = input$acquisitionType)
-      
+      # browser()
       # TODO(cp): add an addidtional parameter
       idx <- rv['Sample Name'] == "autoQC4L" & grepl("EXPLORIS_", rv['Path'])
       rv[idx, 'Inj Vol'] <- 1
@@ -475,7 +475,6 @@ shinyServer(function(input, output, session) {
                                stdPosX = '6', stdPosY = 'F', plate = 1,
                                stdName = "clean", volume = 2) |>
         protViz:::formatXCalibur(Xpath)
-      
       
       print(rv)
       

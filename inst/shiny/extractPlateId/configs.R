@@ -135,12 +135,17 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 }
 
 .pooledQC <- function(x, plateId = "Y"){
+  plateId <- x$Position[nrow(x)] |> substr(1,1)
   data.frame(matrix(NA, ncol = ncol(x), nrow = 3)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   pool[1, 1] <- sprintf("%s_@@@_poolQC", currentdate)
+  pool$Position[1] <- sprintf("%s:H%d", plateId, 3)
+  
   pool[2, 1] <- sprintf("%s_@@@_150mix", currentdate)
+  pool$Position[2] <- sprintf("%s:H%d", plateId, 2)
+  
   pool[3, 1] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[3] <- sprintf("%s:H%d", plateId, 1)
   pool$`Sample Name`[3] <- sprintf("clean")
@@ -183,6 +188,30 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   pool
 }
 
+
+
+#' Vanquish plate number parser
+#' 
+#' @param x character position string
+#' 
+#' @value position string with a valid Vanquish plate numbering 
+#' 
+#' @example .parsePlateNumber("1:A4")
+.validatePlateNumber <- function(x){ 
+  L <- c("Y", "R", "B", "G")
+  pn <- substr(x, 1, 1) 
+  if (pn %in% (1:4 |> as.character())) return(L[as.integer(pn)])
+  else if (pn %in% L) return(pn)
+  else stop("Invalid plate number", x)
+}
+
+.parsePlateNumber <- function(x){
+  .validatePlateNumber(x)
+  
+  sprintf("%s%s", .validatePlateNumber(x), substr(x, 2, 5)) -> rv
+  rv
+}
+
 #' qconfigMetabolomics
 #'
 #' @param df 
@@ -219,7 +248,7 @@ qconfigMetabolomics <- function(x){
   
   
   x$`L3 Laboratory` <- "FGCZ"
-  
+  # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x$`Instrument Method` <- im
   
   x

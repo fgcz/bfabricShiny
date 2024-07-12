@@ -47,9 +47,10 @@ Collate:
     bfabric.R
     ms_queue.R
     fgcz.R
+    plate.R
     randomize.R
     zzz.R
 URL: https://github.com/fgcz/bfabricShiny
 BugReports: https://github.com/fgcz/bfabricShiny/issues
 Encoding: UTF-8
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.1

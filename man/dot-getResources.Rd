@@ -9,7 +9,8 @@
   webservicepassword = NULL,
   posturl = NULL,
   workunitid = NULL,
-  updateProgress = NULL
+  updateProgress = NULL,
+  createdbefore = NULL
 )
 }
 \arguments{
