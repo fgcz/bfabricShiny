@@ -76,7 +76,7 @@ shinyServer(function(input, output) {
      return( selectInput(
         "orderID",
         "Order ID:",
-        c("31741", "35116"),
+        c("31741", "35116", "35464"),
         selected = "31741",
         multiple = FALSE,
         selectize = FALSE
@@ -150,27 +150,20 @@ shinyServer(function(input, output) {
   })
   
   read_plateid <- reactive({
-	  shiny::req(user())
-	  shiny::req(input$orderID)
-	  start_plate <- Sys.time()
-          message(paste("TIME info current before reading plate ID from order ID:", Sys.time()))
-	  res <- bfabricShiny::read(bf$login(),
-	                            bf$webservicepassword(),
-				    posturl = posturl(),
-				    endpoint = "plate",
-				    query = list('containerid' = input$orderID))$res
-	  
-	  end_plate <- Sys.time()
-          if ( TIMEdebugmode == TRUE ) { message(paste("TIME to read plateIDs from order ID ", input$orderID, end_plate-start_plate))}
-	  plate_ids <- c()
-	  for (r in 1:length(res)){
-	          plate_ids <- append(plate_ids, res[[r]]$id)
-	  }
-	  shiny::validate(
-		   shiny::need(try(length(plate_ids) > 0), "There are no plate defined for this order")
-		   )
-	  message(paste("TIME info for plate ID", plate_ids, Sys.time()-end_plate))
-	  sort(plate_ids)
+    shiny::req(user())
+    shiny::req(input$orderID)
+    res <- bfabricShiny::read(bf$login(),
+                              bf$webservicepassword(),
+                              posturl = posturl(),
+                              endpoint = "plate",
+                              query = list('containerid' = input$orderID))$res
+    
+    
+    plate_ids <- sapply(res, function(x) x$id)
+    shiny::validate(
+      shiny::need(try(length(plate_ids) > 0), "There are no plate defined for this order")
+    )
+    sort(plate_ids)
   })
   
   output$area <- renderUI({
