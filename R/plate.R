@@ -21,7 +21,11 @@ readSample <- function(sampleIds, login, webservicepassword, posturl){
 
 
 #' Read plate
-#' @example readPlate(plateid = 2616, login, webservicepassword, bfabricposturl)
+#' @param plateid plate id
+#' @description
+#' extracts plate and sample information from the plate id
+#' @value data.frame containing: sample ID, sample name, tube ID, position
+#' @examples readPlate(plateid = 2616, login, webservicepassword, bfabricposturl)
 #' @export
 readPlate <- function(plateid, login, webservicepassword, posturl) {
   message(sprintf("Reading plate %s ...", plateid))

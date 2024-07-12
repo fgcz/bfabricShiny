@@ -245,6 +245,16 @@ shinyServer(function(input, output) {
     read_sampletype(res[[1]]$parent[[1]]$id)
   }
 
+  .extractSampleIdfromTubeID <- function(containerid, tid){
+    sapply(tid, FUN = function(x){
+      pattern = sprintf("%s/[0-9]+", containerid)
+      if(grepl(pattern, x)){
+        x |> stringr::str_replace("/", "-")
+      }else{
+        containerid
+      }
+    })
+  }
    composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
@@ -261,8 +271,12 @@ shinyServer(function(input, output) {
                   webservicepassword = bf$webservicepassword(),
                   posturl = posturl()) -> p
         
-        p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s", currentdate,
-                                 input$orderID, p$"Sample ID", p$"Sample Name")
+        
+        
+        p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
+                                 currentdate,
+                                 .extractSampleIdfromTubeID(input$orderID, p$`Tube ID`),
+                                 p$"Sample ID", p$"Sample Name")
         
         p$"Path" <- paste0("D:\\Data2San\\p", input$orderID, "\\", input$area,
                            "\\", input$instrument, "\\",
@@ -362,8 +376,8 @@ shinyServer(function(input, output) {
              containerid = input$orderID,
              applicationid = 319,
              status = "PENDING",
-             description = "",
-             inputresourceid = rv$bfrv2$resource[[1]]$id,
+             description = "plate queue generator csv file",
+             #inputresourceid = rv$bfrv2$resource[[1]]$id,
              workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
              resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID[[1]], format(Sys.time(), format="%Y%m%d-%H%M")),
              file = csvFilename()
