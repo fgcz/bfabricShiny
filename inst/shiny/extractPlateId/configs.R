@@ -108,26 +108,24 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
 # Metabolomics ========================================
 
-.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sample = NA, path=NA){
-  
- # if (is.na(sample)){
-#    stop("No sample name provided")
- # }
-  
+.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sampleFUN = NA, path=NA){
   output <- data.frame(matrix(ncol = ncol(x), nrow = 0))
   colnames(output) <- colnames(x)
   
   if (is.na(where)){
     for (i in 1:nrow(x)){
       if (i %% howOften == 0){
-        rbind(output, sample) -> output
+        plateId <- output$Position[nrow(output)] |> substr(1,1)
+        rbind(output, sampleFUN(x, plateId=plateId)) -> output
       }
       rbind(output, x[i, ]) -> output
     }
   }else if (where == 0){
-    rbind(sample, x) ->  output
+    plateId <- x$Position[1] |> substr(1,1)
+    rbind(sampleFUN(x, plateId=plateId), x) ->  output
   }else if (where > nrow(x)){
-    rbind(x, sample) ->  output
+    plateId <- x$Position[nrow(x)] |> substr(1,1)
+    rbind(x, sampleFUN(x, plateId=plateId)) ->  output
   }else{stop("Invalid arguments")}
   
   output$Path <- path
@@ -135,7 +133,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 }
 
 .pooledQC <- function(x, plateId = "Y"){
-  plateId <- x$Position[nrow(x)] |> substr(1,1)
+  #plateId <- x$Position[nrow(x)] |> substr(1,1)
   data.frame(matrix(NA, ncol = ncol(x), nrow = 3)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
@@ -179,7 +177,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
     pool$`Sample Name`[i] <- sprintf("QC dil%d", i)
     pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
-
+  
   pool[8, 1] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[8] <- sprintf("%s:H%d", plateId, 1)
   pool$`Sample Name`[8] <- "clean"
@@ -187,8 +185,6 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   pool$`Inj Vol` <- 3.5
   pool
 }
-
-
 
 #' Vanquish plate number parser
 #' 
@@ -238,24 +234,24 @@ qconfigMetabolomics <- function(x){
   im <- paste0(x$Path[1], "\\methods\\")
   
   
-  x |> .insertSample(howOften = 24, sample = .pooledQC(x), path = x$Path[1]) -> x
+  x |> .insertSample(howOften = 24, sampleFUN = .pooledQC, path = x$Path[1]) -> x
   
-  x |> .insertSample(where = 0, sample = .pooledQCDil(x), path = x$Path[1]) -> x
-  x |> .insertSample(where = 0, sample = .clean(x), path = x$Path[1]) -> x
-  x |> .insertSample(where = 0, sample = .clean(x), path = x$Path[1]) -> x
+  x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1]) -> x
+  x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1]) -> x
+  x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1]) -> x
   
-  x |> .insertSample(where = (nrow(x) + 1), sample = .pooledQCDil(x), path = x$Path[1]) -> x
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .pooledQCDil, path = x$Path[1]) -> x
   
   
   x$`L3 Laboratory` <- "FGCZ"
   # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x$`Instrument Method` <- im
-  
+  x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x
 }
 
 ttt <- function(){
   load("/tmp/mx.RData")
-  x |> qconfigMetabolomics() |> .replaceRunIds()
+  df |> qconfigMetabolomics() |> .replaceRunIds()
 }
   

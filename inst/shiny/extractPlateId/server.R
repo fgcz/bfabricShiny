@@ -213,7 +213,6 @@ shinyServer(function(input, output) {
 	 )
   })
 
-
   output$extrameasurement <- renderUI({
     shiny::req(input$orderID)
     shiny::req(read_plateid())
@@ -291,6 +290,8 @@ shinyServer(function(input, output) {
       set.seed(872436)
       df[sample(nrow(df)), ] -> df
     }
+    
+    if (TRUE) base::save(df, file = "/tmp/mx.RData")
     
     do.call(what = input$qFUN, args = list(df)) |>
       .replaceRunIds()
