@@ -270,7 +270,7 @@ ttt <- function(){
   
   colnames(df) <- c("Sample Name", "Sample ID", "Tube ID")
   
-  df
+  df[order(df$`Sample ID`), ]
 }
 
 .derivePlatePositionVanquish <- function(n = 10){
@@ -282,7 +282,7 @@ ttt <- function(){
   
   pos <- rep("", n)
   for (i in 1:n){
-    pos[i] <- sprintf("%s:%s%d", P[counterPlate], X[counterX + 1], counterY+1)
+    pos[i] <- sprintf("%s:%s%d", counterPlate, X[counterX + 1], counterY+1)
     
     counterX <- counterX + 1
     
@@ -301,13 +301,14 @@ ttt <- function(){
 
 
 #' @e@examples
-#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843)
-#' 
+#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843) -> x
+#' x|> qconfigMetabolomics()|> .replaceRunIds() -> xx
 .composeSampleTable <- function(x, orderID = 34843,
                                 area = "Metabolomics",
                                 instrument = 'ASTRAL_1',
                                 user = 'cpanse',
-                                injVol = 3.5){
+                                injVol = 3.5, 
+                                randomization = TRUE){
   
   format(Sys.time(), "%Y%m%d") -> currentdate
   p <- x
@@ -324,5 +325,12 @@ ttt <- function(){
   p$"Inj Vol" <- injVol
   p$"L3 Laboratory" <- "FGCZ"
   p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
-  p
+  
+  if (randomization){
+    split(1:nrow(p), substr(p$Position, 1, 1)) |>
+      lapply(function(idx){p[idx[sample(length(idx))], ]}) |>
+      Reduce(f = rbind) -> p
+  }
+  p$Position |> sapply(FUN = .parsePlateNumber) -> p$Position
+   p
 }
