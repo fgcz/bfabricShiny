@@ -234,7 +234,7 @@ qconfigMetabolomics <- function(x){
   im <- paste0(x$Path[1], "\\methods\\")
   
   
-  x |> .insertSample(howOften = 24, sampleFUN = .pooledQC, path = x$Path[1]) -> x
+  x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1]) -> x
   
   x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1]) -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1]) -> x
@@ -274,6 +274,7 @@ ttt <- function(){
 }
 
 .derivePlatePositionVanquish <- function(n = 10){
+  #Y <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "")
   X <- c("A", "B", "C", "D", "E", "F", "G")
   P <- c("Y", "R", "B", "G")
   counterPlate <- 1
@@ -282,17 +283,18 @@ ttt <- function(){
   
   pos <- rep("", n)
   for (i in 1:n){
-    pos[i] <- sprintf("%s:%s%d", counterPlate, X[counterX + 1], counterY+1)
+    pos[i] <- sprintf("%s:%s%d", counterPlate, X[counterX + 1], (counterY+1))
     
-    counterX <- counterX + 1
+    counterY <- counterY + 1
     
-    if (i %% length(X) == 0){
-      counterY <- counterY + 1
-      counterX <- 0
+    if (i %% 12 == 0){
+      counterX <- counterX + 1
+      counterY <- 0
     }
-    if (i %% (length(X) * 11) == 0){
+    if (i %% (length(X) * 12) == 0){
       counterPlate <- counterPlate + 1 
-      counterY<- 0
+      counterX <- 0
+      counterY <- 0
     }
      
   }
@@ -301,7 +303,7 @@ ttt <- function(){
 
 
 #' @e@examples
-#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843) -> x
+#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843, randomization = FALSE) -> x
 #' x|> qconfigMetabolomics()|> .replaceRunIds() -> xx
 .composeSampleTable <- function(x, orderID = 34843,
                                 area = "Metabolomics",
