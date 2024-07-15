@@ -76,7 +76,7 @@ shinyServer(function(input, output) {
      return( selectInput(
         "orderID",
         "Order ID:",
-        c("31741", "35116", "35464"),
+        c("31741", "35116", "35464", "34843"),
         selected = "31741",
         multiple = FALSE,
         selectize = FALSE
@@ -117,7 +117,7 @@ shinyServer(function(input, output) {
 
   output$injvol <- renderUI({
     shiny::req(input$orderID)
-    shiny::req(read_plateid())
+    #shiny::req(read_plateid())
     numericInput(
       "injvol",
       "Inj Vol",
@@ -251,26 +251,32 @@ shinyServer(function(input, output) {
    composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
-    shiny::req(input$plateID)
+    #shiny::req(input$plateID)
     shiny::req(input$qFUN)
     
     plateCounter <- 1
     
     format(Sys.time(), "%Y%m%d") -> currentdate
     
+    if (length(input$plateID) == 0){
+      ## TODO(cp): fix that case!
+      .readSampleOfContainer(input$orderID,
+                             login = bf$login(),
+                             webservicepassword = bf$webservicepassword(),
+                             posturl = posturl()) |> 
+        .composeSampleTable(orderID = input$orderID, instrument = input$instrument) -> p
+    }else{
     input$plateID |>
       lapply(FUN=function(pid){
         readPlate(pid, login = bf$login(),
                   webservicepassword = bf$webservicepassword(),
                   posturl = posturl()) -> p
-        
-        
-        
+
         p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
                                  currentdate,
                                  .extractSampleIdfromTubeID(input$orderID, p$`Tube ID`),
                                  p$"Sample ID", p$"Sample Name")
-        
+
         p$"Path" <- paste0("D:\\Data2San\\p", input$orderID, "\\", input$area,
                            "\\", input$instrument, "\\",
                            bf$login(), "_", currentdate)
@@ -297,7 +303,7 @@ shinyServer(function(input, output) {
       set.seed(872436)
       df[sample(nrow(df)), ] -> df
     }
-    
+    }
     if (TRUE) base::save(df, file = "/tmp/mx.RData")
     
     do.call(what = input$qFUN, args = list(df)) |>
@@ -307,12 +313,9 @@ shinyServer(function(input, output) {
 
   # Events ======
   observeEvent(input$run,{
-      showNotification("Extracting plate information")
+      showNotification("Composing queue ...")
       output$outputKable <- function(){
-        table <- composeTable()
-        if ( debugmode == TRUE ) {message(table)}
-        message(paste("TIME info current after table creation:", Sys.time()))
-        table |>
+        composeTable() |>
           kableExtra::kable() |>
           kableExtra::kable_styling("striped", full_width = FALSE)
       }
@@ -325,7 +328,7 @@ shinyServer(function(input, output) {
 
   output$run <- renderUI({
       shiny::req(input$instrument)
-      shiny::req(input$plateID)
+      #shiny::req(input$plateID)
       shiny::req(input$injvol)
       actionButton("run", "Create table")
  })

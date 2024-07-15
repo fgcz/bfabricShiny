@@ -138,13 +138,13 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
-  pool[1, 1] <- sprintf("%s_@@@_poolQC", currentdate)
+  pool[1, "File Name"] <- sprintf("%s_@@@_poolQC", currentdate)
   pool$Position[1] <- sprintf("%s:H%d", plateId, 3)
   
-  pool[2, 1] <- sprintf("%s_@@@_150mix", currentdate)
+  pool[2, "File Name"] <- sprintf("%s_@@@_150mix", currentdate)
   pool$Position[2] <- sprintf("%s:H%d", plateId, 2)
   
-  pool[3, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool[3, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[3] <- sprintf("%s:H%d", plateId, 1)
   pool$`Sample Name`[3] <- sprintf("clean")
   
@@ -157,7 +157,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
-  pool[1, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool[1, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[1] <- sprintf("%s:H%d", plateId, 1)
   pool$`Sample Name`[1] <- sprintf("clean")
   
@@ -172,13 +172,13 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   for (i in 1:7){
-    pool[i, 1] <- sprintf("%s_@@@_pooledQCDil%d", currentdate, i)
+    pool[i, "File Name"] <- sprintf("%s_@@@_pooledQCDil%d", currentdate, i)
     pool$Position[i] <- sprintf("%s:H%d", plateId, i + 1)
     pool$`Sample Name`[i] <- sprintf("QC dil%d", i)
     pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
   
-  pool[8, 1] <- sprintf("%s_@@@_clean", currentdate)
+  pool[8, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
   pool$Position[8] <- sprintf("%s:H%d", plateId, 1)
   pool$`Sample Name`[8] <- "clean"
   
@@ -222,8 +222,8 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 ## 2. insert tube ID.
 ## 3. dir for instrument method
 qconfigMetabolomics <- function(x){
-  colnames(x) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
-                   "Sample ID", "Sample Name", "Instrument Method")
+  cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
+                  "Sample ID", "Sample Name", "Instrument Method")
   
   # base::save(x, file="/tmp/mx.RData")
   
@@ -246,8 +246,8 @@ qconfigMetabolomics <- function(x){
   x$`L3 Laboratory` <- "FGCZ"
   # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x$`Instrument Method` <- im
-  x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
-  x
+  #x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
+  x[, cn]
 }
 
 ttt <- function(){
@@ -255,3 +255,74 @@ ttt <- function(){
   df |> qconfigMetabolomics() |> .replaceRunIds()
 }
   
+#' @examples
+#' .readSampleOfContainer(35464, login, webservicepassword, bfabricposturl)
+#' 
+.readSampleOfContainer <- function(containerID, login, webservicepassword, posturl){
+  res <- bfabricShiny::read(login, webservicepassword, posturl = posturl,
+                            endpoint = "sample",
+                            query = list('containerid' = containerID))$res
+  
+  data.frame('Sample Name' = sapply(res, function(x)x$name),
+             `Sample ID`= sapply(res, function(x)x$id),
+             "Tube ID" = sapply(res, function(x)x$tubeid),
+             stringsAsFactors = FALSE) -> df
+  
+  colnames(df) <- c("Sample Name", "Sample ID", "Tube ID")
+  
+  df
+}
+
+.derivePlatePositionVanquish <- function(n = 10){
+  X <- c("A", "B", "C", "D", "E", "F", "G")
+  P <- c("Y", "R", "B", "G")
+  counterPlate <- 1
+  counterX <- 0
+  counterY <- 0
+  
+  pos <- rep("", n)
+  for (i in 1:n){
+    pos[i] <- sprintf("%s:%s%d", P[counterPlate], X[counterX + 1], counterY+1)
+    
+    counterX <- counterX + 1
+    
+    if (i %% length(X) == 0){
+      counterY <- counterY + 1
+      counterX <- 0
+    }
+    if (i %% (length(X) * 11) == 0){
+      counterPlate <- counterPlate + 1 
+      counterY<- 0
+    }
+     
+  }
+  pos
+} 
+
+
+#' @e@examples
+#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843)
+#' 
+.composeSampleTable <- function(x, orderID = 34843,
+                                area = "Metabolomics",
+                                instrument = 'ASTRAL_1',
+                                user = 'cpanse',
+                                injVol = 3.5){
+  
+  format(Sys.time(), "%Y%m%d") -> currentdate
+  p <- x
+  p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
+                           currentdate,
+                           orderID,
+                           p$"Sample ID",
+                           p$"Sample Name")
+  p$"Path" <- paste0("D:\\Data2San\\p", orderID, "\\", area,
+                     "\\", instrument, "\\",
+                     user, "_", currentdate)
+  
+  p$Position <- .derivePlatePositionVanquish(n = nrow(p))
+  p$"Inj Vol" <- injVol
+  p$"L3 Laboratory" <- "FGCZ"
+  p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
+  p
+}
