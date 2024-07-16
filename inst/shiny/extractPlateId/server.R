@@ -18,7 +18,7 @@ shinyServer(function(input, output) {
   
   instruments <- list(
     Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2",
-                     "QEXACTIVE_3", "ASTRAL_1"),
+                     "QEXACTIVE_3", "ASTRAL_1", "EXPLORIS_3"),
     Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2",
                    "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2",
                    "TIMSTOFFLEX_1"))
@@ -327,7 +327,8 @@ shinyServer(function(input, output) {
 
    csvFilename <- reactive({
        tempdir() |>
-	   file.path(sprintf("fgcz-queue-generator_%s_plate%s.csv",  input$instrument, input$plateID[[1]]))
+	   file.path(sprintf("fgcz-queue-generator_%s_C%s.csv",
+	                     input$instrument, input$orderID))
    })
 
   output$run <- renderUI({
@@ -339,9 +340,14 @@ shinyServer(function(input, output) {
 
   output$downloadReportButton <- renderUI({
       shiny::req(input$instrument)
-      shiny::req(input$plateID)
+      #shiny::req(input$plateID)
       shiny::req(input$injvol)
-      downloadButton("downloadCSV", "Download CSV")
+      
+      if (nrow(composeTable()) > 0){
+        downloadButton("downloadCSV", "Download CSV")
+      }else{
+        NULL
+      }
  })
 
 
