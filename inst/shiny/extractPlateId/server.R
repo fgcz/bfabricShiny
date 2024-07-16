@@ -260,6 +260,10 @@ shinyServer(function(input, output) {
     
     if (length(input$plateID) == 0){
       ## TODO(cp): fix that case!
+      randomization <- FALSE
+      if (input$randomization == 'plate'){
+        randomization <- TRUE
+      }
       .readSampleOfContainer(input$orderID,
                              login = bf$login(),
                              webservicepassword = bf$webservicepassword(),
@@ -268,7 +272,8 @@ shinyServer(function(input, output) {
                             instrument = input$instrument,
                             user = bf$login(),
                             injVol = input$injvol,
-                            area = input$area) -> df
+                            area = input$area,
+                            randomization = randomization) -> df
     }else{
       input$plateID |>
         lapply(FUN=function(pid){

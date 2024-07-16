@@ -273,9 +273,10 @@ ttt <- function(){
   df[order(df$`Sample ID`), ]
 }
 
-.derivePlatePositionVanquish <- function(n = 10){
+.deriveVialPositionVanquish <- function(n = 10){
   #Y <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "")
-  X <- c("A", "B", "C", "D", "E", "F", "G")
+  X <- c("A", "B", "C", "D", "E")
+  nY <- 9
   P <- c("Y", "R", "B", "G")
   counterPlate <- 1
   counterX <- 0
@@ -287,11 +288,11 @@ ttt <- function(){
     
     counterY <- counterY + 1
     
-    if (i %% 12 == 0){
+    if (i %% nY == 0){
       counterX <- counterX + 1
       counterY <- 0
     }
-    if (i %% (length(X) * 12) == 0){
+    if (i %% (length(X) * nY) == 0){
       counterPlate <- counterPlate + 1 
       counterX <- 0
       counterY <- 0
@@ -323,7 +324,7 @@ ttt <- function(){
                      "\\", instrument, "\\",
                      user, "_", currentdate)
   
-  p$Position <- .derivePlatePositionVanquish(n = nrow(p))
+  p$Position <- .deriveVialPositionVanquish(n = nrow(p))
   p$"Inj Vol" <- injVol
   p$"L3 Laboratory" <- "FGCZ"
   p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
