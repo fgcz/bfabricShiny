@@ -145,7 +145,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   pool[2, "File Name"] <- sprintf("%s_@@@_150mix", currentdate)
   pool$Position[2] <- sprintf("%s:%s%d", plateId, QCrow, 9)
   
-  pool[3, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
+  pool[3, "File Name"] <- sprintf("%s_@@@_blank", currentdate)
   pool$Position[3] <- sprintf("%s:%s%d", plateId, QCrow, 1)
   pool$`Sample Name`[3] <- sprintf("clean")
   
@@ -158,7 +158,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
-  pool[1, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
+  pool[1, "File Name"] <- sprintf("%s_@@@_blank", currentdate)
   pool$Position[1] <- sprintf("%s:%s%d", plateId,QCrow, 1)
   pool$`Sample Name`[1] <- sprintf("clean")
   
@@ -179,7 +179,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
     pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
   
-  pool[8, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
+  pool[8, "File Name"] <- sprintf("%s_@@@_blank", currentdate)
   pool$Position[8] <- sprintf("%s:%s%d", plateId, QCrow, 1)
   pool$`Sample Name`[8] <- "clean"
   
