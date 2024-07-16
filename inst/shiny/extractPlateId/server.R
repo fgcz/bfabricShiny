@@ -139,7 +139,7 @@ shinyServer(function(input, output) {
   # selectqFUN ------------
   output$selectqFUN <- renderUI({
     
-    qc <- c("qconfigEVOSEP6x12x8Hystar", "qconfigMetabolomics")
+    qc <- c("qconfigEVOSEP6x12x8Hystar", "qconfigMetabolomics", "qconfigMetabolomicsVial")
     
     shiny::selectInput(inputId = "qFUN", 
                        label = "Queue configuration:",
@@ -355,7 +355,6 @@ shinyServer(function(input, output) {
       }
  })
 
-
   output$downloadCSV <- downloadHandler(
       filename = function(){
           basename(csvFilename())
@@ -389,14 +388,13 @@ shinyServer(function(input, output) {
              status = "PENDING",
              description = "plate queue generator csv file",
              #inputresourceid = rv$bfrv2$resource[[1]]$id,
-             workunitname = sprintf("XCaliburMSconfiguration_orderID-%s_plateID-%s", input$orderID, input$plateID[[1]]),
-             resourcename = sprintf("plateID-%s_info_%s.csv", input$plateID[[1]], format(Sys.time(), format="%Y%m%d-%H%M")),
+             workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
+             resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
+                                    format(Sys.time(), format="%Y%m%d-%H%M%S")),
              file = csvFilename()
          )
          print("bfabric return value:")
          print(rv$bfrv2)
      }
  })
-
-
 })

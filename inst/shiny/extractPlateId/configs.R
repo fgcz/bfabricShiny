@@ -108,7 +108,8 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
 # Metabolomics ========================================
 
-.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2), sampleFUN = NA, path=NA){
+.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2),
+                          sampleFUN = NA, path=NA, QCrow = "H"){
   output <- data.frame(matrix(ncol = ncol(x), nrow = 0))
   colnames(output) <- colnames(x)
   
@@ -116,49 +117,49 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
     for (i in 1:nrow(x)){
       if (i %% howOften == 0){
         plateId <- output$Position[nrow(output)] |> substr(1,1)
-        rbind(output, sampleFUN(x, plateId=plateId)) -> output
+        rbind(output, sampleFUN(x, plateId=plateId, QCrow = QCrow)) -> output
       }
       rbind(output, x[i, ]) -> output
     }
   }else if (where == 0){
     plateId <- x$Position[1] |> substr(1,1)
-    rbind(sampleFUN(x, plateId=plateId), x) ->  output
+    rbind(sampleFUN(x, plateId=plateId, QCrow = QCrow), x) ->  output
   }else if (where > nrow(x)){
     plateId <- x$Position[nrow(x)] |> substr(1,1)
-    rbind(x, sampleFUN(x, plateId=plateId)) ->  output
+    rbind(x, sampleFUN(x, plateId=plateId, QCrow = QCrow)) ->  output
   }else{stop("Invalid arguments")}
   
   output$Path <- path
   output
 }
 
-.pooledQC <- function(x, plateId = "Y"){
+.pooledQC <- function(x, plateId = "Y", QCrow = "H"){
   #plateId <- x$Position[nrow(x)] |> substr(1,1)
   data.frame(matrix(NA, ncol = ncol(x), nrow = 3)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   pool[1, "File Name"] <- sprintf("%s_@@@_poolQC", currentdate)
-  pool$Position[1] <- sprintf("%s:H%d", plateId, 3)
+  pool$Position[1] <- sprintf("%s:%s%d", plateId, QCrow, 8)
   
   pool[2, "File Name"] <- sprintf("%s_@@@_150mix", currentdate)
-  pool$Position[2] <- sprintf("%s:H%d", plateId, 2)
+  pool$Position[2] <- sprintf("%s:%s%d", plateId, QCrow, 9)
   
   pool[3, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
-  pool$Position[3] <- sprintf("%s:H%d", plateId, 1)
+  pool$Position[3] <- sprintf("%s:%s%d", plateId, QCrow, 1)
   pool$`Sample Name`[3] <- sprintf("clean")
   
   pool$`Inj Vol` <- 3.5
   pool
 }
 
-.clean <- function(x, plateId = "Y"){
+.clean <- function(x, plateId = "Y", QCrow = "H"){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 1)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   pool[1, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
-  pool$Position[1] <- sprintf("%s:H%d", plateId, 1)
+  pool$Position[1] <- sprintf("%s:%s%d", plateId,QCrow, 1)
   pool$`Sample Name`[1] <- sprintf("clean")
   
   pool$`Inj Vol` <- 3.5
@@ -166,20 +167,20 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 }
 
 
-.pooledQCDil <- function(x, plateId = "Y"){
+.pooledQCDil <- function(x, plateId = "Y", QCrow = "H"){
   data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
   for (i in 1:7){
     pool[i, "File Name"] <- sprintf("%s_@@@_pooledQCDil%d", currentdate, i)
-    pool$Position[i] <- sprintf("%s:H%d", plateId, i + 1)
+    pool$Position[i] <- sprintf("%s:%s%d", plateId, QCrow,i + 1)
     pool$`Sample Name`[i] <- sprintf("QC dil%d", i)
     pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
   
   pool[8, "File Name"] <- sprintf("%s_@@@_clean", currentdate)
-  pool$Position[8] <- sprintf("%s:H%d", plateId, 1)
+  pool$Position[8] <- sprintf("%s:%s%d", plateId, QCrow, 1)
   pool$`Sample Name`[8] <- "clean"
   
   pool$`Inj Vol` <- 3.5
@@ -250,6 +251,35 @@ qconfigMetabolomics <- function(x){
   x[, cn]
 }
 
+qconfigMetabolomicsVial <- function(x){
+  cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
+          "Sample ID", "Sample Name", "Instrument Method")
+  
+  # base::save(x, file="/tmp/mx.RData")
+  # browser()
+  # ignore H row
+  x[grepl(pattern = ":[ABCDEFG][1-9]", x = x$Position), ] -> x
+  
+  message(x$Path[1])
+  im <- paste0(x$Path[1], "\\methods\\")
+  
+  
+  x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1], QCrow = 'F') -> x
+  
+  x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1], QCrow = 'F') -> x
+  x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], QCrow = 'F') -> x
+  x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], QCrow = 'F') -> x
+  
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .pooledQCDil, path = x$Path[1], QCrow = 'F') -> x
+  
+  
+  x$`L3 Laboratory` <- "FGCZ"
+  # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
+  x$`Instrument Method` <- im
+  #x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
+  x[, cn]
+}
+
 ttt <- function(){
   load("/tmp/mx.RData")
   df |> qconfigMetabolomics() |> .replaceRunIds()
@@ -274,7 +304,6 @@ ttt <- function(){
 }
 
 .deriveVialPositionVanquish <- function(n = 10){
-  #Y <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "")
   X <- c("A", "B", "C", "D", "E")
   nY <- 9
   P <- c("Y", "R", "B", "G")
