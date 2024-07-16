@@ -226,7 +226,7 @@ qconfigMetabolomics <- function(x){
                   "Sample ID", "Sample Name", "Instrument Method")
   
   # base::save(x, file="/tmp/mx.RData")
-  
+  # browser()
   # ignore H row
   x[grepl(pattern = ":[ABCDEFG][1-9]", x = x$Position), ] -> x
   
@@ -303,7 +303,7 @@ ttt <- function(){
 
 
 #' @e@examples
-#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843, randomization = FALSE) -> x
+#' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843, randomization = TRUE) -> x
 #' x|> qconfigMetabolomics()|> .replaceRunIds() -> xx
 .composeSampleTable <- function(x, orderID = 34843,
                                 area = "Metabolomics",

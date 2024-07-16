@@ -264,52 +264,56 @@ shinyServer(function(input, output) {
                              login = bf$login(),
                              webservicepassword = bf$webservicepassword(),
                              posturl = posturl()) |> 
-        .composeSampleTable(orderID = input$orderID, instrument = input$instrument) -> p
+        .composeSampleTable(orderID = input$orderID,
+                            instrument = input$instrument,
+                            user = bf$login(),
+                            injVol = input$injvol,
+                            area = input$area) -> df
     }else{
-    input$plateID |>
-      lapply(FUN=function(pid){
-        readPlate(pid, login = bf$login(),
-                  webservicepassword = bf$webservicepassword(),
-                  posturl = posturl()) -> p
-
-        p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
-                                 currentdate,
-                                 .extractSampleIdfromTubeID(input$orderID, p$`Tube ID`),
-                                 p$"Sample ID", p$"Sample Name")
-
-        p$"Path" <- paste0("D:\\Data2San\\p", input$orderID, "\\", input$area,
-                           "\\", input$instrument, "\\",
-                           bf$login(), "_", currentdate)
-        
-        p$Position <- sprintf("%d:%s", plateCounter, p$Position)
-        
-        p$"Inj Vol" <- input$injvol
-        
-        p$"L3 Laboratory" <- "FGCZ"
-        
-        p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
-        
-        if (input$randomization == "plate"){
-          set.seed(872436)
-          p[sample(nrow(p)), ] -> p
-        }
-        
-        plateCounter <<- plateCounter + 1
-        p[, columnOrder]
-      }) |> Reduce(f = rbind) -> df
-    
-    
-    if (input$randomization == "all"){
-      set.seed(872436)
-      df[sample(nrow(df)), ] -> df
-    }
+      input$plateID |>
+        lapply(FUN=function(pid){
+          readPlate(pid, login = bf$login(),
+                    webservicepassword = bf$webservicepassword(),
+                    posturl = posturl()) -> p
+          
+          p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
+                                   currentdate,
+                                   .extractSampleIdfromTubeID(input$orderID, p$`Tube ID`),
+                                   p$"Sample ID", p$"Sample Name")
+          
+          p$"Path" <- paste0("D:\\Data2San\\p", input$orderID, "\\", input$area,
+                             "\\", input$instrument, "\\",
+                             bf$login(), "_", currentdate)
+          
+          p$Position <- sprintf("%d:%s", plateCounter, p$Position)
+          
+          p$"Inj Vol" <- input$injvol
+          
+          p$"L3 Laboratory" <- "FGCZ"
+          
+          p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
+          
+          if (input$randomization == "plate"){
+            set.seed(872436)
+            p[sample(nrow(p)), ] -> p
+          }
+          
+          plateCounter <<- plateCounter + 1
+          p[, columnOrder]
+        }) |> Reduce(f = rbind) -> df
+      
+      
+      if (input$randomization == "all"){
+        set.seed(872436)
+        df[sample(nrow(df)), ] -> df
+      }
     }
     if (TRUE) base::save(df, file = "/tmp/mx.RData")
     
     do.call(what = input$qFUN, args = list(df)) |>
       .replaceRunIds()
-  })
-  
+   })
+   
 
   # Events ======
   observeEvent(input$run,{
