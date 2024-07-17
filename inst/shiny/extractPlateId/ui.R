@@ -29,7 +29,8 @@ shinyUI(fluidPage(
       #uiOutput("extratext"),
       #uiOutput("extrameasurement"),
       uiOutput('run'),
-      uiOutput("downloadReportButton")
+      htmlOutput("download"),
+      #uiOutput("downloadReportButton")
    ),
     
     mainPanel(

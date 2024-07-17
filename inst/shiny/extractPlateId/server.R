@@ -38,7 +38,7 @@ shinyServer(function(input, output) {
 
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
-  rv <- reactiveValues(download_flag = 0)
+  rv <- reactiveValues(download_flag = 0, wuid = NULL)
 
   output$bfabricUser <- renderUI({
     if (require("bfabricShiny")){
@@ -333,12 +333,15 @@ shinyServer(function(input, output) {
           kableExtra::kable(row.names = FALSE) |>
           kableExtra::kable_styling("striped", full_width = FALSE)
       }
+      
+    
   })
 
    csvFilename <- reactive({
-       tempdir() |>
-	   file.path(sprintf("fgcz-queue-generator_%s_C%s.csv",
-	                     input$instrument, input$orderID))
+      # tempdir() |>
+	   #file.path(sprintf("fgcz-queue-generator_%s_C%s.csv",
+	      #               input$instrument, input$orderID))
+     tempfile(fileext = ".csv")
    })
 
   output$run <- renderUI({
@@ -360,46 +363,73 @@ shinyServer(function(input, output) {
       }
  })
 
-  output$downloadCSV <- downloadHandler(
-      filename = function(){
-          basename(csvFilename())
-      },
-      content = function(file) {
-          
-          rv$download_flag <- rv$download_flag + 1
-          utils::write.csv(composeTable(), file, row.names = FALSE)
+  
+  #=======output$download======
+  output$download <- renderUI({
+    #shiny::req(file.exists(csvFilename()))
+    
+    res <- composeTable()
+    message(paste0("debug output$download values$wuid=", rv$wuid))
+    if (is.null(res) || nrow(res) == 0){
+      msg <- "The download is not possible yet. "
+      HTML(msg)
+    }else{
+      message(paste0("debug output$download rv$wuid=", rv$wuid))
+      if (isFALSE(is.null(rv$wuid))){
+        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                        rv$wuid, "', '_blank')")
+        
+        actionButton("download",
+                     paste("go to B-Fabric workunit", rv$wuid),
+                     onclick = wuUrl)
+      }else{
+        #if (file.exists(csvFilename())){
+          actionButton('generate', 'Upload configuration to b-fabric')
+      #  }
+        
       }
-  )
+    }
+  })
+  
+  
 
- bfabricUploadResource <- observeEvent(rv$download_flag, {
-     progress <- shiny::Progress$new(min = 0, max = 1)
-     progress$set(message = "upload csv file to bfabric")
-     on.exit(progress$close())
-     
-     if (rv$download_flag > 0){
-         message(paste0("writing csv file ", csvFilename()," ..."))
-         S <- composeTable()
-         #base::save(S, file = "/tmp/SSS.RData")
-         
-         utils::write.csv(composeTable(), csvFilename(), row.names = FALSE)
-         message("uploading to bfabric ...")
-         progress$set(message = "uploading csv file with plate info to bfabric")
-         rv$bfrv2 <- bfabricShiny::uploadResource(
-             login = bf$login(),
-             webservicepassword = bf$webservicepassword(),
-             posturl = posturl(),
-             containerid = input$orderID,
-             applicationid = 319,
-             status = "PENDING",
-             description = "plate queue generator csv file",
-             #inputresourceid = rv$bfrv2$resource[[1]]$id,
-             workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
-             resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
-                                    format(Sys.time(), format="%Y%m%d-%H%M%S")),
-             file = csvFilename()
-         )
-         print("bfabric return value:")
-         print(rv$bfrv2)
-     }
- })
+  bfabricUploadResource <- observeEvent(input$generate, {
+    progress <- shiny::Progress$new(min = 0, max = 1)
+    progress$set(message = "upload csv file to bfabric")
+    on.exit(progress$close())
+    
+    #if (rv$download_flag  0){
+    message(paste0("writing csv file ", csvFilename()," ..."))
+    
+    cat("Bracket Type=4\r\n",
+        file = csvFilename(),
+        append = FALSE)
+    utils::write.table(composeTable(),
+                       sep = ',',
+                       file = csvFilename(),
+                       row.names = FALSE,
+                       append = TRUE,
+                       quote = FALSE,
+                       eol = '\r\n')
+    
+    message("uploading to bfabric ...")
+    progress$set(message = "uploading csv file with plate info to bfabric")
+    rr <- bfabricShiny::uploadResource(
+      login = bf$login(),
+      webservicepassword = bf$webservicepassword(),
+      posturl = posturl(),
+      containerid = input$orderID,
+      applicationid = 319,
+      status = "PENDING",
+      description = "plate queue generator csv file",
+      #inputresourceid = rv$bfrv2$resource[[1]]$id,
+      workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
+      resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
+                             format(Sys.time(), format="%Y%m%d-%H%M%S")),
+      file = csvFilename()
+    )
+    rv$wuid <- rr$workunit$res[[1]]$id
+    #}
+  })
+  
 })

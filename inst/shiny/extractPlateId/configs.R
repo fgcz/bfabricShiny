@@ -38,7 +38,7 @@
 
 # Proteomics ========================================
 
-qconfigEVOSEP6x12x8Hystar <- function(x){
+qconfigEVOSEP6x12x8Hystar <- function(x, ...){
   df <- x
 	Y <- c('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
 	
