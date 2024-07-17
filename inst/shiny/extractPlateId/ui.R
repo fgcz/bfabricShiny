@@ -26,8 +26,8 @@ shinyUI(fluidPage(
       uiOutput("injvol"),
       uiOutput("randomization"),
       uiOutput("selectqFUN"),
-      uiOutput("extratext"),
-      uiOutput("extrameasurement"),
+      #uiOutput("extratext"),
+      #uiOutput("extrameasurement"),
       uiOutput('run'),
       uiOutput("downloadReportButton")
    ),
