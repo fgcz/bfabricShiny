@@ -21,6 +21,7 @@ shinyUI(fluidPage(
       uiOutput("orderID"),
       uiOutput("area"),
       uiOutput("instrument"),
+      uiOutput("instrumentMode"),
       uiOutput("plateID"),
       uiOutput("injvol"),
       uiOutput("randomization"),

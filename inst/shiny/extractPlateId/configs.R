@@ -340,11 +340,63 @@ ttt <- function(){
 } 
 
 
+.extractSampleIdfromTubeID <- function(containerid, tid){
+  sapply(tid, FUN = function(x){
+    pattern = sprintf("%s/[0-9]+", containerid)
+    if(grepl(pattern, x)){
+      x |> stringr::str_replace("/", "-")
+    }else{
+      containerid
+    }
+  })
+}
+
+.composePlateSampleTable <- function(p,
+                                     orderID = 34843,
+                                     area = "Metabolomics",
+                                     mode = "",
+                                     instrument = 'ASTRAL_1',
+                                     user = 'cpanse',
+                                     injVol = 3.5, 
+                                     plateCounter = 0,
+                                     randomization = 'plate'){
+  format(Sys.time(), "%Y%m%d") -> currentdate
+  
+  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
+                           currentdate,
+                           .extractSampleIdfromTubeID(orderID, p$`Tube ID`),
+                           p$"Sample ID",
+                           mode,
+                           p$"Sample Name")
+  
+  p$"Path" <- paste0("D:\\Data2San\\p", orderID, "\\", area,
+                     "\\", instrument, "\\",
+                     user, "_", currentdate)
+  
+  p$Position <- sprintf("%d:%s", plateCounter, p$Position)
+  
+  p$"Inj Vol" <- injVol
+  
+  p$"L3 Laboratory" <- "FGCZ"
+  
+  p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
+  
+  if (randomization == "plate"){
+    set.seed(872436)
+    p[sample(nrow(p)), ] -> p
+  }
+  
+  plateCounter <<- plateCounter + 1
+  p[, columnOrder]
+}
+
+
 #' @e@examples
 #' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843, randomization = TRUE) -> x
 #' x|> qconfigMetabolomics()|> .replaceRunIds() -> xx
 .composeSampleTable <- function(x, orderID = 34843,
                                 area = "Metabolomics",
+                                mode = "",
                                 instrument = 'ASTRAL_1',
                                 user = 'cpanse',
                                 injVol = 3.5, 
@@ -352,10 +404,11 @@ ttt <- function(){
   
   format(Sys.time(), "%Y%m%d") -> currentdate
   p <- x
-  p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
+  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
                            currentdate,
                            orderID,
                            p$"Sample ID",
+                           mode,
                            p$"Sample Name")
   p$"Path" <- paste0("D:\\Data2San\\p", orderID, "\\", area,
                      "\\", instrument, "\\",

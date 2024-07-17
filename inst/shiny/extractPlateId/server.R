@@ -24,7 +24,7 @@ shinyServer(function(input, output) {
                    "TIMSTOFFLEX_1"))
   
   
-  columnOrder <- c("File Name",
+  columnOrder <<- c("File Name",
                    "Path",
                    "Position",
                    "Inj Vol",
@@ -133,7 +133,7 @@ shinyServer(function(input, output) {
     shiny::radioButtons("randomization", "Randomization:",
                  c("no" = "no",
                    "plate" = "plate",
-                   "all" = "all"))
+                   "all" = "all"), inline = TRUE)
   })
   
   # selectqFUN ------------
@@ -171,11 +171,23 @@ shinyServer(function(input, output) {
     selectInput(
       "area",
       "Area:",
-      c("Proteomics","Metabolomics"),
+      c("Proteomics", "Metabolomics"),
       multiple = FALSE,
       selected = "",
       selectize = TRUE
     )
+  })
+  
+  output$instrumentMode <- renderUI({
+    shiny::req(input$instrument)
+    
+    if (input$area == "Metabolomics"){
+      shiny::radioButtons("mode", "Mode:",
+                          c("-" = "_neg",
+                            "+" = "_pos",
+                            "±" = "_posneg"), 
+                          inline = TRUE)
+    }else{NULL}
   })
 
   output$instrument <- renderUI({
@@ -238,32 +250,28 @@ shinyServer(function(input, output) {
     read_sampletype(res[[1]]$parent[[1]]$id)
   }
 
-  .extractSampleIdfromTubeID <- function(containerid, tid){
-    sapply(tid, FUN = function(x){
-      pattern = sprintf("%s/[0-9]+", containerid)
-      if(grepl(pattern, x)){
-        x |> stringr::str_replace("/", "-")
-      }else{
-        containerid
-      }
-    })
-  }
+
    composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
     #shiny::req(input$plateID)
     shiny::req(input$qFUN)
     
-    plateCounter <- 1
+   
     
-    format(Sys.time(), "%Y%m%d") -> currentdate
+    instrumentMode <- ""
+    if (input$area == "Metabolomics"){
+      instrumentMode <- input$mode
+    }
     
     if (length(input$plateID) == 0){
-      ## TODO(cp): fix that case!
+     ## --------vial block (no plateid)------------ 
+     ## we fetch all samples of a container
       randomization <- FALSE
       if (input$randomization == 'plate'){
         randomization <- TRUE
       }
+      
       .readSampleOfContainer(input$orderID,
                              login = bf$login(),
                              webservicepassword = bf$webservicepassword(),
@@ -273,48 +281,38 @@ shinyServer(function(input, output) {
                             user = bf$login(),
                             injVol = input$injvol,
                             area = input$area,
+                            mode = instrumentMode,
                             randomization = randomization) -> df
     }else{
+      ## --------plate block ------------ 
+      ## we iterate over the given plates
+      plateCounter <- 1
       input$plateID |>
         lapply(FUN=function(pid){
           readPlate(pid, login = bf$login(),
                     webservicepassword = bf$webservicepassword(),
-                    posturl = posturl()) -> p
-          
-          p$"File Name" <- sprintf("%s_@@@_C%s_S%d_%s",
-                                   currentdate,
-                                   .extractSampleIdfromTubeID(input$orderID, p$`Tube ID`),
-                                   p$"Sample ID", p$"Sample Name")
-          
-          p$"Path" <- paste0("D:\\Data2San\\p", input$orderID, "\\", input$area,
-                             "\\", input$instrument, "\\",
-                             bf$login(), "_", currentdate)
-          
-          p$Position <- sprintf("%d:%s", plateCounter, p$Position)
-          
-          p$"Inj Vol" <- input$injvol
-          
-          p$"L3 Laboratory" <- "FGCZ"
-          
-          p$"Instrument Method" <- sprintf("%s\\methods\\", p$Path)
-          
-          if (input$randomization == "plate"){
-            set.seed(872436)
-            p[sample(nrow(p)), ] -> p
-          }
-          
+                    posturl = posturl()) |>
+          .composePlateSampleTable(orderID = input$orderID,
+                                   instrument = input$instrument,
+                                   injVol = input$injvol,
+                                   area = input$area,
+                                   mode = instrumentMode,
+                                   plateCounter = plateCounter,
+                                   randomization = input$randomization) -> p
+          # global counter
           plateCounter <<- plateCounter + 1
           p[, columnOrder]
         }) |> Reduce(f = rbind) -> df
-      
-      
+
       if (input$randomization == "all"){
         set.seed(872436)
         df[sample(nrow(df)), ] -> df
       }
     }
-    if (TRUE) base::save(df, file = "/tmp/mx.RData")
+    if (FALSE) base::save(df, file = "/tmp/mx.RData")
     
+    ## ------injectSamples------
+    ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
     do.call(what = input$qFUN, args = list(df)) |>
       .replaceRunIds()
    })
