@@ -323,7 +323,7 @@ shinyServer(function(input, output) {
       showNotification("Composing queue ...")
       output$outputKable <- function(){
         composeTable() |>
-          kableExtra::kable() |>
+          kableExtra::kable(row.names = FALSE) |>
           kableExtra::kable_styling("striped", full_width = FALSE)
       }
   })
