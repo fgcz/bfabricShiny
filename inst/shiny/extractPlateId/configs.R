@@ -168,7 +168,7 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
 
 
 .pooledQCDil <- function(x, plateId = "Y", QCrow = "H"){
-  data.frame(matrix(NA, ncol = ncol(x), nrow = 8)) -> pool
+  data.frame(matrix(NA, ncol = ncol(x), nrow = 9)) -> pool
   colnames(pool) <- colnames(x)
   currentdate <- format(Sys.time(), "%Y%m%d")
   
@@ -179,9 +179,12 @@ qconfigEVOSEP6x12x8Hystar <- function(df){
     pool$`Instrument Method`[i] <- "xxxxxx  xxxx  x"
   }
   
-  pool[8, "File Name"] <- sprintf("%s_@@@_blank", currentdate)
-  pool$Position[8] <- sprintf("%s:%s%d", plateId, QCrow, 1)
-  pool$`Sample Name`[8] <- "clean"
+  pool[8, "File Name"] <- sprintf("%s_@@@_150mix", currentdate)
+  pool$Position[8] <- sprintf("%s:%s%d", plateId, QCrow, 9)
+  
+  pool[9, "File Name"] <- sprintf("%s_@@@_blank", currentdate)
+  pool$Position[9] <- sprintf("%s:%s%d", plateId, QCrow, 1)
+  pool$`Sample Name`[9] <- "blank"
   
   pool$`Inj Vol` <- 3.5
   pool
@@ -233,17 +236,21 @@ qconfigMetabolomics <- function(x){
   
   message(x$Path[1])
   im <- paste0(x$Path[1], "\\methods\\")
-  
-  
+
+
+  # in between
   x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1]) -> x
   
+  # START
   x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1]) -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1]) -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1]) -> x
-  
+
+  # END
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .clean, path = x$Path[1]) -> x
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .clean, path = x$Path[1]) -> x
   x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .pooledQCDil, path = x$Path[1]) -> x
-  
-  
+
   x$`L3 Laboratory` <- "FGCZ"
   # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x$`Instrument Method` <- im
@@ -257,26 +264,28 @@ qconfigMetabolomicsVial <- function(x){
   
   # base::save(x, file="/tmp/mx.RData")
   # browser()
-  # ignore H row
+  # ignore H (last) row
   x[grepl(pattern = ":[ABCDEFG][1-9]", x = x$Position), ] -> x
   
   message(x$Path[1])
   im <- paste0(x$Path[1], "\\methods\\")
-  
-  
+
   x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1], QCrow = 'F') -> x
-  
   x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1], QCrow = 'F') -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], QCrow = 'F') -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], QCrow = 'F') -> x
+
+  # END
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .clean, path = x$Path[1]) -> x
+  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .clean, path = x$Path[1]) -> x
   
-  x |> .insertSample(where = (nrow(x) + 1), sampleFUN = .pooledQCDil, path = x$Path[1], QCrow = 'F') -> x
-  
-  
+  x |> .insertSample(where = (nrow(x) + 1),
+                     sampleFUN = .pooledQCDil, path = x$Path[1], QCrow = 'F') -> x
+
   x$`L3 Laboratory` <- "FGCZ"
   # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x$`Instrument Method` <- im
-  #x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
+  # x$Position |> sapply(FUN = .parsePlateNumber) -> x$Position
   x[, cn]
 }
 
@@ -287,7 +296,6 @@ ttt <- function(){
   
 #' @examples
 #' .readSampleOfContainer(35464, login, webservicepassword, bfabricposturl)
-#' 
 .readSampleOfContainer <- function(containerID, login, webservicepassword, posturl){
   res <- bfabricShiny::read(login, webservicepassword, posturl = posturl,
                             endpoint = "sample",
