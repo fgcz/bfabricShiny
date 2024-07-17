@@ -183,9 +183,8 @@ shinyServer(function(input, output) {
     
     if (input$area == "Metabolomics"){
       shiny::radioButtons("mode", "Mode:",
-                          c("-" = "_neg",
-                            "+" = "_pos",
-                            "±" = "_posneg"), 
+                          c("neg" = "_neg",
+                            "pos" = "_pos"), 
                           inline = TRUE)
     }else{NULL}
   })
@@ -251,14 +250,14 @@ shinyServer(function(input, output) {
   }
 
 
+  ## ====== compose output table ==========
    composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
     #shiny::req(input$plateID)
     shiny::req(input$qFUN)
-    
-   
-    
+
+    QCrow <- "F"
     instrumentMode <- ""
     if (input$area == "Metabolomics"){
       instrumentMode <- input$mode
@@ -267,6 +266,7 @@ shinyServer(function(input, output) {
     if (length(input$plateID) == 0){
      ## --------vial block (no plateid)------------ 
      ## we fetch all samples of a container
+      QCrow <- "F"
       randomization <- FALSE
       if (input$randomization == 'plate'){
         randomization <- TRUE
@@ -286,6 +286,7 @@ shinyServer(function(input, output) {
     }else{
       ## --------plate block ------------ 
       ## we iterate over the given plates
+      QCrow <- "H"
       plateCounter <- 1
       input$plateID |>
         lapply(FUN=function(pid){
@@ -313,10 +314,16 @@ shinyServer(function(input, output) {
     
     ## ------injectSamples------
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
-    do.call(what = input$qFUN, args = list(df)) |>
-      .replaceRunIds()
+    
+    if (input$area == "Metabolomics"){
+      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode)) |>
+        .replaceRunIds()
+    }else{
+      do.call(what = input$qFUN, args = list(x = df)) |>
+        .replaceRunIds()
+    }
+    
    })
-   
 
   # Events ======
   observeEvent(input$run,{
