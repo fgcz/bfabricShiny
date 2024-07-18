@@ -28,14 +28,15 @@ shinyUI(fluidPage(
       uiOutput("selectqFUN"),
       #uiOutput("extratext"),
       #uiOutput("extrameasurement"),
-      uiOutput('run'),
+      #uiOutput('run'),
       htmlOutput("download"),
       #uiOutput("downloadReportButton")
    ),
     
     mainPanel(
       list(
-        uiOutput("outputKable")
+        #uiOutput("outputKable")
+        DT::dataTableOutput("outputKable")
       )
     )
   )

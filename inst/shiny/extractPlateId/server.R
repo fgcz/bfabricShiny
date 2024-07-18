@@ -325,16 +325,10 @@ shinyServer(function(input, output) {
     
    })
 
-  # Events ======
-  observeEvent(input$run,{
-      showNotification("Composing queue ...")
-      output$outputKable <- function(){
-        composeTable() |>
-          kableExtra::kable(row.names = FALSE) |>
-          kableExtra::kable_styling("striped", full_width = FALSE)
-      }
-      
-    
+  
+  output$outputKable <- DT::renderDataTable({
+    shiny::req(composeTable())
+    DT::datatable(composeTable(), options = list(paging = FALSE))
   })
 
    csvFilename <- reactive({
@@ -355,21 +349,21 @@ shinyServer(function(input, output) {
       shiny::req(input$instrument)
       #shiny::req(input$plateID)
       shiny::req(input$injvol)
-      
-      if (nrow(composeTable()) > 0){
-        downloadButton("downloadCSV", "Download CSV")
-      }else{
-        NULL
-      }
+      shiny::req(composeTable())
+     
+      downloadButton("downloadCSV", "Download CSV")
  })
 
   
   #=======output$download======
   output$download <- renderUI({
     #shiny::req(file.exists(csvFilename()))
+    #shiny::req(output$outputKable)
     
     res <- composeTable()
+    #browser()
     message(paste0("debug output$download values$wuid=", rv$wuid))
+    message(nrow(res))
     if (is.null(res) || nrow(res) == 0){
       msg <- "The download is not possible yet. "
       HTML(msg)
