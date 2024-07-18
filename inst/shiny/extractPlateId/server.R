@@ -160,6 +160,8 @@ shinyServer(function(input, output) {
     
     
     plate_ids <- sapply(res, function(x) x$id)
+    #if (length(plate_ids) == 0) return(NULL)
+    
     shiny::validate(
       shiny::need(try(length(plate_ids) > 0), "There are no plate defined for this order")
     )
@@ -254,6 +256,7 @@ shinyServer(function(input, output) {
    composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
+    shiny::req(input$area)
     #shiny::req(input$plateID)
     shiny::req(input$qFUN)
 
@@ -310,7 +313,11 @@ shinyServer(function(input, output) {
         df[sample(nrow(df)), ] -> df
       }
     }
-    if (FALSE) base::save(df, file = "/tmp/mx.RData")
+    if (FALSE){
+      tempfile(pattern = "fgcz_queue_generator_", fileext = ".RData") -> tf
+      base::save(df, file = tf)
+      message("Output table saved to ", tf)
+    } 
     
     ## ------injectSamples------
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
@@ -328,14 +335,15 @@ shinyServer(function(input, output) {
   
   output$outputKable <- DT::renderDataTable({
     shiny::req(composeTable())
-    DT::datatable(composeTable(), options = list(paging = FALSE))
+    DT::datatable(composeTable(),
+                  rownames = FALSE,
+                  style = 'auto',
+                  editable = FALSE,
+                  options = list(paging = FALSE))
   })
 
    csvFilename <- reactive({
-      # tempdir() |>
-	   #file.path(sprintf("fgcz-queue-generator_%s_C%s.csv",
-	      #               input$instrument, input$orderID))
-     tempfile(fileext = ".csv")
+     tempfile(pattern = "fgcz_queue_generator_", fileext = ".csv")
    })
 
   output$run <- renderUI({
