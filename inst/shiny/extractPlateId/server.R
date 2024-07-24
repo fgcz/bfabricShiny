@@ -76,7 +76,7 @@ shinyServer(function(input, output) {
      return( selectInput(
         "orderID",
         "Order ID:",
-        c("31741", "35116", "35464", "34843"),
+        c("31741", "35116", "35464", "34843", "34777", "34778"),
         selected = "31741",
         multiple = FALSE,
         selectize = FALSE
