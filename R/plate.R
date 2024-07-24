@@ -8,6 +8,7 @@
 readSample <- function(sampleIds, login, webservicepassword, posturl){
   res <- bfabricShiny::read(login, webservicepassword, posturl = posturl,
                             endpoint = "sample",
+                            maxitems = 1000,
                             query = list('id' = list(sampleIds)))[[1]]
   
   data.frame("SampleName" = sapply(res, function(x)x$name),
