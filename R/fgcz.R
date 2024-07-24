@@ -266,6 +266,14 @@ query <- function(login, webservicepassword,
 #' @param page define requested page, default is 1
 #' @param posturlsuffix defines the method to use, e.g., read. also, save should work
 #' @author MdE/CP 2023-03
+#' @examples
+#' bfabricShiny::read(login,
+#'   webservicepassword,
+#'   endpoint = 'sample',
+#'   query = list('containerid' = 34777),
+#'   posturl = bfabricposturl,
+#'   maxitems = 1000) -> rv
+#' 
 read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
                   #page = 1,

@@ -295,6 +295,7 @@ qconfigMetabolomicsVial <- function(x, ...){
 .readSampleOfContainer <- function(containerID, login, webservicepassword, posturl){
   res <- bfabricShiny::read(login, webservicepassword, posturl = posturl,
                             endpoint = "sample",
+                            maxitems = 2000,
                             query = list('containerid' = containerID))$res
   
   data.frame('Sample Name' = sapply(res, function(x)x$name),

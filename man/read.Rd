@@ -40,6 +40,15 @@ see also \url{https://shiny.rstudio.com/articles/progress.html}.}
 \description{
 .read
 }
+\examples{
+bfabricShiny::read(login,
+  webservicepassword,
+  endpoint = 'sample',
+  query = list('containerid' = 34777),
+  posturl = bfabricposturl,
+  maxitems = 1000) -> rv
+
+}
 \author{
 MdE/CP 2023-03
 }
