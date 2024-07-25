@@ -64,7 +64,6 @@ shinyServer(function(input, output) {
                          "Please provide valid bfabric login and webservicepassword."))
     message(paste("Request started from user", u$login))
     
-    #browser()
     return(u)
   })
 
@@ -166,12 +165,20 @@ shinyServer(function(input, output) {
         shiny::tags$h5("use \"shift + click\" or \"click + drag\"  for selecting a block of consecutive samples"),
         shiny::tags$h5("use \"control + click\" to select multiple samples"),
         shiny::tags$h5("use \"control + click + drag\" to select multiple blocks of consecutive samples"),
-        selectInput('sample', 'Sample:',
+        selectInput('selectedSample', 'Sample:',
                     sampleOfContainer()$"Sample Name",
                     size = 40, multiple = TRUE, selectize = FALSE)
       )
     }else{
-      input$sample <- sampleOfContainer()$"Sample Name"
+      rv$selectedSampleinput <- sampleOfContainer()$"Sample Name"
+    }
+  })
+  
+  oeSelectedSample <- observeEvent(input$selectedSample, {
+    shiny::req(input$booleanSampleSelection)
+    
+    if (input$booleanSampleSelection){
+      rv$selectedSample <- input$selectedSample
     }
   })
   
@@ -286,6 +293,17 @@ shinyServer(function(input, output) {
                            posturl = posturl())
   })
     
+  filteredSampleOfContainer <- reactive({
+    shiny::req(sampleOfContainer)
+   
+    if (length(rv$selectedSample) > 0){
+      sampleOfContainer() |>
+        subset(sampleOfContainer()$`Sample Name` %in% rv$selectedSample)
+    }else{
+      sampleOfContainer()
+    }
+  })
+  
   ## ====== compose output table ==========
    composeTable <- reactive({
     shiny::req(input$instrument)
@@ -309,7 +327,7 @@ shinyServer(function(input, output) {
         randomization <- TRUE
       }
       
-     sampleOfContainer() |> 
+      filteredSampleOfContainer() |> 
         .composeSampleTable(orderID = input$orderID,
                             instrument = input$instrument,
                             user = bf$login(),
@@ -377,21 +395,6 @@ shinyServer(function(input, output) {
      tempfile(pattern = "fgcz_queue_generator_", fileext = ".csv")
    })
 
-  output$run <- renderUI({
-      shiny::req(input$instrument)
-      #shiny::req(input$plateID)
-      shiny::req(input$injvol)
-      actionButton("run", "Create table")
- })
-
-  output$downloadReportButton <- renderUI({
-      shiny::req(input$instrument)
-      #shiny::req(input$plateID)
-      shiny::req(input$injvol)
-      shiny::req(composeTable())
-     
-      downloadButton("downloadCSV", "Download CSV")
- })
 
   
   #=======output$download======
@@ -400,7 +403,7 @@ shinyServer(function(input, output) {
     #shiny::req(output$outputKable)
     
     res <- composeTable()
-    #browser()
+    
     message(paste0("debug output$download values$wuid=", rv$wuid))
     message(nrow(res))
     if (is.null(res) || nrow(res) == 0){
