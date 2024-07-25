@@ -151,7 +151,7 @@ shinyServer(function(input, output) {
   output$checkSampleSelection <- renderUI({
     if (length(input$plateID) == 0){
       shiny::checkboxInput("booleanSampleSelection",
-                           "Select samples", value = FALSE)
+                           "Subsetting samples", value = FALSE)
     }else{NULL}
   })
   
