@@ -26,16 +26,12 @@ shinyUI(fluidPage(
       uiOutput("injvol"),
       uiOutput("randomization"),
       uiOutput("selectqFUN"),
-      #uiOutput("extratext"),
-      #uiOutput("extrameasurement"),
-      #uiOutput('run'),
+      uiOutput("checkSampleSelection"),
+      uiOutput("selectSampleSelection"),
       htmlOutput("download"),
-      #uiOutput("downloadReportButton")
    ),
-    
     mainPanel(
       list(
-        #uiOutput("outputKable")
         DT::dataTableOutput("outputKable")
       )
     )
