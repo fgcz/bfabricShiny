@@ -149,6 +149,32 @@ shinyServer(function(input, output) {
                        selectize = FALSE)
   })
   
+  output$checkSampleSelection <- renderUI({
+    if (length(input$plateID) == 0){
+      shiny::checkboxInput("booleanSampleSelection",
+                           "Select samples", value = FALSE)
+    }else{NULL}
+  })
+  
+  output$selectSampleSelection <- renderUI({
+    shiny::req(sampleOfContainer)
+    shiny::req(input$booleanSampleSelection)
+    
+    if (input$booleanSampleSelection){
+      shiny::tagList(
+        shiny::tags$h4("Available samples for your queue:"),
+        shiny::tags$h5("use \"shift + click\" or \"click + drag\"  for selecting a block of consecutive samples"),
+        shiny::tags$h5("use \"control + click\" to select multiple samples"),
+        shiny::tags$h5("use \"control + click + drag\" to select multiple blocks of consecutive samples"),
+        selectInput('sample', 'Sample:',
+                    sampleOfContainer()$"Sample Name",
+                    size = 40, multiple = TRUE, selectize = FALSE)
+      )
+    }else{
+      input$sample <- sampleOfContainer()$"Sample Name"
+    }
+  })
+  
   read_plateid <- reactive({
     shiny::req(user())
     shiny::req(input$orderID)
@@ -251,7 +277,15 @@ shinyServer(function(input, output) {
     read_sampletype(res[[1]]$parent[[1]]$id)
   }
 
+  sampleOfContainer <- reactive({
+    shiny::req(input$orderID)
 
+    .readSampleOfContainer(input$orderID,
+                           login = bf$login(),
+                           webservicepassword = bf$webservicepassword(),
+                           posturl = posturl())
+  })
+    
   ## ====== compose output table ==========
    composeTable <- reactive({
     shiny::req(input$instrument)
@@ -275,10 +309,7 @@ shinyServer(function(input, output) {
         randomization <- TRUE
       }
       
-      .readSampleOfContainer(input$orderID,
-                             login = bf$login(),
-                             webservicepassword = bf$webservicepassword(),
-                             posturl = posturl()) |> 
+     sampleOfContainer() |> 
         .composeSampleTable(orderID = input$orderID,
                             instrument = input$instrument,
                             user = bf$login(),
