@@ -148,7 +148,7 @@ qconfigEVOSEP6x12x8Hystar <- function(x, ...){
   
   pool[3, "File Name"] <- sprintf("%s_@@@_blank%s", currentdate,mode)
   pool$Position[3] <- sprintf("%s:%s%d", plateId, QCrow, 1)
-  pool$`Sample Name`[3] <- sprintf("clean")
+  pool$`Sample Name`[3] <- sprintf("blank")
   
   pool$`Inj Vol` <- 3.5
   pool
@@ -161,7 +161,7 @@ qconfigEVOSEP6x12x8Hystar <- function(x, ...){
   
   pool[1, "File Name"] <- sprintf("%s_@@@_blank%s", currentdate, mode)
   pool$Position[1] <- sprintf("%s:%s%d", plateId,QCrow, 1)
-  pool$`Sample Name`[1] <- sprintf("clean")
+  pool$`Sample Name`[1] <- sprintf("blank")
   
   pool$`Inj Vol` <- 3.5
   pool
@@ -388,7 +388,7 @@ qconfigMetabolomicsVial <- function(x, ...){
 }
 
 
-#' @e@examples
+#' @examples
 #' .readSampleOfContainer(34843, login, webservicepassword, bfabricposturl) |> .composeSampleTable(orderID = 34843, randomization = TRUE) -> x
 #' x|> qconfigMetabolomics()|> .replaceRunIds() -> xx
 .composeSampleTable <- function(x, orderID = 34843,
