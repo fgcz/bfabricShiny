@@ -145,6 +145,7 @@ qconfigEVOSEP6x12x8Hystar <- function(x, ...){
   
   pool[2, "File Name"] <- sprintf("%s_@@@_150mix%s", currentdate,mode)
   pool$Position[2] <- sprintf("%s:%s%d", plateId, QCrow, 9)
+  pool$`Sample Name`[2] <- sprintf("150mix")
   
   pool[3, "File Name"] <- sprintf("%s_@@@_blank%s", currentdate,mode)
   pool$Position[3] <- sprintf("%s:%s%d", plateId, QCrow, 1)
