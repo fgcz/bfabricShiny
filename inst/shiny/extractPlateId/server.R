@@ -17,9 +17,9 @@ shinyServer(function(input, output) {
   
   
   instruments <- list(
-    Metabolomics = c("QEXACTIVEHF_3", "QUANTIVA_1", "QEXACTIVE_2",
+    Metabolomics = c("QEXACTIVEHF_2", "QUANTIVA_1", "QEXACTIVE_2",
                      "QEXACTIVE_3", "ASTRAL_1", "EXPLORIS_3"),
-    Proteomics = c("QEXACTIVEHF_2", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2",
+    Proteomics = c("QEXACTIVEHF_3", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2",
                    "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2",
                    "TIMSTOFFLEX_1"))
   
