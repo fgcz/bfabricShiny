@@ -137,9 +137,12 @@ shinyServer(function(input, output) {
   
   # selectqFUN ------------
   output$selectqFUN <- renderUI({
+    shiny::req(input$area)
+    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomics",
+      "qconfigMetabolomicsVial") -> qc
     
-    qc <- c("qconfigEVOSEP6x12x8Hystar", "qconfigMetabolomics", "qconfigMetabolomicsVial")
-    
+    qc[base::grepl(pattern = input$area, x = qc)] -> qc
+
     shiny::selectInput(inputId = "qFUN", 
                        label = "Queue configuration:",
                        choices = qc,
