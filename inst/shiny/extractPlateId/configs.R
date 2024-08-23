@@ -2,7 +2,7 @@
 ## 2024-07-04 Clauda Fortes / Christian Panse
 ## 2024-07-11 Martina
 
-.toHystar <- function(x, xmlfile='file.xml'){
+.toHystar <- function(x, file='file.xml'){
 	data.frame(
 	    Position = x$Position |> stringr::str_replace("^", "S") |> stringr::str_replace(":", "-") |> stringr::str_replace(",", ""),
 	    SampleID = sprintf("%s.d", x$"File Name"),
@@ -19,8 +19,8 @@
     xml$addTag("SampleTable")
     dump <- lapply(1:nrow(df), FUN = function(i) xml$addTag("Sample", close=TRUE, attrs=df[i, ]))
       
-    message(paste0("Saving XML to file '", xmlfile, "' ..."))
-    rvSave <- XML::saveXML(xml$value(), file = xmlfile, encoding = "utf-8")
+    message(paste0("Saving XML to file '", file, "' ..."))
+    rvSave <- XML::saveXML(xml$value(), file = file, encoding = "utf-8")
     print(rvSave)
 
 }
@@ -229,7 +229,7 @@ qconfigProteomicsEVOSEP6x12x8Hystar <- function(x, ...){
 ## 1. take clean dil qcs only from plateId H?
 ## 2. insert tube ID.
 ## 3. dir for instrument method
-qconfigMetabolomics <- function(x, ...){
+qconfigMetabolomicsPlateXCalibur <- function(x, ...){
   cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
                   "Sample ID", "Sample Name", "Instrument Method")
   
@@ -261,7 +261,7 @@ qconfigMetabolomics <- function(x, ...){
   x[, cn]
 }
 
-qconfigMetabolomicsVial <- function(x, ...){
+qconfigMetabolomicsVialXCalibur <- function(x, ...){
   cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
           "Sample ID", "Sample Name", "Instrument Method")
   

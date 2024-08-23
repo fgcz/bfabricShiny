@@ -11,7 +11,7 @@ if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queu
 
 # Define server logic required
 shinyServer(function(input, output) {
- 
+  
   debugmode <- FALSE
   TIMEdebugmode <- FALSE
   
@@ -25,21 +25,24 @@ shinyServer(function(input, output) {
   
   
   columnOrder <<- c("File Name",
-                   "Path",
-                   "Position",
-                   "Inj Vol",
-                   "L3 Laboratory",
-                   "Sample ID",
-                   "Sample Name",
-                   "Instrument Method") 
+                    "Path",
+                    "Position",
+                    "Inj Vol",
+                    "L3 Laboratory",
+                    "Sample ID",
+                    "Sample Name",
+                    "Instrument Method") 
   
   plate_idx <- c("Y", "G", "R", "B")
   currentdate <- format(Sys.time(), "%Y%m%d")
-
+  
   bf <- callModule(bfabricShiny::bfabricLogin,
                    "bfabric8")
+  
+  
+  ## TODO(cp): rename that rv to make it clear it is a global var
   rv <- reactiveValues(download_flag = 0, wuid = NULL)
-
+  
   output$bfabricUser <- renderUI({
     if (require("bfabricShiny")){
       bfabricInput("bfabric8")
@@ -53,7 +56,7 @@ shinyServer(function(input, output) {
   user <- reactive({
     shiny::req(bf$login())
     shiny::req(bf$webservicepassword())
- 
+    
     try(
       u <- bfabricShiny::read(login = bf$login(),
                               webservicepassword = bf$webservicepassword(),
@@ -66,13 +69,13 @@ shinyServer(function(input, output) {
     
     return(u)
   })
-
- # UI ==========
+  
+  # UI ==========
   output$orderID <- renderUI({
     shiny::req(user())
-  
+    
     if (user()$login == 'cpanse'){
-     return( selectInput(
+      return( selectInput(
         "orderID",
         "Order ID:",
         c("31741", "35116", "35464", "34843", "34777", "34778"),
@@ -93,27 +96,27 @@ shinyServer(function(input, output) {
       width = NULL
     )
   })
-
-  output$plateID <- renderUI({
-      shiny::req(input$orderID)
-      shiny::req(read_plateid())
-      shiny::req(user())
-      
-      
-      selectInput(
-          "plateID",
-          "List of available plate IDs:",
-          read_plateid(),
-          selected = "",
-          multiple = TRUE,
-          selectize = TRUE,
-          size = NULL,
-          width = NULL
-    )
-      
   
+  output$plateID <- renderUI({
+    shiny::req(input$orderID)
+    shiny::req(read_plateid())
+    shiny::req(user())
+    
+    
+    selectInput(
+      "plateID",
+      "List of available plate IDs:",
+      read_plateid(),
+      selected = "",
+      multiple = TRUE,
+      selectize = TRUE,
+      size = NULL,
+      width = NULL
+    )
+    
+    
   })
-
+  
   output$injvol <- renderUI({
     shiny::req(input$orderID)
     #shiny::req(read_plateid())
@@ -127,22 +130,22 @@ shinyServer(function(input, output) {
       width = NULL
     )
   })
-
+  
   output$randomization <- renderUI({
     shiny::radioButtons("randomization", "Randomization:",
-                 c("no" = "no",
-                   "plate" = "plate",
-                   "all" = "all"), inline = TRUE)
+                        c("no" = "no",
+                          "plate" = "plate",
+                          "all" = "all"), inline = TRUE)
   })
   
   # selectqFUN ------------
   output$selectqFUN <- renderUI({
     shiny::req(input$area)
-    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomicsXCalibur",
+    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomicsPlateXCalibur",
       "qconfigMetabolomicsVialXCalibur") -> qc
     
     qc[base::grepl(pattern = input$area, x = qc)] -> qc
-
+    
     shiny::selectInput(inputId = "qFUN", 
                        label = "Queue configuration:",
                        choices = qc,
@@ -226,7 +229,7 @@ shinyServer(function(input, output) {
                           inline = TRUE)
     }else{NULL}
   })
-
+  
   output$instrument <- renderUI({
     shiny::req(input$orderID)
     shiny::req(input$area)
@@ -246,15 +249,15 @@ shinyServer(function(input, output) {
     shiny::req(input$area)
     shiny::req(input$instrument)
     list(textInput(
-              "extratext",
-              "(Optional) Suffix to the folder name in Data2San:",
-              "",
-              width = NULL
-	      ),
-	 helpText(paste0("if empty, the file path will be the following one: D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
-	 )
+      "extratext",
+      "(Optional) Suffix to the folder name in Data2San:",
+      "",
+      width = NULL
+    ),
+    helpText(paste0("if empty, the file path will be the following one: D:\\Data2San\\p", input$orderID, "\\", input$area, "\\", input$instrument, "\\", bf$login(), "_", currentdate))
+    )
   })
-
+  
   output$extrameasurement <- renderUI({
     shiny::req(input$orderID)
     shiny::req(read_plateid())
@@ -268,8 +271,8 @@ shinyServer(function(input, output) {
     ),
     helpText("Note that the suffix above is applied to all samples for all selected plates"))
   })
-
-
+  
+  
   read_sampletype <- function(sampleid){
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
                               posturl = posturl(),
@@ -277,28 +280,28 @@ shinyServer(function(input, output) {
                               query = list('id' = sampleid))
     if ( debugmode == TRUE ) {message(res)}
     if (is.null(res[[1]]$parent)){
-        sampletype <- res[[1]]$type
-        if (is.null(sampletype)){
-            return("Unknown")
-	} else {
-	    return(sampletype)
-	}
+      sampletype <- res[[1]]$type
+      if (is.null(sampletype)){
+        return("Unknown")
+      } else {
+        return(sampletype)
+      }
     }
     read_sampletype(res[[1]]$parent[[1]]$id)
   }
-
+  
   sampleOfContainer <- reactive({
     shiny::req(input$orderID)
-
+    
     .readSampleOfContainer(input$orderID,
                            login = bf$login(),
                            webservicepassword = bf$webservicepassword(),
                            posturl = posturl())
   })
-    
+  
   filteredSampleOfContainer <- reactive({
     shiny::req(sampleOfContainer)
-   
+    
     if (length(rv$selectedSample) > 0){
       sampleOfContainer() |>
         subset(sampleOfContainer()$`Sample Name` %in% rv$selectedSample)
@@ -308,13 +311,13 @@ shinyServer(function(input, output) {
   })
   
   ## ====== compose output table ==========
-   composeTable <- reactive({
+  composeTable <- reactive({
     shiny::req(input$instrument)
     shiny::req(input$injvol)
     shiny::req(input$area)
     #shiny::req(input$plateID)
     shiny::req(input$qFUN)
-
+    
     QCrow <- "F"
     instrumentMode <- ""
     if (input$area == "Metabolomics"){
@@ -322,8 +325,8 @@ shinyServer(function(input, output) {
     }
     
     if (length(input$plateID) == 0){
-     ## --------vial block (no plateid)------------ 
-     ## we fetch all samples of a container
+      ## --------vial block (no plateid)------------ 
+      ## we fetch all samples of a container
       QCrow <- "F"
       randomization <- FALSE
       if (input$randomization == 'plate'){
@@ -348,18 +351,18 @@ shinyServer(function(input, output) {
           readPlate(pid, login = bf$login(),
                     webservicepassword = bf$webservicepassword(),
                     posturl = posturl()) |>
-          .composePlateSampleTable(orderID = input$orderID,
-                                   instrument = input$instrument,
-                                   injVol = input$injvol,
-                                   area = input$area,
-                                   mode = instrumentMode,
-                                   plateCounter = plateCounter,
-                                   randomization = input$randomization) -> p
+            .composePlateSampleTable(orderID = input$orderID,
+                                     instrument = input$instrument,
+                                     injVol = input$injvol,
+                                     area = input$area,
+                                     mode = instrumentMode,
+                                     plateCounter = plateCounter,
+                                     randomization = input$randomization) -> p
           # global counter
           plateCounter <<- plateCounter + 1
           p[, columnOrder]
         }) |> Reduce(f = rbind) -> df
-
+      
       if (input$randomization == "all"){
         set.seed(872436)
         df[sample(nrow(df)), ] -> df
@@ -382,8 +385,8 @@ shinyServer(function(input, output) {
         .replaceRunIds()
     }
     
-   })
-
+  })
+  
   
   output$outputKable <- DT::renderDataTable({
     shiny::req(composeTable())
@@ -393,12 +396,16 @@ shinyServer(function(input, output) {
                   editable = FALSE,
                   options = list(paging = FALSE))
   })
-
-   csvFilename <- reactive({
-     tempfile(pattern = "fgcz_queue_generator_", fileext = ".csv")
-   })
-
-
+  
+  csvFilename <- reactive({
+    tempfile(pattern = "fgcz_queue_generator_XCalibur", fileext = ".csv")
+  })
+  xmlFilename <- reactive({
+    tempfile(pattern = "fgcz_queue_generator_Hystar.", fileext = ".xml")
+  })
+  
+  
+  
   
   #=======output$download======
   output$download <- renderUI({
@@ -423,55 +430,72 @@ shinyServer(function(input, output) {
                      onclick = wuUrl)
       }else{
         #if (file.exists(csvFilename())){
-          actionButton('generate', 'Upload configuration to b-fabric')
-      #  }
+        actionButton('generate', 'Upload configuration to b-fabric')
+        #  }
         
       }
     }
   })
   
-  
-
-   ## ======upload to bfabric =========
-   bfabricUploadResource <- observeEvent(input$generate, {
-     progress <- shiny::Progress$new(min = 0, max = 1)
-     progress$set(message = "upload csv file to bfabric")
-     on.exit(progress$close())
-     
-     if(grepl("Hystar", input$FUN)){
-       
-     }else{
-       message(paste0("Writing XCalibur csv config file ",
-                      csvFilename(), " ..."))
-       
-       ## to make it readable by XCalibur
-       cat("Bracket Type=4\r\n",
-           file = csvFilename(),
-           append = FALSE)
-       utils::write.table(composeTable(),
-                          sep = ',',
-                          file = csvFilename(),
-                          row.names = FALSE,
-                          append = TRUE,
-                          quote = FALSE,
-                          eol = '\r\n')
-       
-       message("Uploading  XCalibur csv config file to bfabric ...")
-       progress$set(message = "uploading csv file with plate info to bfabric")
-       rr <- bfabricShiny::uploadResource(
-         login = bf$login(),
-         webservicepassword = bf$webservicepassword(),
-         posturl = posturl(),
-         containerid = input$orderID,
-         applicationid = 319,
-         status = "PENDING",
-         description = "plate queue generator csv file",
-         workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
-         resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
-                                format(Sys.time(), format="%Y%m%d-%H%M%S")),
-         file = csvFilename()
-       )
-       rv$wuid <- rr$workunit$res[[1]]$id
-     })
-   }
+  ## ======upload to bfabric =========
+  bfabricUploadResource <- observeEvent(input$generate, {
+    progress <- shiny::Progress$new(min = 0, max = 1)
+    progress$set(message = "upload csv file to bfabric")
+    on.exit(progress$close())
+    
+    filename <- NULL
+    workunitname <- NULL
+    resourcename <- NULL
+    #browser()
+    if(grepl("Hystar", input$qFUN)){
+      composeTable() |>
+        .toHystar(file = xmlFilename())
+      filename <- xmlFilename()
+      workunitname <- sprintf("Hystar-MS-configuration_orderID-%s", input$orderID[1])
+      resourcename = sprintf("queue-C%s_%s.xml",
+                             input$orderID[1],
+                             format(Sys.time(), format="%Y%m%d-%H%M%S"))
+    }else{
+      message(paste0("Writing XCalibur csv config file ",
+                     csvFilename(), " ..."))
+      
+      ## to make it readable by XCalibur
+      cat("Bracket Type=4\r\n",
+          file = csvFilename(),
+          append = FALSE)
+      utils::write.table(composeTable(),
+                         sep = ',',
+                         file = csvFilename(),
+                         row.names = FALSE,
+                         append = TRUE,
+                         quote = FALSE,
+                         eol = '\r\n')
+      filename <- csvFilename()
+      workunitname <- sprintf("XCalibur-MS-configuration_orderID-%s", input$orderID[1])
+      resourcename = sprintf("queue-C%s_%s.csv",
+                             input$orderID[1],
+                             format(Sys.time(), format="%Y%m%d-%H%M%S"))
+    }
+    
+    
+    message("Uploading queue config file to bfabric ...")
+    progress$set(message = "uploading config file with plate info to bfabric")
+    
+    rr <- bfabricShiny::uploadResource(
+      login = bf$login(),
+      webservicepassword = bf$webservicepassword(),
+      posturl = posturl(),
+      containerid = input$orderID,
+      applicationid = 319,
+      status = "PENDING",
+      description = "plate queue generator config file",
+      workunitname = workunitname,
+      resourcename = resourcename,
+      file = filename
+    )
+    
+    ## save wuid
+    rv$wuid <- rr$workunit$res[[1]]$id
+  })
 })
+
