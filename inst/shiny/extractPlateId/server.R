@@ -138,8 +138,8 @@ shinyServer(function(input, output) {
   # selectqFUN ------------
   output$selectqFUN <- renderUI({
     shiny::req(input$area)
-    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomics",
-      "qconfigMetabolomicsVial") -> qc
+    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomicsXCalibur",
+      "qconfigMetabolomicsVialXCalibur") -> qc
     
     qc[base::grepl(pattern = input$area, x = qc)] -> qc
 
@@ -432,43 +432,46 @@ shinyServer(function(input, output) {
   
   
 
-  bfabricUploadResource <- observeEvent(input$generate, {
-    progress <- shiny::Progress$new(min = 0, max = 1)
-    progress$set(message = "upload csv file to bfabric")
-    on.exit(progress$close())
-    
-    #if (rv$download_flag  0){
-    message(paste0("writing csv file ", csvFilename()," ..."))
-    
-    cat("Bracket Type=4\r\n",
-        file = csvFilename(),
-        append = FALSE)
-    utils::write.table(composeTable(),
-                       sep = ',',
-                       file = csvFilename(),
-                       row.names = FALSE,
-                       append = TRUE,
-                       quote = FALSE,
-                       eol = '\r\n')
-    
-    message("uploading to bfabric ...")
-    progress$set(message = "uploading csv file with plate info to bfabric")
-    rr <- bfabricShiny::uploadResource(
-      login = bf$login(),
-      webservicepassword = bf$webservicepassword(),
-      posturl = posturl(),
-      containerid = input$orderID,
-      applicationid = 319,
-      status = "PENDING",
-      description = "plate queue generator csv file",
-      #inputresourceid = rv$bfrv2$resource[[1]]$id,
-      workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
-      resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
-                             format(Sys.time(), format="%Y%m%d-%H%M%S")),
-      file = csvFilename()
-    )
-    rv$wuid <- rr$workunit$res[[1]]$id
-    #}
-  })
-  
+   ## ======upload to bfabric =========
+   bfabricUploadResource <- observeEvent(input$generate, {
+     progress <- shiny::Progress$new(min = 0, max = 1)
+     progress$set(message = "upload csv file to bfabric")
+     on.exit(progress$close())
+     
+     if(grepl("Hystar", input$FUN)){
+       
+     }else{
+       message(paste0("Writing XCalibur csv config file ",
+                      csvFilename(), " ..."))
+       
+       ## to make it readable by XCalibur
+       cat("Bracket Type=4\r\n",
+           file = csvFilename(),
+           append = FALSE)
+       utils::write.table(composeTable(),
+                          sep = ',',
+                          file = csvFilename(),
+                          row.names = FALSE,
+                          append = TRUE,
+                          quote = FALSE,
+                          eol = '\r\n')
+       
+       message("Uploading  XCalibur csv config file to bfabric ...")
+       progress$set(message = "uploading csv file with plate info to bfabric")
+       rr <- bfabricShiny::uploadResource(
+         login = bf$login(),
+         webservicepassword = bf$webservicepassword(),
+         posturl = posturl(),
+         containerid = input$orderID,
+         applicationid = 319,
+         status = "PENDING",
+         description = "plate queue generator csv file",
+         workunitname = sprintf("XCaliburMSconfiguration_orderID-%s", input$orderID),
+         resourcename = sprintf("queue-C%s_%s.csv", input$orderID,
+                                format(Sys.time(), format="%Y%m%d-%H%M%S")),
+         file = csvFilename()
+       )
+       rv$wuid <- rr$workunit$res[[1]]$id
+     })
+   }
 })
