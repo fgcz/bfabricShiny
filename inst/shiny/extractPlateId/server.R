@@ -224,6 +224,20 @@ shinyServer(function(input, output) {
                           "all" = "all"), inline = TRUE)
   })
   
+  # input orderID ------------
+  output$frequency <- renderUI({
+    shiny::req(input$orderID) 
+      selectInput(
+        "frequency",
+        "QC frequency:",
+        c(1, 2, 4, 8, 16, 32, 48, 64, 1024),
+        selected = "16",
+        multiple = FALSE,
+        selectize = 16
+      )
+      
+    })
+  
   # input check sample selection -------------
   output$checkSampleSelection <- renderUI({
     if (length(input$plateID) == 0){
@@ -469,10 +483,10 @@ shinyServer(function(input, output) {
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
     #df$`Sample Name` <- paste0(df$`Sample Name`, mode)
     if (input$area == "Metabolomics"){
-      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode)) |>
+      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode, howOftenQC = as.integer(input$frequency))) |>
         .replaceRunIds()
     }else{
-      do.call(what = input$qFUN, args = list(x = df)) |>
+      do.call(what = input$qFUN, args = list(x = df, howOftenQC = as.integer(input$frequency))) |>
         .replaceRunIds()
     }
     
@@ -494,10 +508,6 @@ shinyServer(function(input, output) {
   xmlFilename <- reactive({
     tempfile(pattern = "fgcz_queue_generator_Hystar.", fileext = ".xml")
   })
-  
-  
-  
-  
 
   
   # ObserveEvents ===================================

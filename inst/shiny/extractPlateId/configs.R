@@ -164,7 +164,7 @@
 ## 1. take clean dil qcs only from plateId H?
 ## 2. insert tube ID.
 ## 3. dir for instrument method
-qconfigMetabolomicsPlateXCalibur <- function(x, ...){
+qconfigMetabolomicsPlateXCalibur <- function(x, howOften = 22, ...){
   cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
                   "Sample ID", "Sample Name", "Instrument Method")
   
@@ -177,7 +177,7 @@ qconfigMetabolomicsPlateXCalibur <- function(x, ...){
   im <- paste0(x$Path[1], "\\methods\\")
 
   # in between
-  x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1], ...) -> x
+  x |> .insertSample(howOften = howOften, sampleFUN = .pooledQC, path = x$Path[1], ...) -> x
   
   # START
   x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1], ...) -> x
@@ -196,7 +196,7 @@ qconfigMetabolomicsPlateXCalibur <- function(x, ...){
   x[, cn]
 }
 
-qconfigMetabolomicsVialXCalibur <- function(x, ...){
+qconfigMetabolomicsVialXCalibur <- function(x, howOften = 22, ...){
   cn <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory",
           "Sample ID", "Sample Name", "Instrument Method")
   
@@ -207,7 +207,7 @@ qconfigMetabolomicsVialXCalibur <- function(x, ...){
   
   im <- paste0(x$Path[1], "\\methods\\")
 
-  x |> .insertSample(howOften = 22, sampleFUN = .pooledQC, path = x$Path[1], ...) -> x
+  x |> .insertSample(howOften = howOften, sampleFUN = .pooledQC, path = x$Path[1], ...) -> x
   x |> .insertSample(where = 0, sampleFUN = .pooledQCDil, path = x$Path[1], ...) -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], ...) -> x
   x |> .insertSample(where = 0, sampleFUN = .clean, path = x$Path[1], ...) -> x

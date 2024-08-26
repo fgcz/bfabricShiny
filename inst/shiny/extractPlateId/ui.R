@@ -27,6 +27,7 @@ shinyUI(fluidPage(
       uiOutput("plateID"),
       uiOutput("injvol"),
       uiOutput("randomization"),
+      uiOutput("frequency"),
       uiOutput("checkSampleSelection"),
       uiOutput("selectSampleSelection"),
       htmlOutput("download"),
