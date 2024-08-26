@@ -95,35 +95,38 @@ shinyServer(function(input, output) {
       selectize = FALSE
     )
   })
-  # ------ input system ------
-  output$system <- renderUI({
-    shiny::req(input$area)
-    systems <- configInstrument()$system[configInstrument()$area == input$area]
-    
-    selectInput(
-      "system",
-      "System:",
-      unique(systems),
-      multiple = FALSE,
-      selected = unique(systems)[1],
-      selectize = TRUE
-    )
-  })
+  
+  
   # ------ input instrument ------
   output$instrument <- renderUI({
     shiny::req(input$orderID)
     shiny::req(input$area)
     
-    instruments <- configInstrument()$instrument[configInstrument()$area == input$area &
-                                                   configInstrument()$system == input$system] |> sort()
+    instruments <- configInstrument()$instrument[configInstrument()$area == input$area] |> sort()
     
     selectInput(
       "instrument",
       "Instrument:",
       instruments,
       multiple = FALSE,
-      selected = instruments[1],
+      selected = instruments,
       selectize = TRUE
+    )
+  })
+  
+  # ------ input system ------
+  output$system <- renderUI({
+    shiny::req(input$area)
+    systems <- configInstrument()$system[configInstrument()$area == input$area &
+                                           configInstrument()$instrument == input$instrument]
+    
+    selectInput(
+      "system",
+      "System:",
+      unique(systems),
+      multiple = FALSE,
+      selected = unique(systems),
+      selectize = FALSE
     )
   })
   
@@ -133,8 +136,10 @@ shinyServer(function(input, output) {
     shiny::req(input$system)
     shiny::req(read_plateid())
     
-    c("qconfigProteomicsEVOSEP6x12x8PlateHystar", "qconfigMetabolomicsPlateXCalibur",
+    c("qconfigProteomicsEVOSEP6x12x8PlateHystar",
+      "qconfigMetabolomicsPlateXCalibur",
       "qconfigMetabolomicsVialXCalibur") -> qc
+    
     ## filter for area and system
     qc[ base::grepl(pattern = input$area, x = qc) ] -> qc
     qc[ base::grepl(pattern = input$system, x = qc) ] -> qc
@@ -483,7 +488,7 @@ shinyServer(function(input, output) {
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
     #df$`Sample Name` <- paste0(df$`Sample Name`, mode)
     if (input$area == "Metabolomics"){
-      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode, howOftenQC = as.integer(input$frequency))) |>
+      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode, howOften = as.integer(input$frequency))) |>
         .replaceRunIds()
     }else{
       do.call(what = input$qFUN, args = list(x = df, howOftenQC = as.integer(input$frequency))) |>
