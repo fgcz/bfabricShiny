@@ -8,6 +8,8 @@ stopifnot(require(shiny),
 
 if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queue configs.")}
 if (file.exists("configProteomics.R")){ source("configProteomics.R") }else{stop("can not load queue configProteomics.")}
+if (file.exists("configMetabolomics.R")){ source("configMetabolomics.R") }else{stop("can not load queue configMetabolomics.")}
+
 #if (file.exists("configs.R")){ source("helper.R") }else{stop("can not load queue helper.")}
 
 # Define server logic required
