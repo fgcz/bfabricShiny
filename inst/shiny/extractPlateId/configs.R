@@ -28,7 +28,11 @@
 .replaceRunIds <- function(x){
 	for (i in 1:nrow(x)){
 		rn <- sprintf("_%03d_", i)
-		x$`File Name`[i] <- stringr::str_replace(x$`File Name`[i], "_@@@_", rn)
+		x$`File Name`[i] |>
+		  stringr::str_replace("_@@@_", rn) -> x$`File Name`[i]
+		
+		x$`File Name`[i] |>
+		  stringr::str_replace("#", "_") -> x$`File Name`[i]
 
 	}
 
@@ -36,75 +40,6 @@
 }
 
 
-# Proteomics ========================================
-
-qconfigProteomicsEVOSEP6x12x8PlateHystar <- function(x, ...){
-  df <- x
-	Y <- c('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
-	
-	currentdate <- format(Sys.time(), "%Y%m%d")
-	output <- data.frame(matrix(ncol = 8, nrow = 0))
-	colnames(output) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-
-	clean <- data.frame(matrix(ncol = 8, nrow = 0))
-	cleanAutoQC03 <- data.frame(matrix(ncol = 8, nrow = 0))
-
-	colnames(df) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-
-	colnames(clean) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-	clean <- c("Clean", df$Path[1], "5:X:X", 1, "FGCZ", "clean", "clean", "clean")
-	cleancount <- 1
-	cleancountx <- 1
-	cleancounty <- 1
-
-	colnames(cleanAutoQC03) <- c("File Name", "Path", "Position", "Inj Vol", "L3 Laboratory", "Sample ID", "Sample Name", "Instrument Method")
-	autoQC03count <- 1
-	autoQC03countx <- 1
-	autoQC03county <- 1
-
-        ## initial clean and autoQC03dia
-	#clean <- c(sprintf("%s_%03d_clean", currentdate, cleancount), df$Path[1], sprintf("5:%s,%d", Y[cleancounty], cleancountx), 1, "FGCZ", "clean", "clean", "clean")
-	#cleancountx <- cleancountx + 1
-	#cleancount <- cleancount + 1
-	#output <- rbind(output, clean)
-
-	#autoQC03 <- c(sprintf("%s_%03d_autoQC03dia", currentdate, autoQC03countx), df$Path[1], sprintf("6:%s,%d", Y[autoQC03county], autoQC03countx), 1, "FGCZ", "autoQC03", "autoQC03", "autoQC03")
-	#autoQC03countx <- autoQC03countx + 1
-	#autoQC03count <- autoQC03count + 1
-	#output <- rbind(output, autoQC03)
-	for (i in 1:nrow(df)){
-	  output <- rbind(output, df[i, ])
-	  
-	  if(i %% 12 == 0 && i %% 48 == 0) {
-	    clean <- c(sprintf("%s_@@@_clean_%02d", currentdate, cleancount), df$Path[1], sprintf("5:%s,%d", Y[cleancounty], cleancountx), 1, "FGCZ", "clean", "clean", "clean")
-	    cleancountx <- cleancountx + 1
-	    cleancount <- cleancount + 1
-	    output <- rbind(output, clean)
-	    
-	    autoQC03 <- c(sprintf("%s_@@@_autoQC03dia_%02d", currentdate, autoQC03countx), df$Path[1], sprintf("6:%s,%d", Y[autoQC03county], autoQC03countx), 1, "FGCZ", "autoQC03", "autoQC03", "autoQC03")
-	    autoQC03countx <- autoQC03countx + 1
-	    autoQC03count <- autoQC03count + 1
-	    output <- rbind(output, autoQC03)
-	  } else if (i %% 12 == 0) {
-	    clean <- c(sprintf("%s_@@@_clean_%02d", currentdate, cleancount), df$Path[1], sprintf("5:%s,%d", Y[cleancounty], cleancountx), 1, "FGCZ", "clean", "clean", "clean")
-	    cleancountx <- cleancountx + 1
-	    cleancount <- cleancount + 1
-	    output <- rbind(output, clean)
-	  }
-	  
-	  if (cleancountx > 12){
-	    cleancountx <- 1
-	    cleancounty <- cleancounty + 1
-	  }
-	  
-	  if (autoQC03countx > 12){
-	    autoQC03countx <- 1
-	    autoQC03county <- autoQC03county + 1
-	  }
-	  
-	}
-	output 
-}
 
 
 # Metabolomics ========================================
@@ -361,7 +296,7 @@ qconfigMetabolomicsVialXCalibur <- function(x, ...){
                                      randomization = 'plate'){
   format(Sys.time(), "%Y%m%d") -> currentdate
   
-  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
+  p$"File Name" <- sprintf("%s_C%s_@@@_S%d%s_%s",
                            currentdate,
                            .extractSampleIdfromTubeID(orderID, p$`Tube ID`),
                            p$"Sample ID",
@@ -404,7 +339,7 @@ qconfigMetabolomicsVialXCalibur <- function(x, ...){
   
   format(Sys.time(), "%Y%m%d") -> currentdate
   p <- x
-  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
+  p$"File Name" <- sprintf("%s_C%s_@@@_S%d%s_%s",
                            currentdate,
                            orderID,
                            p$"Sample ID",
