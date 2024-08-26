@@ -1,0 +1,16 @@
+instrument;area;system
+QEXACTIVEHF_2;Metabolomics;XCalibur
+QUANTIVA_1;Metabolomics;XCalibur
+QEXACTIVE_2;Metabolomics;XCalibur
+QEXACTIVE_3;Metabolomics;XCalibur
+ASTRAL_1;Metabolomics;XCalibur
+EXPLORIS_3;Metabolomics;XCalibur
+QEXACTIVEHF_3;Proteomics;XCalibur
+QEXACTIVEHF_4;Proteomics;XCalibur
+QEXACTIVE_2;Proteomics;XCalibur
+FUSION_2;Proteomics;XCalibur
+EXPLORIS_1;Proteomics;XCalibur
+EXPLORIS_2;Proteomics;XCalibur
+LUMOS_1;Proteomics;XCalibur
+LUMOS_2;Proteomics;XCalibur
+TIMSTOFFLEX_1;Proteomics;Hystar
