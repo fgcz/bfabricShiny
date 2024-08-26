@@ -72,12 +72,24 @@ qconfigProteomicsEVOSEP6x12x8PlateHystar <- function(x, howOftenQC = 48,  ...){
   } # for loop
   
   ## START
+  autoQC03 <- c(sprintf("%s_@@@_autoQC03dia_00", currentdate, autoQC03countx), df$Path[1], sprintf("6:%s,%d", Y[autoQC03county], autoQC03countx), 1, "FGCZ", "autoQC03", "autoQC03", "autoQC03")
+  output <- rbind(autoQC03, output)
   clean <- c(sprintf("%s_@@@_clean_00", currentdate, cleancount), df$Path[1], sprintf("5:%s,%d", Y[cleancounty], cleancountx), 1, "FGCZ", "clean", "clean", "clean")
-  cleancountx <- cleancountx + 1
-  cleancount <- cleancount + 1
   output <- rbind(clean, output)
   
+
+  
   ## TODO add autoQC03
+  ## END
+  clean <- c(sprintf("%s_@@@_clean_%02d", currentdate, cleancount), df$Path[1], sprintf("5:%s,%d", Y[cleancounty], cleancountx), 1, "FGCZ", "clean", "clean", "clean")
+  cleancountx <- cleancountx + 1
+  cleancount <- cleancount + 1
+  output <- rbind(output, clean)
+  
+  autoQC03 <- c(sprintf("%s_@@@_autoQC03dia_%02d", currentdate, autoQC03countx), df$Path[1], sprintf("6:%s,%d", Y[autoQC03county], autoQC03countx), 1, "FGCZ", "autoQC03", "autoQC03", "autoQC03")
+  autoQC03countx <- autoQC03countx + 1
+  autoQC03count <- autoQC03count + 1
+  output <- rbind(output, autoQC03)
   
   output 
 }
