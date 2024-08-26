@@ -65,9 +65,6 @@
 
 	x
 }
-
-
-
   
 #' @examples
 #' .readSampleOfContainer(35464, login, webservicepassword, bfabricposturl)

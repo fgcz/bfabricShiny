@@ -490,7 +490,11 @@ shinyServer(function(input, output) {
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
     #df$`Sample Name` <- paste0(df$`Sample Name`, mode)
     if (input$area == "Metabolomics"){
-      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode, howOften = as.integer(input$frequency))) |>
+      do.call(what = input$qFUN, args = list(x = df,
+                                             containerid = input$orderID[1],
+                                             QCrow = QCrow,
+                                             mode = instrumentMode,
+                                             howOften = as.integer(input$frequency))) |>
         .replaceRunIds()
     }else{
       do.call(what = input$qFUN, args = list(x = df, howOftenQC = as.integer(input$frequency))) |>
