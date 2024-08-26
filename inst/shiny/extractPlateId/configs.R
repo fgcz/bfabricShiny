@@ -2,6 +2,33 @@
 ## 2024-07-04 Clauda Fortes / Christian Panse
 ## 2024-07-11 Martina
 
+
+.insertSample <- function(x, where = NA, howOften = round(nrow(x)/2),
+                          sampleFUN = NA, path=NA, ...){
+  output <- data.frame(matrix(ncol = ncol(x), nrow = 0))
+  colnames(output) <- colnames(x)
+  
+  if (is.na(where)){
+    for (i in 1:nrow(x)){
+      if (i %% howOften == 0){
+        plateId <- output$Position[nrow(output)] |> substr(1,1)
+        rbind(output, sampleFUN(x, plateId=plateId, ...)) -> output
+      }
+      rbind(output, x[i, ]) -> output
+    }
+  }else if (where == 0){
+    plateId <- x$Position[1] |> substr(1,1)
+    rbind(sampleFUN(x, plateId = plateId, ...), x) ->  output
+  }else if (where > nrow(x)){
+    plateId <- x$Position[nrow(x)] |> substr(1,1)
+    rbind(x, sampleFUN(x, plateId = plateId, ...)) ->  output
+  }else{stop("Invalid arguments")}
+  
+  output$Path <- path
+  output
+}
+
+
 .toHystar <- function(x, file='file.xml'){
 	data.frame(
 	    Position = x$Position |> stringr::str_replace("^", "S") |> stringr::str_replace(":", "-") |> stringr::str_replace(",", ""),
