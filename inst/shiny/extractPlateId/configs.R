@@ -29,16 +29,20 @@
 }
 
 
+## TODO(cp): check replacemet for QHF2!!
 .toHystar <- function(x, file='file.xml'){
 	data.frame(
-	    Position = x$Position |> stringr::str_replace("^", "S") |> stringr::str_replace(":", "-") |> stringr::str_replace(",", ""),
-	    SampleID = sprintf("%s.d", x$"File Name"),
+	    Position = x$Position |>
+	      stringr::str_replace("^", "S") |>
+	      stringr::str_replace(":", "_") |>
+	      stringr::str_replace(",", ""),
+	    SampleID = sprintf("%s", x$"File Name"),
 	    SampleComment = "",
 	    Volume = 1,
 	    DataPath = x$Path |> stringr::str_replace("QEXACTIVEHF_2", "TIMSTOFFLEX_1"),
 	    SuperMethod = "",
 	    ResultDatafile = sprintf("%s\\%s.d", x$Path, x$"File Name"),
-	    ACQEND_EXECUTE = "D:\\FGCZ\\BioBeamer\\biobeamer.bat"
+	    ACQEND_EXECUTE = "D:\\FGCZ\\Biobeamer\\biobeamer.bat"
 	    ) -> df
 
 
@@ -65,6 +69,9 @@
 
 	x
 }
+
+
+
   
 #' @examples
 #' .readSampleOfContainer(35464, login, webservicepassword, bfabricposturl)
