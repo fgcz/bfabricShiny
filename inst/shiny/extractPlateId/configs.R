@@ -1,6 +1,6 @@
 #R
 ## 2024-07-04 Clauda Fortes / Christian Panse
-## 2024-07-11 Martina
+
 
 
 .insertSample <- function(x, where = NA, howOften = round(nrow(x)/2),
@@ -138,7 +138,7 @@
                                      randomization = 'plate'){
   format(Sys.time(), "%Y%m%d") -> currentdate
   
-  p$"File Name" <- sprintf("%s_C%s_@@@_S%d%s_%s",
+  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
                            currentdate,
                            .extractSampleIdfromTubeID(orderID, p$`Tube ID`),
                            p$"Sample ID",
@@ -181,7 +181,7 @@
   
   format(Sys.time(), "%Y%m%d") -> currentdate
   p <- x
-  p$"File Name" <- sprintf("%s_C%s_@@@_S%d%s_%s",
+  p$"File Name" <- sprintf("%s_@@@_C%s_S%d%s_%s",
                            currentdate,
                            orderID,
                            p$"Sample ID",
