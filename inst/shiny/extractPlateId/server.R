@@ -168,7 +168,7 @@ shinyServer(function(input, output) {
       return( selectInput(
         "orderID",
         "Order ID:",
-        c("31741",  "35464", "34843", "34777", "34778", "35117"),
+        c("31741",  "35464", "34843", "34777", "34778", "35117", "35270"),
         selected = "31741",
         multiple = TRUE,
         selectize = FALSE
@@ -211,20 +211,21 @@ shinyServer(function(input, output) {
   # input injvol ------------ 
   output$injvol <- renderUI({
     shiny::req(input$orderID)
-    #shiny::req(read_plateid())
-    numericInput(
-      "injvol",
-      "Inj Vol",
-      "",
-      min = NA,
-      max = NA,
-      step = NA,
-      width = NULL
-    )
+    
+    #if(length(shiny::req(input$plateID)) > 0 || nrow(sampleOfContainer()) > 0){
+      numericInput(
+        "injvol",
+        "Inj Vol",
+        min = NA,
+        max = NA,
+        step = NA,
+        width = NULL,
+        value = NA)
   })
   
   #input randomization ------------
   output$randomization <- renderUI({
+    shiny::req(input$orderID) 
     shiny::radioButtons("randomization", "Randomization:",
                         c("no" = "no",
                           "plate" = "plate",
@@ -247,6 +248,7 @@ shinyServer(function(input, output) {
   
   # input check sample selection -------------
   output$checkSampleSelection <- renderUI({
+    shiny::req(input$orderID) 
     if (length(input$plateID) == 0){
       shiny::checkboxInput("booleanSampleSelection",
                            "Subsetting samples", value = FALSE)
@@ -350,13 +352,15 @@ shinyServer(function(input, output) {
   read_plateid <- reactive({
     shiny::req(user())
     shiny::req(input$orderID)
-    res <- bfabricShiny::read(bf$login(),
-                              bf$webservicepassword(),
-                              posturl = posturl(),
-                              endpoint = "plate",
-                              query = list('containerid' = input$orderID))$res
     
-    
+    shiny::withProgress(message = 'Reading plates of container', {
+      res <- bfabricShiny::read(bf$login(),
+                                bf$webservicepassword(),
+                                posturl = posturl(),
+                                endpoint = "plate",
+                                query = list('containerid' = input$orderID))$res
+      
+    })
     plate_ids <- sapply(res, function(x) x$id)
     #if (length(plate_ids) == 0) return(NULL)
     
@@ -385,13 +389,14 @@ shinyServer(function(input, output) {
   
   sampleOfContainer <- reactive({
     shiny::req(input$orderID)
-    
-    .readSampleOfContainer(input$orderID,
-                           login = bf$login(),
-                           webservicepassword = bf$webservicepassword(),
-                           posturl = posturl())
+    shiny::withProgress(message = 'Reading sample of container', {
+      .readSampleOfContainer(input$orderID,
+                             login = bf$login(),
+                             webservicepassword = bf$webservicepassword(),
+                             posturl = posturl())
+    })
   })
-  
+    
   
   # read container from bfabric -----------------
   # bfabricShiny::read(login = login, webservicepassword = webservicepassword, posturl = bfabricposturl, endpoint = 'container', query = list('id' = list(34778, 35116)))$res -> rv
