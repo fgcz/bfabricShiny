@@ -7,6 +7,9 @@ stopifnot(require(shiny),
           require(stringr))
 
 if (file.exists("configs.R")){ source("configs.R") }else{stop("can not load queue configs.")}
+if (file.exists("configProteomics.R")){ source("configProteomics.R") }else{stop("can not load queue configProteomics.")}
+if (file.exists("configMetabolomics.R")){ source("configMetabolomics.R") }else{stop("can not load queue configMetabolomics.")}
+
 #if (file.exists("configs.R")){ source("helper.R") }else{stop("can not load queue helper.")}
 
 # Define server logic required
@@ -16,13 +19,12 @@ shinyServer(function(input, output) {
   TIMEdebugmode <- FALSE
   
   
-  instruments <- list(
-    Metabolomics = c("QEXACTIVEHF_2", "QUANTIVA_1", "QEXACTIVE_2",
-                     "QEXACTIVE_3", "ASTRAL_1", "EXPLORIS_3"),
-    Proteomics = c("QEXACTIVEHF_3", "QEXACTIVEHF_4", "QEXACTIVE_2", "FUSION_2",
-                   "EXPLORIS_1", "EXPLORIS_2", "LUMOS_1", "LUMOS_2",
-                   "TIMSTOFFLEX_1"))
-  
+  configInstrument <- reactive({
+    f <- file.path(system.file(package = "bfabricShiny"), "extdata", 
+                   "instrument.csv")
+    stopifnot(file.exists(f))
+    read.table(f, header = TRUE, sep = ";")
+  })
   
   columnOrder <<- c("File Name",
                     "Path",
@@ -71,6 +73,94 @@ shinyServer(function(input, output) {
   })
   
   # UI ==========
+  # ------ input area ------
+  output$area <- renderUI({
+   
+    shiny::req(input$orderID)
+    
+    ccc <- container()[[1]]$technology[[1]]
+    print(ccc)
+    # browser()
+   
+    if (grepl("Proteomics", ccc)){
+      area <- "Proteomics"
+    }else{
+      area <- "Metabolomics"
+    }
+    
+    selectInput(
+      "area",
+      "Area:",
+      area,
+      multiple = FALSE,
+      selected = area,
+      selectize = FALSE
+    )
+  })
+  
+  
+  # ------ input instrument ------
+  output$instrument <- renderUI({
+    shiny::req(input$orderID)
+    shiny::req(input$area)
+    
+    instruments <- configInstrument()$instrument[configInstrument()$area == input$area] |> sort()
+    
+    selectInput(
+      "instrument",
+      "Instrument:",
+      instruments,
+      multiple = FALSE,
+      selected = instruments,
+      selectize = TRUE
+    )
+  })
+  
+  # ------ input system ------
+  output$system <- renderUI({
+    shiny::req(input$area)
+    systems <- configInstrument()$system[configInstrument()$area == input$area &
+                                           configInstrument()$instrument == input$instrument]
+    
+    selectInput(
+      "system",
+      "System:",
+      unique(systems),
+      multiple = FALSE,
+      selected = unique(systems),
+      selectize = FALSE
+    )
+  })
+  
+  #input queue configuration FUN ------------
+  output$selectqFUN <- renderUI({
+    shiny::req(input$area)
+    shiny::req(input$system)
+    shiny::req(read_plateid())
+    
+    c("qconfigProteomicsEVOSEP6x12x8PlateHystar",
+      "qconfigMetabolomicsPlateXCalibur",
+      "qconfigMetabolomicsVialXCalibur") -> qc
+    
+    ## filter for area and system
+    qc[ base::grepl(pattern = input$area, x = qc) ] -> qc
+    qc[ base::grepl(pattern = input$system, x = qc) ] -> qc
+    
+    if (length(read_plateid()) > 0){
+      qc[ base::grepl(pattern = "Plate", x = qc) ] -> qc
+    }else{
+      qc[ base::grepl(pattern = "Vial", x = qc) ] -> qc
+    }
+    
+    shiny::selectInput(inputId = "qFUN", 
+                       label = "Queue configuration:",
+                       choices = qc,
+                       multiple = FALSE,
+                       selected = qc[1],
+                       selectize = FALSE)
+  })
+  
+  # input orderID ------------
   output$orderID <- renderUI({
     shiny::req(user())
     
@@ -78,9 +168,9 @@ shinyServer(function(input, output) {
       return( selectInput(
         "orderID",
         "Order ID:",
-        c("31741", "35116", "35464", "34843", "34777", "34778"),
+        c("31741",  "35464", "34843", "34777", "34778", "35117", "35270"),
         selected = "31741",
-        multiple = FALSE,
+        multiple = TRUE,
         selectize = FALSE
       ))
       
@@ -97,6 +187,7 @@ shinyServer(function(input, output) {
     )
   })
   
+  # input plateID ------------
   output$plateID <- renderUI({
     shiny::req(input$orderID)
     shiny::req(read_plateid())
@@ -117,50 +208,54 @@ shinyServer(function(input, output) {
     
   })
   
+  # input injvol ------------ 
   output$injvol <- renderUI({
     shiny::req(input$orderID)
-    #shiny::req(read_plateid())
-    numericInput(
-      "injvol",
-      "Inj Vol",
-      "",
-      min = NA,
-      max = NA,
-      step = NA,
-      width = NULL
-    )
+    
+    #if(length(shiny::req(input$plateID)) > 0 || nrow(sampleOfContainer()) > 0){
+      numericInput(
+        "injvol",
+        "Inj Vol",
+        min = NA,
+        max = NA,
+        step = NA,
+        width = NULL,
+        value = NA)
   })
   
+  #input randomization ------------
   output$randomization <- renderUI({
+    shiny::req(input$orderID) 
     shiny::radioButtons("randomization", "Randomization:",
                         c("no" = "no",
                           "plate" = "plate",
                           "all" = "all"), inline = TRUE)
   })
   
-  # selectqFUN ------------
-  output$selectqFUN <- renderUI({
-    shiny::req(input$area)
-    c("qconfigProteomicsEVOSEP6x12x8Hystar", "qconfigMetabolomicsPlateXCalibur",
-      "qconfigMetabolomicsVialXCalibur") -> qc
-    
-    qc[base::grepl(pattern = input$area, x = qc)] -> qc
-    
-    shiny::selectInput(inputId = "qFUN", 
-                       label = "Queue configuration:",
-                       choices = qc,
-                       multiple = FALSE,
-                       selected = qc[1],
-                       selectize = FALSE)
-  })
+  # input orderID ------------
+  output$frequency <- renderUI({
+    shiny::req(input$orderID) 
+      selectInput(
+        "frequency",
+        "QC frequency:",
+        c(1, 2, 4, 8, 16, 32, 48, 64, 1024),
+        selected = "16",
+        multiple = FALSE,
+        selectize = 16
+      )
+      
+    })
   
+  # input check sample selection -------------
   output$checkSampleSelection <- renderUI({
+    shiny::req(input$orderID) 
     if (length(input$plateID) == 0){
       shiny::checkboxInput("booleanSampleSelection",
                            "Subsetting samples", value = FALSE)
     }else{NULL}
   })
   
+  # input select sample ------------
   output$selectSampleSelection <- renderUI({
     shiny::req(sampleOfContainer)
     shiny::req(input$booleanSampleSelection)
@@ -180,44 +275,6 @@ shinyServer(function(input, output) {
     }
   })
   
-  oeSelectedSample <- observeEvent(input$selectedSample, {
-    shiny::req(input$booleanSampleSelection)
-    
-    if (input$booleanSampleSelection){
-      rv$selectedSample <- input$selectedSample
-    }
-  })
-  
-  read_plateid <- reactive({
-    shiny::req(user())
-    shiny::req(input$orderID)
-    res <- bfabricShiny::read(bf$login(),
-                              bf$webservicepassword(),
-                              posturl = posturl(),
-                              endpoint = "plate",
-                              query = list('containerid' = input$orderID))$res
-    
-    
-    plate_ids <- sapply(res, function(x) x$id)
-    #if (length(plate_ids) == 0) return(NULL)
-    
-    shiny::validate(
-      shiny::need(try(length(plate_ids) > 0), "There are no plate defined for this order")
-    )
-    sort(plate_ids)
-  })
-  
-  output$area <- renderUI({
-    shiny::req(input$orderID)
-    selectInput(
-      "area",
-      "Area:",
-      c("Proteomics", "Metabolomics"),
-      multiple = FALSE,
-      selected = "",
-      selectize = TRUE
-    )
-  })
   
   output$instrumentMode <- renderUI({
     shiny::req(input$instrument)
@@ -230,19 +287,7 @@ shinyServer(function(input, output) {
     }else{NULL}
   })
   
-  output$instrument <- renderUI({
-    shiny::req(input$orderID)
-    shiny::req(input$area)
-    selectInput(
-      "instrument",
-      "Instrument:",
-      instruments[input$area],
-      multiple = FALSE,
-      selected = "",
-      selectize = TRUE
-    )
-  })
-  
+  # input extratext (not used)  ------------
   output$extratext <- renderUI({
     shiny::req(input$orderID)
     shiny::req(read_plateid())
@@ -258,6 +303,7 @@ shinyServer(function(input, output) {
     )
   })
   
+  # input extrameasurement ------------
   output$extrameasurement <- renderUI({
     shiny::req(input$orderID)
     shiny::req(read_plateid())
@@ -272,6 +318,57 @@ shinyServer(function(input, output) {
     helpText("Note that the suffix above is applied to all samples for all selected plates"))
   })
   
+  
+  # output$download --------------------
+  output$download <- renderUI({
+    res <- composeTable()
+    
+    message(nrow(res))
+    if (is.null(res) || nrow(res) == 0){
+      msg <- "The download is not possible yet. "
+      HTML(msg)
+    }else{
+      message(paste0("debug output$download rv$wuid=", rv$wuid))
+      if (isFALSE(is.null(rv$wuid))){
+        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+                        rv$wuid, "', '_blank')")
+        
+        actionButton("download",
+                     paste("go to B-Fabric workunit", rv$wuid),
+                     onclick = wuUrl)
+      }else{
+        #if (file.exists(csvFilename())){
+        actionButton('generate', 'Upload configuration to b-fabric')
+        #  }
+        
+      }
+    }
+  })
+  
+  
+  # FUNCTIONS ===========================
+  
+  # read_plateid FUN ------------
+  read_plateid <- reactive({
+    shiny::req(user())
+    shiny::req(input$orderID)
+    
+    shiny::withProgress(message = 'Reading plates of container', {
+      res <- bfabricShiny::read(bf$login(),
+                                bf$webservicepassword(),
+                                posturl = posturl(),
+                                endpoint = "plate",
+                                query = list('containerid' = input$orderID))$res
+      
+    })
+    plate_ids <- sapply(res, function(x) x$id)
+    #if (length(plate_ids) == 0) return(NULL)
+    
+    shiny::validate(
+      shiny::need(try(length(plate_ids) > 0), "There are no plate defined for this order")
+    )
+    sort(plate_ids)
+  })
   
   read_sampletype <- function(sampleid){
     res <- bfabricShiny::read(bf$login(), bf$webservicepassword(),
@@ -292,11 +389,31 @@ shinyServer(function(input, output) {
   
   sampleOfContainer <- reactive({
     shiny::req(input$orderID)
+    shiny::withProgress(message = 'Reading sample of container', {
+      .readSampleOfContainer(input$orderID,
+                             login = bf$login(),
+                             webservicepassword = bf$webservicepassword(),
+                             posturl = posturl())
+    })
+  })
     
-    .readSampleOfContainer(input$orderID,
-                           login = bf$login(),
-                           webservicepassword = bf$webservicepassword(),
-                           posturl = posturl())
+  
+  # read container from bfabric -----------------
+  # bfabricShiny::read(login = login, webservicepassword = webservicepassword, posturl = bfabricposturl, endpoint = 'container', query = list('id' = list(34778, 35116)))$res -> rv
+  container <- reactive({
+    shiny::req(input$orderID)
+    shiny::req(bf$login())
+    shiny::req(bf$webservicepassword())
+    
+    res <- bfabricShiny::read(login = bf$login(),
+                              webservicepassword = bf$webservicepassword(),
+                              posturl = posturl(),
+                              endpoint = "container",
+                              maxitems = 100,
+                              query = list('id' = input$orderID))$res
+    
+    #browser()
+    res
   })
   
   filteredSampleOfContainer <- reactive({
@@ -378,10 +495,14 @@ shinyServer(function(input, output) {
     ## here we inject the clean|blank|qc runs and finally replace @@@ with run#
     #df$`Sample Name` <- paste0(df$`Sample Name`, mode)
     if (input$area == "Metabolomics"){
-      do.call(what = input$qFUN, args = list(x = df, QCrow = QCrow, mode = instrumentMode)) |>
+      do.call(what = input$qFUN, args = list(x = df,
+                                             containerid = input$orderID[1],
+                                             QCrow = QCrow,
+                                             mode = instrumentMode,
+                                             howOften = as.integer(input$frequency))) |>
         .replaceRunIds()
     }else{
-      do.call(what = input$qFUN, args = list(x = df)) |>
+      do.call(what = input$qFUN, args = list(x = df, howOftenQC = as.integer(input$frequency))) |>
         .replaceRunIds()
     }
     
@@ -403,41 +524,20 @@ shinyServer(function(input, output) {
   xmlFilename <- reactive({
     tempfile(pattern = "fgcz_queue_generator_Hystar.", fileext = ".xml")
   })
+
   
+  # ObserveEvents ===================================
   
-  
-  
-  #=======output$download======
-  output$download <- renderUI({
-    #shiny::req(file.exists(csvFilename()))
-    #shiny::req(output$outputKable)
+  # observe selected sample ---------------
+  oeSelectedSample <- observeEvent(input$selectedSample, {
+    shiny::req(input$booleanSampleSelection)
     
-    res <- composeTable()
-    
-    message(paste0("debug output$download values$wuid=", rv$wuid))
-    message(nrow(res))
-    if (is.null(res) || nrow(res) == 0){
-      msg <- "The download is not possible yet. "
-      HTML(msg)
-    }else{
-      message(paste0("debug output$download rv$wuid=", rv$wuid))
-      if (isFALSE(is.null(rv$wuid))){
-        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
-                        rv$wuid, "', '_blank')")
-        
-        actionButton("download",
-                     paste("go to B-Fabric workunit", rv$wuid),
-                     onclick = wuUrl)
-      }else{
-        #if (file.exists(csvFilename())){
-        actionButton('generate', 'Upload configuration to b-fabric')
-        #  }
-        
-      }
+    if (input$booleanSampleSelection){
+      rv$selectedSample <- input$selectedSample
     }
   })
-  
-  ## ======upload to bfabric =========
+
+  # upload to bfabric --------------
   bfabricUploadResource <- observeEvent(input$generate, {
     progress <- shiny::Progress$new(min = 0, max = 1)
     progress$set(message = "upload csv file to bfabric")
