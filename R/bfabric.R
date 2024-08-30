@@ -32,11 +32,16 @@ bfabricInput <- function(id) {
   privKey <- PKI::PKI.load.key(file = .privateKeyFile())
 
   tagList(
-    initStore(ns("store"), "shinyStore-ex2", privKey),
+    shiny::conditionalPanel(
+      condition = isFALSE(all(c("login", "webservicepassword") %in% Sys.getenv())),
+      initStore(ns("store"), "shinyStore-ex2", privKey),
+    ),
     a(img(src="https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen"),
       href='https://www.degruyter.com/document/doi/10.1515/jib-2022-0031/html'),
     br(),
-    textInput(ns('login'), 'B-Fabric Login', placeholder = "as you login on https://fgcz-bfabric.uzh.ch", value = Sys.getenv('login')),
+    textInput(ns('login'), 'B-Fabric Login',
+              placeholder = "as you login on https://fgcz-bfabric.uzh.ch",
+              value = Sys.getenv('login')),
     passwordInput(ns('webservicepassword'),
                   label = 'Web Service Password',
                   placeholder = "in B-Fabric on 'User Details' (upper-right corner).", 
