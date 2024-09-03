@@ -502,7 +502,7 @@ shinyServer(function(input, output) {
                                              howOften = as.integer(input$frequency))) |>
         .replaceRunIds()
     }else{
-      do.call(what = input$qFUN, args = list(x = df, howOftenQC = as.integer(input$frequency))) |>
+      do.call(what = input$qFUN, args = list(x = df, howOften = as.integer(input$frequency))) |>
         .replaceRunIds()
     }
     
