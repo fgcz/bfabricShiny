@@ -40,7 +40,8 @@ readPlate <- function(plateid, login, webservicepassword, posturl) {
     lapply(FUN = function(s){
       data.frame(
         "SampleID" = s$id,
-        Position = s$`_gridposition`
+        Position = s$`_position`,
+        GridPosition = s$`_gridposition`
       )
     }) |> Reduce(f = rbind) -> dfPlate
   
@@ -50,7 +51,7 @@ readPlate <- function(plateid, login, webservicepassword, posturl) {
   # browser()
   stopifnot(nrow(dfPlate) == nrow(dfSample))
   merge(dfSample, dfPlate, by = 'SampleID') -> df
-  colnames(df) <- c("Sample ID" ,  "Sample Name", "Tube ID", "Position")
+  colnames(df) <- c("Sample ID" ,  "Sample Name", "Tube ID", "Position", "GridPosition")
   df
 }
 

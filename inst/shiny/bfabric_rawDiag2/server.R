@@ -4,8 +4,8 @@
 stopifnot(
   require(rawDiag),
   require(bfabricShiny),
-  packageVersion('bfabricShiny') >= "0.12.20",
-  packageVersion('rawDiag') >= "0.99.30"
+  packageVersion('bfabricShiny') >= "0.13.4",
+  packageVersion('rawDiag') >= "1.3.4"
 )
 
 shinyServer(function(input, output, session) {
