@@ -510,7 +510,7 @@ readPages <- read
                                   endpoint = 'user',
                                   posturl = posturl,
                                   query = list(login = login),
-                                  updateProgress = updateProgress)
+                                  updateProgress = updateProgress)[[1]]
     
     if ('errorreport' %in% names(rv)){
       return (rv)
@@ -553,7 +553,7 @@ readPages <- read
                                   posturl = posturl,
                                   endpoint = 'workunit',
                                   query=query,
-                                  updateProgress = updateProgress)
+                                  updateProgress = updateProgress)[[1]]
     
     if ('errorreport' %in% names(rv)){
       return (rv)
@@ -597,7 +597,7 @@ readPages <- read
                                   posturl = posturl,
                                   query = query,
                                   updateProgress = updateProgress
-                                  )
+                                  )[[1]]
  
 
   return(resources)
@@ -623,7 +623,7 @@ readPages <- read
   bfabricShiny::readPages(login, webservicepassword,
                           endpoint = 'application',
                           posturl = posturl,
-                          query = list())
+                          query = list())[[1]]
 }
 
 #' Saves an object in bfabric
