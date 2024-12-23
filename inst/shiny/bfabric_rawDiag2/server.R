@@ -47,13 +47,14 @@ shinyServer(function(input, output, session) {
                  resources <- bf$resources()$relativepath
                  resourcesSelected <- resources[resources %in% input$relativepath] 
                  
-                 c('/srv/www/htdocs/', '/Users/cp/Downloads/dump') |>
+                 c('/srv/www/htdocs/',
+                   file.path(Sys.getenv('HOME'), 'Downloads/dump')) |>
                    Filter(f = dir.exists) -> rootdir
                  
                  stopifnot(length(rootdir) >= 1)
                  file.path(rootdir[1], resourcesSelected) -> resourcesSelected
               
-                 # message("resources: ", paste0(resources, collapse = ",\n\t"))
+                 # mes8sage("resources: ", paste0(resources, collapse = ",\n\t"))
                  message("resourcesSelected: ", paste0(resourcesSelected, collapse = ", "))
                  
                  vals$rawfile <- resourcesSelected |>
@@ -63,6 +64,8 @@ shinyServer(function(input, output, session) {
                })
 
   bfabricUpload <- observeEvent(input$generate, {
+    #shiny::showNotification("Uploading to B-Fabric ...", duration = 5, type = 'message')
+    
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "uploading to B-Fabric ...")
     on.exit(progress$close())
@@ -82,7 +85,7 @@ shinyServer(function(input, output, session) {
       file = vals$pdfFileName
     )
     print( rvUpload )
-    vals$bfabricWorkunitId <- rvUpload$workunit[[1]]$id
+    vals$bfabricWorkunitId <- rvUpload$workunit$res[[1]]$id
     msg <- paste0("The current plot is available as workunit ", vals$bfabricWorkunitId, ".")
     message(msg)
     progress$set(message = msg)
@@ -103,7 +106,7 @@ shinyServer(function(input, output, session) {
         
         wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
                         vals$bfabricWorkunitId, "', '_blank')")
-        message("Rendering actionButton to link workunit ", vals$bfabricWorkunitId, " in B-Fabric.")
+        shiny::showNotification(paste0("Rendering actionButton to link workunit ", vals$bfabricWorkunitId, " in B-Fabric."), type = "message", duration = 5)
         tagList(
           shiny::helpText(paste0("The current plot '", vals$pdfFileName, "' is available as workunit in B-Fabric.")),
           actionButton(inputId = "B-FabricDownload",
