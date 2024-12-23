@@ -14,7 +14,7 @@ Description: provides a shiny module and read, save, and delete functions to
     applications, e.g., to allow the FGCZ user to automatically generate a
     configuration of queues for Thermo Fisher Scientific and Bruker instruments. 
 Depends:
-    R (>= 4.3)
+    R (>= 4.4)
 Imports:
     PKI,
     base64enc,
