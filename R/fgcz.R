@@ -240,7 +240,7 @@ query <- function(login, webservicepassword,
                   query,
                   posturl = 'http://localhost:5000/q',
                   as_data_frame = FALSE){
-  .Deprecated("bfabricShiny::readPages")
+  .Deprecated("bfabricShiny::read")
   
   query_result <- POST(posturl,
                body = toJSON(list(login = login,
@@ -260,12 +260,22 @@ query <- function(login, webservicepassword,
 }
 
 
-## TODO(cp): this function should replace the read function
-#' .read
-#' @inheritParams readPages
+#=======read======
+#' read function which supports pages
+#' @param login bfabric login
+#' @param webservicepassword bfabric webservicepassword,
+#' visible when you check your user details in the bfabric system.
+#' @param endpoint the endpoint, e.g., \code{'sample'}
+#' @param query e,g, \code{list(containerid = 3000)}
+#' @param posturl where the flask server is working
+#' @param maxpages max number of supported pages to 
+#' @param updateProgress a callback function for writing log output, e.g.,
+#' using a \code{\link[shiny]{Progress}} object,
+#' see also \url{https://shiny.rstudio.com/articles/progress.html}.
 #' @param page define requested page, default is 1
 #' @param posturlsuffix defines the method to use, e.g., read. also, save should work
-#' @author MdE/CP 2023-03
+#' @author MdE/CP 2023-03; CP 2024-12-24
+#' @export
 #' @examples
 #' bfabricShiny::read(login,
 #'   webservicepassword,
@@ -276,7 +286,6 @@ query <- function(login, webservicepassword,
 #' 
 read <- function(login = NULL, webservicepassword = NULL,
                   endpoint = 'workunit',
-                  #page = 1,
                   offset = 0,
                   maxitems = 100,
                   query = list(),
@@ -312,30 +321,14 @@ read <- function(login = NULL, webservicepassword = NULL,
   rv <- httr::content(query_result)
   if (is.null(rv$res)){warning("query failed."); message(rv); return(rv);}
   
+  
+  ## TODO(@Leo): is that possible?
   if ('errorreport' %in% names(rv$res)){
     stop(paste0("B-Fabric errorreport: ", rv$res$errorreport))
   }
   
   if (interactive()) {
-    #msg <- paste0("idonly: ", idonly, "\n",
-    #              "endpoint: ", endpoint, "\n")
-    #              #"entitiesonpage: ", rv$res$entitiesonpage, "\n",
-    #              #"numberofpages: ", rv$res$numberofpages, "\n",
-    #              #"page: ", rv$res$page)
-    #message(msg)
-    
-    ## If we were passed a progress update function, call it
-    #if (is.function(updateProgress)) {
-    #  # TODO
-    #  msg <- sprintf("read (idonly=%s) %d/%d %s page(s) (%d items) in %s",
-    #                 idonly,
-    #                 rv$res$page, rv$res$numberofpages, endpoint, rv$res$entitiesonpage,
-    #                 diff_time_msg)
-    #  
-    #  updateProgress(value = rv$res$page, detail = msg, n = rv$res$numberofpages)
-    #}
-    
-    message(paste0("query time: ", diff_time_msg))
+    message(paste0("read query time: ", diff_time_msg))
   }
   rv
 }
@@ -384,83 +377,10 @@ read <- function(login = NULL, webservicepassword = NULL,
 #'         }
 readPages <- read
   
-#' read method to access bfabric REST
-#'
-#' @inheritParams readPages
-#' @param posturl POST url, default is \code{'http://localhost:5000/q'}.
-#' @param as_data_frame if TRUE it returns a data.frame object.
-#' @return a nested list object
-#'
-#' @importFrom httr POST
-#' @importFrom jsonlite toJSON
-#' @export read
-#'
-#' @examples
-#' # ensure you have login and password
-#' Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-#' source(Rprofile, local = TRUE)
-#' 
-#' res.sample <- bfabricShiny::read(login = login,
-#'    webservicepassword = webservicepassword,
-#'    endpoint = 'sample',
-#'    query = list(containerid = 27053),
-#'    as_data_frame = TRUE)
-#'    
-#' res.sample |> subset(select=c("_id", "name", "groupingvar.name"))
-#'    
-#' res.file <- bfabricShiny::read(login, webservicepassword,
-#'   endpoint = 'resource',
-#'   query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
-#'   )
-#'   
-#' res.workunit <- bfabricShiny::read(login, webservicepassword, 
-#'     endpoint='workunit',
-#'     query = list('status' = 'pending'),
-#'     as_data_frame = TRUE)
-#'       
-#'
-#'  ## query metadata
-#'  Q <- bfabricShiny::read(login, webservicepassword,
-#'    endpoint = 'resource',
-#'    query = list('workunitid' = 163763))
-#'    
-#read <- function(login = NULL, webservicepassword = NULL,
-#                  endpoint = 'workunit',
-#                  query,
-#                  posturl = 'http://localhost:5000/',
-#                  as_data_frame = FALSE){
-#  
-#
-#  stopifnot(isFALSE(is.null(login)),
-#            isFALSE(is.null(webservicepassword)))
-#  
-#  if (interactive()) {
-#    .Deprecated("bfabricShiny::readPages")
-#    message(paste0("using '", posturl, "' as posturl ..."))
-#    }
-#  
-#  query_result <- httr::POST(paste0(posturl, "/q"),
-#                       body = jsonlite::toJSON(list(login = login,
-#                                          webservicepassword = webservicepassword,
-#                                          endpoint = endpoint,
-#                                          query = query
-#                       ),
-#                       encode = 'json', auto_unbox = TRUE))
-#
-#  rv <- httr::content(query_result)
-#  if (is.null(rv$res)){warning("query failed."); return(rv);}
-#  if(as_data_frame){
-#    if (interactive()) {message("reshaping list to data.frame object ...")}
-#    rv <- Reduce(rbind, rv$res) |>
-#      as.data.frame() |>
-#      apply(1, unlist) |>
-#      t()
-#  }
-#  rv
-#}
 
 #===========.getSamples======
 #' get samples of a container as data frame object
+#' 
 #' @inheritParams readPages
 #' @param containerid bfabric container id.
 #' @return a \code{data.frame}
@@ -473,19 +393,25 @@ readPages <- read
 .getSamples <- function(login = NULL,
                         webservicepassword = NULL,
                         posturl = NULL,
-                        containerid = NULL, updateProgress=NULL) {
+                        containerid = NULL,
+                        updateProgress = NULL) {
   
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)),
             isFALSE(is.null(containerid)))
   
-  rv <- bfabricShiny::readPages(login,
+  rv <- bfabricShiny::read(login,
                                 webservicepassword,
                                 endpoint = 'sample',
                                 posturl = posturl,
                                 query = list(containerid = containerid),
-                                updateProgress = updateProgress)[[1]]
+                                updateProgress = updateProgress)
+  if ('error' %in% names(rv)){
+    message(rv$error)
+    return (rv)
+  }
+  rv[[1]] -> rv
   #browser()
   df <- data.frame(
     samples._id = sapply(rv, FUN = function(x){x$id}) |> as.numeric(),
@@ -497,39 +423,45 @@ readPages <- read
   return(df[order(df$samples._id), ])
 }
 
+#' @inheritParams read
 #' @noRd
-#' @return a vector of project ids
 .getContainers <- function(login, webservicepassword,  posturl = NULL,
                            updateProgress = NULL) {
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(posturl)))
   
-  #containers <- ({
-    rv <- bfabricShiny::readPages(login, webservicepassword,
-                                  endpoint = 'user',
-                                  posturl = posturl,
-                                  query = list(login = login),
-                                  updateProgress = updateProgress)[[1]]
-    
-    if ('errorreport' %in% names(rv)){
-      return (rv)
-    }
-    
-    projetcs <- sapply(rv[[1]]$project, function(y){y$id})
-    coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$id})
-    orders <- sapply(rv[[1]]$order, function(y){y$id})
-    
-    containers <- c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
-  #})
   
- # containers
-    return(containers)
+  rv <- bfabricShiny::read(login, webservicepassword,
+                           endpoint = 'user',
+                           posturl = posturl,
+                           query = list(login = login),
+                           updateProgress = updateProgress)
+  
+  
+  if ('error' %in% names(rv)){
+    message(rv$error)
+    return (rv)
+  }
+  
+  rv[[1]] -> rv
+  ## extracting container ids
+  projetcs <- sapply(rv[[1]]$project, function(y){y$id})
+  coachedprojects <- sapply(rv[[1]]$coachedproject, function(y){y$id})
+  orders <- sapply(rv[[1]]$order, function(y){y$id})
+  
+  containers <- c(unlist(projetcs), unlist(coachedprojects), unlist(orders)) |> sort(decreasing = TRUE)
+  
+  
+  # return container ids
+  return(containers)
 }
 
 
-#' @noRd
-.getWorkunits <- function(login = NULL, webservicepassword =  NULL,
+#' CP 2024-12-24
+#' @inheritParams read
+.getWorkunits <- function(login = NULL,
+                          webservicepassword =  NULL,
                           posturl = NULL,
                           containerid = 3000,
                           applicationid = 224,
@@ -543,36 +475,42 @@ readPages <- read
   query <- list('applicationid' = applicationid,
                 'status' = 'available',
                 'containerid' = containerid)
+  
   if (!is.null(createdbefore)) {
     query$createdbefore <- createdbefore
   }
-
-   workunits <- ({
-    rv <- bfabricShiny::readPages(login = login,
-                                  webservicepassword = webservicepassword,
-                                  posturl = posturl,
-                                  endpoint = 'workunit',
-                                  query=query,
-                                  updateProgress = updateProgress)[[1]]
-    
-    if ('errorreport' %in% names(rv)){
-      return (rv)
-    }
-    
-    if (is.null(rv)) return(NULL)
+  
+  
+  rv <- bfabricShiny::read(login = login,
+                           webservicepassword = webservicepassword,
+                           posturl = posturl,
+                           endpoint = 'workunit',
+                           query = query,
+                           updateProgress = updateProgress)
+  
+  
+  if ('error' %in% names(rv)){
+    message("DEBUG")
+    message(rv$error)
+    return (rv)
+  }else if (is.null(rv)){
+    return(NULL)
+  }
+  
+  ## this is new due to refactoring! 2024-12-24
+  rv[[1]] -> rv
+  if (length(rv) > 0){
+    ## composing a vector of workunit ids and workunit names
     rv <- sapply(rv, function(y){paste(y$id, y$name, sep=" - ")})
-
-    if (length(rv) > 0){
-      rv <- sort(rv, decreasing = TRUE)
-    }
-    rv
-  })
-  return(workunits)
+    rv <- sort(rv, decreasing = TRUE)
+  }
+  
+  return(rv)
 }
 
 #' get all resources of a (login, project)
 #'
-#' @inheritParams readPages
+#' @inheritParams read
 #' @param workunitid  a workunit Id
 #'
 #' @return a vector of resource ids
@@ -592,21 +530,24 @@ readPages <- read
     query$createdbefore <- createdbefore
   }
 
-  resources <- bfabricShiny::readPages(login, webservicepassword,
+  rv <- bfabricShiny::read(login, webservicepassword,
                                   endpoint = 'resource',
                                   posturl = posturl,
                                   query = query,
                                   updateProgress = updateProgress
-                                  )[[1]]
+                                  )
  
 
-  return(resources)
+  if ('error' %in% names(rv)){
+    message(rv$error)
+  }
+  return(rv[[1]])
 }
 
 
 #' getApplications
 #'
-#' @inheritParams readPages
+#' @inheritParams read
 #' @return list of bfabric applications
 #' @examples
 #' \dontrun{
@@ -620,10 +561,16 @@ readPages <- read
 #' }
 #'
 .getApplications <- function(login, webservicepassword, posturl){
-  bfabricShiny::readPages(login, webservicepassword,
+  bfabricShiny::read(login, webservicepassword,
                           endpoint = 'application',
                           posturl = posturl,
-                          query = list())[[1]]
+                          query = list())
+  
+  if ('error' %in% names(rv)){
+    message(rv$error)
+    return(rv)
+  }
+  rv[[1]]
 }
 
 #' Saves an object in bfabric

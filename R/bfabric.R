@@ -30,7 +30,7 @@ bfabricInput <- function(id) {
   ns <- NS(id)
 
   privKey <- PKI::PKI.load.key(file = .privateKeyFile())
-
+  
   tagList(
     shiny::conditionalPanel(
       condition = isFALSE(all(c("login", "webservicepassword") %in% Sys.getenv())),
@@ -102,7 +102,11 @@ bfabric <- function(input, output, session,
 
   posturl <- reactive({
     source(Rprofile(), local=TRUE)
-    message(paste0("read bfabricposturl ", bfabricposturl, "."))
+    
+    (paste0("read bfabricposturl ", bfabricposturl, ".")) -> msg
+    message(msg)
+    shiny::showNotification(msg, duration = 4, type = "message")
+    
     return (bfabricposturl)
   })
 
@@ -120,7 +124,8 @@ bfabric <- function(input, output, session,
 
   #=======output$containers======
   output$containers <- renderUI({
-     
+    shiny::req(bfabricConnectionWorking() == TRUE)
+    
     if(bfabricConnectionWorking()){
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
       progress$set(message = "querying containers ...")
@@ -140,6 +145,7 @@ bfabric <- function(input, output, session,
                                                     updateProgress = updateProgress)
         
         if ('errorreport' %in% names(containers)) {
+          shiny::showNotification(containers$errorreport, duration = 15, type = "error")
           HTML(paste0("<b>container:</b> ", containers$errorreport))
         }else{
           selectInput(ns("containerid"), "Order | project | container id:",
@@ -150,7 +156,8 @@ bfabric <- function(input, output, session,
 
   #=======output$workunits======
   output$workunits <- renderUI({
-    if(bfabricConnectionWorking()){
+    
+    if(shiny::req(bfabricConnectionWorking() == TRUE)){
       
       progress <- shiny::Progress$new(session = session, min = 0, max = 1)
       progress$set(message = "querying workunits ...")
@@ -172,9 +179,11 @@ bfabric <- function(input, output, session,
                                    input$webservicepassword,
                                    containerid = input$containerid,
                                    posturl = posturl(),
-                                   applicationid = id, updateProgress)
+                                   applicationid = id,
+                                   updateProgress)
         
-        if ('errorreport' %in% names(workunits)) {
+        if ('error' %in% names(workunits)) {
+          shiny::showNotification(workunits$error, duration = 15, type = "error")
           HTML(paste0("<b>workunit:</b> ", workunits$errorreport))
         }
         else if (is.null(workunits)){
@@ -188,6 +197,7 @@ bfabric <- function(input, output, session,
   
   #=======output$resourcess======
   output$resources <- renderUI({
+    shiny::req(bfabricConnectionWorking() == TRUE)
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "querying resources ...")
     on.exit(progress$close())
@@ -218,6 +228,7 @@ bfabric <- function(input, output, session,
   
   #=======output$applications======
   output$applications <- renderUI({
+    shiny::req(bfabricConnectionWorking() == TRUE)
     if(bfabricConnectionWorking()){
       applications <- application()
       

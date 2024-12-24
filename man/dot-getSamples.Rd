@@ -2,7 +2,7 @@
 % Please edit documentation in R/fgcz.R
 \name{.getSamples}
 \alias{.getSamples}
-\title{read method to access bfabric REST}
+\title{get samples of a container as data frame object}
 \usage{
 .getSamples(
   login = NULL,
@@ -18,54 +18,21 @@
 \item{webservicepassword}{bfabric webservicepassword,
 visible when you check your user details in the bfabric system.}
 
-\item{posturl}{POST url, default is \code{'http://localhost:5000/q'}.}
+\item{posturl}{where the flask server is working}
 
 \item{containerid}{bfabric container id.}
 
 \item{updateProgress}{a callback function for writing log output, e.g.,
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
-
-\item{as_data_frame}{if TRUE it returns a data.frame object.}
 }
 \value{
-a nested list object
-
 a \code{data.frame}
 }
 \description{
-read method to access bfabric REST
+get samples of a container as data frame object
 }
 \examples{
-# ensure you have login and password
-Rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
-source(Rprofile, local = TRUE)
-
-res.sample <- bfabricShiny::read(login = login,
-   webservicepassword = webservicepassword,
-   endpoint = 'sample',
-   query = list(containerid = 27053),
-   as_data_frame = TRUE)
-   
-res.sample |> subset(select=c("_id", "name", "groupingvar.name"))
-   
-res.file <- bfabricShiny::read(login, webservicepassword,
-  endpoint = 'resource',
-  query = list('filechecksum' = '127f0c5b6352a326f9a6c8458d59d921'),
-  )
-  
-res.workunit <- bfabricShiny::read(login, webservicepassword, 
-    endpoint='workunit',
-    query = list('status' = 'pending'),
-    as_data_frame = TRUE)
-      
-
- ## query metadata
- Q <- bfabricShiny::read(login, webservicepassword,
-   endpoint = 'resource',
-   query = list('workunitid' = 163763))
-   
-get samples of a container as data frame object
 smp <- bfabricShiny:::.getSamples(login, webservicepassword,
    posturl = bfabricposturl,
    containerid = 30993)

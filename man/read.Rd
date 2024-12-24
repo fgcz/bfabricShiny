@@ -2,7 +2,7 @@
 % Please edit documentation in R/fgcz.R
 \name{read}
 \alias{read}
-\title{.read}
+\title{read function which supports pages}
 \usage{
 read(
   login = NULL,
@@ -35,10 +35,12 @@ visible when you check your user details in the bfabric system.}
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
 
+\item{maxpages}{max number of supported pages to}
+
 \item{page}{define requested page, default is 1}
 }
 \description{
-.read
+read function which supports pages
 }
 \examples{
 bfabricShiny::read(login,
@@ -50,5 +52,5 @@ bfabricShiny::read(login,
 
 }
 \author{
-MdE/CP 2023-03
+MdE/CP 2023-03; CP 2024-12-24
 }
