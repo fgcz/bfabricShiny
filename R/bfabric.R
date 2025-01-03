@@ -266,11 +266,12 @@ bfabric <- function(input, output, session,
     list(input$login,
          input$webservicepassword),
     {
+      shiny::req(input$login, input$webservicepassword)
       rv = bfabricShiny::readPages(input$login,
                                    input$webservicepassword ,
                                    posturl = posturl(),
                                    endpoint = 'user',
-                                   query = list(login=login))
+                                   query = list(login=input$login))
       
       if ("errorreport" %in% names(rv)){
         bfabricValues$errorreport <- rv$errorreport
@@ -294,7 +295,7 @@ bfabric <- function(input, output, session,
                                   input$webservicepassword,
                                   posturl  = posturl(),
                                   endpoint = 'user',
-                                  query = list(login = input$login))
+                                  query = list(login = input$login))$res
     
     if('empdegree' %in% names(user[[1]])){
       message("'empdegree' found.")
