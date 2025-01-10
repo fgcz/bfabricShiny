@@ -381,15 +381,25 @@ readPages <- read
 #===========.getSamples======
 #' get samples of a container as data frame object
 #' 
-#' @inheritParams readPages
+#' @inheritParams read
 #' @param containerid bfabric container id.
 #' @return a \code{data.frame}
-#' @author CP 2023-03-14
+#' @author CP 2023-03-14, 2025-01-10 
+#' @details
+#' 2025-01 replace _id by id
+#' 
 #' @export
 #' @examples
-#' smp <- bfabricShiny:::.getSamples(login, webservicepassword,
+#' bfabricShiny:::.getSamples(login, webservicepassword,
 #'    posturl = bfabricposturl,
-#'    containerid = 30993)
+#'    containerid = 30993) -> smp
+#' smp
+#' 
+#' lapply(c(29941,30021,30041,30057), FUN = bfabricShiny:::.getSamples,
+#'   login = login,
+#'   webservicepassword = webservicepassword,
+#'   posturl = bfabricposturl) -> smp
+#' smp
 .getSamples <- function(login = NULL,
                         webservicepassword = NULL,
                         posturl = NULL,
@@ -402,25 +412,25 @@ readPages <- read
             isFALSE(is.null(containerid)))
   
   rv <- bfabricShiny::read(login,
-                                webservicepassword,
-                                endpoint = 'sample',
-                                posturl = posturl,
-                                query = list(containerid = containerid),
-                                updateProgress = updateProgress)
+                           webservicepassword,
+                           endpoint = 'sample',
+                           posturl = posturl,
+                           query = list(containerid = containerid),
+                           updateProgress = updateProgress)
   if ('error' %in% names(rv)){
     message(rv$error)
     return (rv)
   }
   rv[[1]] -> rv
-  #browser()
+  # TODO(cp): rename containerid by container.id
   df <- data.frame(
-    samples._id = sapply(rv, FUN = function(x){x$id}) |> as.numeric(),
+    samples.id = sapply(rv, FUN = function(x){x$id}) |> as.numeric(),
     samples.name = sapply(rv, FUN = function(x){x$name}),
     samples.condition = lapply(rv, FUN = function(x){x$grouping$name}) |>
       sapply(FUN = function(x){if (is.null(x)){"N/A"}else{x}}),
     containerid = sapply(rv, FUN = function(x){x$container$id})) 
   
-  return(df[order(df$samples._id), ])
+  return(df[order(df$samples.id), ])
 }
 
 #' @inheritParams read

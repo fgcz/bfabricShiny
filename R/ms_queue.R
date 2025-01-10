@@ -175,6 +175,19 @@ get_tray_waters <- function(start.row = 1
 }
 
 
+#' TODO(cp): config the right way
+#' @noRd
+#' @examples
+#' bfabricShiny:::..vanquish()
+.vanquish <- function(){
+  tray1 <- rep(2, times = 46) %>%
+    paste(rep(LETTERS[1:6], each = 8), sep = "") %>%
+    paste(rep(sprintf("%02d", c(1:8)), times = 6), sep = "")
+  pos <- tray1[1:45]
+  res <- c('vanquish', list(pos), '2F08', '2F07', '2F07','2F06')
+  return(res)
+}
+
 #' method eksigent
 #' @examples
 #' bfabricShiny:::.easylc()
@@ -213,6 +226,7 @@ getHPLCparameter <- function(row = 1, col ="A", plate = 1){
        LUMOS_2 = get_tray_waters(row, col, plate),
        EXPLORIS_1 = get_tray_waters(row, col, plate),
        EXPLORIS_2 = get_tray_waters(row, col, plate),
+       ASTRAL_1 = .vanquish(),
        IMSTOF_1 = .eksigent())
 }
 
@@ -315,12 +329,14 @@ getQCsample <- function(){
       qc.idx <- howoften*(1:qc.inserts)
     }
     repetitions <- qc.inserts * howmany
+    # browser()
     df <- data.frame(extract.name = autoQCName,
                      extract.id = as.integer(NA),
                      extract.Condition = autoQCName,
-                     position = unlist(getHPLCparameter()[[instrument]][position]),
+                     position = unlist(bfabricShiny:::getHPLCparameter()[[instrument]][position]),
                      idx = as.numeric(NA),
                      stringsAsFactors = FALSE)
+    # browser()
     res <- df[rep(1, times = repetitions), ]
     res$idx  <-  rep(qc.idx + idxoffset, each = howmany)
   }
