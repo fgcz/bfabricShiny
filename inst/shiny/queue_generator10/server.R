@@ -264,12 +264,12 @@ shinyServer(function(input, output, session) {
         progress$set(detail = detail)
       }
       
-      rv <- bfabricShiny::read(login = login(),
+      rv <- bfabricShiny::readPages(login = login(),
                                     webservicepassword = webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
                                     query = list(containerid = input$container),
-                                    updateProgress = updateProgress)$res |> 
+                                    updateProgress = updateProgress) |> 
         lapply(FUN = function(x){x$login}) |>
         unlist()
 
@@ -666,7 +666,8 @@ shinyServer(function(input, output, session) {
       
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
-        bfabricShiny::uploadResource(login(), webservicepassword(),
+        bfabricShiny::uploadResource(login = login(),
+                                     webservicepassword = webservicepassword(),
                                      posturl = posturl(),
                                      containerid = containerid,
                                      applicationid = 212,
@@ -674,10 +675,17 @@ shinyServer(function(input, output, session) {
                                      description = workunitDescription,
                                      workunitname = 'XCalibur MS configuration',
                                      resourcename = paste0(getResourcename(), '.csv'),
-                                     file = fn)
-        
+                                     file = fn) 
+      
       })
-      values$wuid <- rv[[1]]$workunit[[1]]$id
+      
+      if ("error" %in% names(rv[[1]]$workunit)) {
+        shiny::showNotification(rv[[1]]$workunit$error, type = "error", duration = 10)
+        return()
+      }
+      
+      values$wuid <- rv[[1]]$workunit$res[[1]]$id
+      shiny::showNotification(paste0("Saved XCalibur queue as workunit id = ", values$wuid), type = "message", duration = 15)
     } else if (input$instrumentControlSoftware == "HyStar"){
       #=====write HyStar MS configuration to bfabric=========
       fn <- tempfile(tmpdir = tempdir(), fileext = ".xml") 
@@ -719,14 +727,19 @@ shinyServer(function(input, output, session) {
                                                file = fn)
       })
       
+      if ("error" %in% names(rv[[1]]$workunit)) {
+        shiny::showNotification(rv[[1]]$workunit$error, type = "error", duration = 10)
+        return()
+      }
       
       message(paste0("DEBUG: wuid=", values$wuid))
       
-      values$wuid <- rv[[1]]$workunit[[1]]$id
+      values$wuid <- rv[[1]]$workunit$res[[1]]$id
       message(paste0("DEBUG: rv wuid=", rv[[1]]$workunit[[1]]$id))
       message(paste0("DEBUG: wuid=", values$wuid))
+      shiny::showNotification(paste0("Saved workunit id = ", values$wuid), type = "message", duration = 15)
     }else{
-      warning("Hit else block of bfabricUpload!")
+      shiny::showNotification("Something went wrong.", type = "warning", duration = 5)
     }
     TRUE
   })
