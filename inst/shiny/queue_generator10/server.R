@@ -264,12 +264,12 @@ shinyServer(function(input, output, session) {
         progress$set(detail = detail)
       }
       
-      rv <- bfabricShiny::readPages(login = login(),
+      rv <- bfabricShiny::read(login = login(),
                                     webservicepassword = webservicepassword(),
                                     posturl = posturl(),
                                     endpoint = 'user',
                                     query = list(containerid = input$container),
-                                    updateProgress = updateProgress) |> 
+                                    updateProgress = updateProgress)$res |> 
         lapply(FUN = function(x){x$login}) |>
         unlist()
 
