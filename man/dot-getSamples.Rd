@@ -33,9 +33,16 @@ a \code{data.frame}
 get samples of a container as data frame object
 }
 \examples{
-smp <- bfabricShiny:::.getSamples(login, webservicepassword,
+bfabricShiny:::.getSamples(login, webservicepassword,
    posturl = bfabricposturl,
-   containerid = 30993)
+   containerid = 30993) -> smp
+smp
+
+lapply(c(29941,30021,30041,30057), FUN = bfabricShiny:::.getSamples,
+  login = login,
+  webservicepassword = webservicepassword,
+  posturl = bfabricposturl) -> smp
+smp
 }
 \author{
 CP 2023-03-14

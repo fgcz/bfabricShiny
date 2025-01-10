@@ -12,7 +12,7 @@ stopifnot(
   require(XML))
 
 
-stopifnot(packageVersion('bfabricShiny') >= "0.12.18")
+stopifnot(packageVersion('bfabricShiny') >= "0.13.6")
 
 # TODO(cp): replace with CRAN protViz functions
 source("queuetools.R", local = FALSE)
@@ -341,10 +341,8 @@ shinyServer(function(input, output, session) {
     if (is.null(res)){
       selectInput('sample', 'Sample:', NULL)
     }else{
-      #idx <- rev(order(res$samples._id))
-      #res <- res[idx, ]
       selectInput('sample', 'Sample:',
-                  paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name),
+                  paste0("C", res$container, "_S", res$samples.id, "-", res$samples.name),
                   size = 40, multiple = TRUE, selectize = FALSE)
     }
   })
@@ -395,8 +393,8 @@ shinyServer(function(input, output, session) {
     
     res[, "instrument"] <- input$instrument
 
-    idx.filter <- (paste0("C", res$container, "_S", res$samples._id, "-", res$samples.name) %in% input$sample)
-    res <- res[idx.filter, c("samples.name", "samples._id", "samples.condition", "containerid")]
+    idx.filter <- (paste0("C", res$container, "_S", res$samples.id, "-", res$samples.name) %in% input$sample)
+    res <- res[idx.filter, c("samples.name", "samples.id", "samples.condition", "containerid")]
 
     # TODO(cp): replace extract by sample
     names(res) <- c("extract.name", "extract.id", "extract.Condition", "containerid")
@@ -414,7 +412,7 @@ shinyServer(function(input, output, session) {
     
     if (input$instrumentControlSoftware == "XCalibur" && input$area == "Proteomics"){
       print(res)
-      
+      #browser()
       rv <- bfabricShiny:::generate_queue_order(x = res,
                                                 foldername = input$folder,
                                                 projectid = containerid,
