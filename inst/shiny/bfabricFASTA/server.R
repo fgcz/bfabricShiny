@@ -5,14 +5,7 @@ library(PKI)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-  
-  #qs <- reactive({getQueryString() })
-  
-  
-  #if ("token" %in% names(qs)){
-  #  shiny::showNotification("found token", type = 'message')
-  #}
-  
+
   callModule(bfabric, "bfabric8",  applicationid = c(61),
              resoucepattern = 'fasta$') -> bf
   
@@ -31,15 +24,20 @@ shinyServer(function(input, output, session) {
     FASTA.parameter <- list(
       FASTAfile = paste("/srv/www/htdocs/", input$relativepath, sep='/')
     )
+    
     cmd <- paste("cat", FASTA.parameter$FASTAfile, "| fcat | tryptic-digest", sep=" ")
     
     if (!file.exists(FASTA.parameter$FASTAfile)){
-      cmd <- paste("ssh r35 '", cmd, "'", sep='')
+      shiny::showNotification(paste0("Can not access ", FASTA.parameter$FASTAfile, "trying ssh ..."),
+                              duration = 10, type = 'error')
+      
+      cmd <- paste("ssh fgcz-r-035 '", cmd, "'", sep='')
+      
+      shiny::showNotification(paste0("cmd = ", cmd))
     }
     
-    message(cmd)
-    
     S <- scan(pipe(cmd), what='character')
+    
     # sanity check take only valid AA
     S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
   })
