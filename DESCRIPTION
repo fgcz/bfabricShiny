@@ -7,7 +7,7 @@ Authors@R: c(person("Christian", "Trachsel",
         role = c("aut", "cre"), 
         comment = c(ORCID = "0000-0003-1975-3064")))
 Maintainer: Christian Panse <cp@fgcz.ethz.ch>
-Version: 0.13.8
+Version: 0.14.0
 Description: provides a shiny module and read, save, and delete functions to
     interact with the FGCZ's B-Fabric <https://fgcz-bfabric.uzh.ch> system
     using WSDL and REST. Also, the package contains shiny

@@ -32,6 +32,9 @@ a \code{data.frame}
 \description{
 get samples of a container as data frame object
 }
+\details{
+2025-01 replace _id by id
+}
 \examples{
 bfabricShiny:::.getSamples(login, webservicepassword,
    posturl = bfabricposturl,
@@ -45,5 +48,5 @@ lapply(c(29941,30021,30041,30057), FUN = bfabricShiny:::.getSamples,
 smp
 }
 \author{
-CP 2023-03-14
+CP 2023-03-14, 2025-01-10
 }

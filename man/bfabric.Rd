@@ -2,7 +2,7 @@
 % Please edit documentation in R/bfabric.R
 \name{bfabric}
 \alias{bfabric}
-\title{shiny server module for the bfabric}
+\title{Shiny server module for the bfabric using bfabricPy}
 \usage{
 bfabric(
   input,
@@ -10,7 +10,8 @@ bfabric(
   session,
   applicationid = NULL,
   resoucepattern = ".*",
-  resourcemultiple = FALSE
+  resourcemultiple = FALSE,
+  token = NULL
 )
 }
 \arguments{
@@ -25,27 +26,30 @@ check the \code{input$resourceid} value.
 }
 \description{
 provides a shiny server module for the bfabric system.
-It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
-
-\code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate
-the key files.
+It is assumes that the \code{bfabric_flask.py} program is running, e.g.,
+\code{BFABRICPY_CONFIG_ENV=FGCZSTABLE bfabric_flask.py}
 }
 \details{
-t.b.d.
+ensure file staging via ssh if not NFS is available
+\code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate
+the key files.
+
 \enumerate{
+
 \item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))}
+
 \item follow the instructions \code{\link{bfabricInput}}
+
 }
 }
 \references{
-\url{https://doi.org/10.1145/1739041.1739135}
+\url{https://www.degruyterbrill.com/document/doi/10.1515/jib-2022-0031/html}
 }
 \seealso{
 \itemize{
-\item \url{http://fgcz-bfabric.uzh.ch}
-\item \url{http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python}
+\item \url{https://github.com/fgcz/bfabricPy}
 }
 }
 \author{
-Christian Panse <cp@fgcz.ethz.ch> 2017
+Christian Panse <cp@fgcz.ethz.ch> 2017, 2025
 }

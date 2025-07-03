@@ -965,3 +965,24 @@ To help us funding further development, please cite:
 }
 
 
+#' Validate Token
+#'
+#' @param token a given token
+#' @param posturl the bfabric REST proxy URL
+#'
+#' @returns login webservicepassword
+#' @author LS,CP 2025-07-03 devDay
+#' @importFrom httr POST content
+.validateToken <- function(token, posturl = bfabricposturl) {
+  paste0(posturl, "/validate_token") -> posturl 
+  print("DEBUG running .validateToken ...")
+  httr::POST(posturl,  
+             body = list(token = token),
+             encode = 'json') |>
+    httr::content() -> qr
+
+  if ("error" %in% names(qr)){
+    return (NULL)
+  }
+  return(qr) 
+}

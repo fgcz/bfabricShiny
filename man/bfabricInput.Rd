@@ -24,9 +24,6 @@ Defines the bfabric shiny UI module
    )
 }
 }
-\references{
-\url{https://doi.org/10.1145/1739041.1739135}
-}
 \seealso{
-\url{http://fgcz-bfabric.uzh.ch}
+\link{bfabric}
 }

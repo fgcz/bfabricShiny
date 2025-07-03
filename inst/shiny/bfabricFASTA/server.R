@@ -2,10 +2,19 @@
 library(bfabricShiny)
 library(protViz)
 library(PKI)
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  bf <- callModule(bfabric, "bfabric8",  applicationid = c(61), resoucepattern = 'fasta$')
+  #qs <- reactive({getQueryString() })
+  
+  
+  #if ("token" %in% names(qs)){
+  #  shiny::showNotification("found token", type = 'message')
+  #}
+  
+  callModule(bfabric, "bfabric8",  applicationid = c(61),
+             resoucepattern = 'fasta$') -> bf
   
   output$test <- renderUI({
     selectInput('test', "test", bf$posturl(), multiple = FALSE)
@@ -31,6 +40,7 @@ shinyServer(function(input, output, session) {
     message(cmd)
     
     S <- scan(pipe(cmd), what='character')
+    # sanity check take only valid AA
     S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
   })
   

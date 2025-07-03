@@ -10,11 +10,11 @@
 #' Defines the bfabric shiny UI module
 #'
 #' @param id shiny session id
+#' 
 #' @import shiny
 #' @importFrom PKI PKI.load.key PKI.encrypt PKI.decrypt
 #' @importFrom shinyStore updateStore initStore
-#' @seealso \url{http://fgcz-bfabric.uzh.ch}
-#' @references \url{https://doi.org/10.1145/1739041.1739135}
+#' @seealso \link{bfabric}
 #' @return tagList
 #' @export bfabricInput
 #' @examples
@@ -58,28 +58,34 @@ bfabricInput <- function(id) {
   )
 }
 
-#' shiny server module for the bfabric
+#' Shiny server module for the bfabric using bfabricPy
 #'
 #' @param input default module input
 #' @param output default module output
 #' @param session module session
 #' @description provides a shiny server module for the bfabric system.
-#' It is assumes that the \code{exec/flask_bfabric_sample.py} programm is running.
+#' It is assumes that the \code{bfabric_flask.py} program is running, e.g.,
+#' \code{BFABRICPY_CONFIG_ENV=FGCZSTABLE bfabric_flask.py}
+#' 
 #'
+#' @details ensure file staging via ssh if not NFS is available
 #' \code{ssh-keygen -f $PWD/bfabricShiny.key -t rsa} will generate
 #' the key files.
-#'
-#' @details t.b.d.
+#' 
 #' \enumerate{
+#' 
 #' \item add \code{bf <- callModule(bfabric, "bfabric8", applicationid = c(155))}
+#' 
 #' \item follow the instructions \code{\link{bfabricInput}}
+#' 
 #' }
-#' @author Christian Panse <cp@fgcz.ethz.ch> 2017
+#' 
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2017, 2025
 #' @seealso \itemize{
-#' \item \url{http://fgcz-bfabric.uzh.ch}
-#' \item \url{http://fgcz-svn.uzh.ch/repos/scripts/trunk/linux/bfabric/apps/python}
+#' \item \url{https://github.com/fgcz/bfabricPy}
 #' }
-#' @references \url{https://doi.org/10.1145/1739041.1739135}
+#'
+#' @references \url{https://www.degruyterbrill.com/document/doi/10.1515/jib-2022-0031/html}
 #' @return check the \code{input$resourceid} value.
 #' @importFrom utils read.table
 #' @import PKI
@@ -87,8 +93,17 @@ bfabricInput <- function(id) {
 bfabric <- function(input, output, session,
                     applicationid = NULL,
                     resoucepattern = ".*",
-                    resourcemultiple=FALSE) {
+                    resourcemultiple = FALSE,
+                    token = NULL) {
   ns <- session$ns
+  
+  getToken <- reactive({ 
+    getQueryString() -> qs
+    if ('token' %in% names(qs)){
+      return(.validateToken(qs$token))
+    }
+    return(NULL)
+  })
 
   bfabricValues <- reactiveValues()
   bfabricValues$errorreport <- NULL
@@ -345,30 +360,48 @@ bfabric <- function(input, output, session,
   })
 
 
-
-
-  ## shinyStore; for login and password handling
+  ## login and password handling
   observe({
-
-    #message("OBSERVE bfabricSHINY")
-
+    getToken() -> token
+    print(token)
+    # check if token exists and extract login and webservice password from there
+    # 
+    if (is.null(token)){
+      shiny::showNotification(paste0("token is NULL."),
+                              type = 'error',
+                              duration = 10)
+      
+    }else{
+      updateTextInput(session, "login", value = token$user)
+      updateTextInput(session, "webservicepassword", value = token$userWsPassword)
+      #updateTextInput(session, "project", value=3000)
+      shiny::showNotification(paste0("login as ", token$user, "."),
+                              type = 'message')
+      return()
+    }
+    
+    
     if ('login' %in% names(input)){
       if (input$saveBfabricPassword <= 0){
         # On initialization, set the value of the text editor to the current val.
         message("saving 'login and webservicepassword' ...")
-        updateTextInput(session, "login", value=isolate(input$store)$login)
-        updateTextInput(session, "webservicepassword", value=isolate(input$store)$webservicepassword)
-        updateTextInput(session, "project", value=isolate(input$project)$login)
+        updateTextInput(session, "login", value = isolate(input$store)$login)
+        updateTextInput(session, "webservicepassword", value = isolate(input$store)$webservicepassword)
+        updateTextInput(session, "project", value = isolate(input$project)$login)
         return()
       }
-
-      #stopifnot(require(PKI))
-      shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
-      shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
-      shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      
+      if (isFALSE(is.null(token))){
+        # Fetches login and webservicepassword from shinyStore
+        shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+        shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+        shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      }
     }
   }
   )
+  
+  
   # -------bfabric module return--------
   return(list(login = reactive({input$login}),
               webservicepassword = reactive({input$webservicepassword}),
@@ -378,7 +411,10 @@ bfabric <- function(input, output, session,
               containerid = reactive({input$containerid})))
 }
 
+#' bfabricInputLogin 
 #' @export bfabricInputLogin
+#'
+#' @return a \code{tagList} containing login and webservicepassword
 bfabricInputLogin <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -395,6 +431,7 @@ bfabricInputLogin <- function(id) {
   )
 }
 
+#' @inheritParams bfabric
 #' @import PKI
 #' @export bfabricLogin
 bfabricLogin <- function(input, output, session) {
