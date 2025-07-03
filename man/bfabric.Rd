@@ -10,7 +10,8 @@ bfabric(
   session,
   applicationid = NULL,
   resoucepattern = ".*",
-  resourcemultiple = FALSE
+  resourcemultiple = FALSE,
+  token = NULL
 )
 }
 \arguments{

@@ -974,11 +974,14 @@ To help us funding further development, please cite:
 #' @importFrom httr POST content
 .validateToken <- function(token, posturl = bfabricposturl) {
   paste0(posturl, "/validate_token") -> posturl 
-  
-  httr::POST(posturl,
-             body = list(token),
+  print("DEBUG running .validateToken ...")
+  httr::POST(posturl,  
+             body = list(token = token),
              encode = 'json') |>
     httr::content() -> qr
-  print(qr)
-  return(qr)
+
+  if ("error" %in% names(qr)){
+    return (NULL)
+  }
+  return(qr) 
 }

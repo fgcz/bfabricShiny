@@ -100,7 +100,7 @@ bfabric <- function(input, output, session,
   getToken <- reactive({ 
     getQueryString() -> qs
     if ('token' %in% names(qs)){
-      return(qs['token'])
+      return(.validateToken(qs$token))
     }
     return(NULL)
   })
@@ -362,20 +362,25 @@ bfabric <- function(input, output, session,
 
   ## login and password handling
   observe({
-
+    getToken() -> token
+    print(token)
     # check if token exists and extract login and webservice password from there
     # 
-    if (isFALSE(is.null(getToken()))){
-      # TODO(cp): implement token version
-      print("DEBUG:")
-      print(getToken())
-      updateTextInput(session, "login", value="tokenLogin")
-      updateTextInput(session, "webservicepassword", value="tokenWebservicepassword")
-      updateTextInput(session, "project", value=3000)
+    if (is.null(token)){
+      shiny::showNotification(paste0("token is NULL."),
+                              type = 'error',
+                              duration = 10)
       
+    }else{
+      updateTextInput(session, "login", value = token$user)
+      updateTextInput(session, "webservicepassword", value = token$userWsPassword)
+      #updateTextInput(session, "project", value=3000)
+      shiny::showNotification(paste0("login as ", token$user, "."),
+                              type = 'message')
       return()
     }
-
+    
+    
     if ('login' %in% names(input)){
       if (input$saveBfabricPassword <= 0){
         # On initialization, set the value of the text editor to the current val.
@@ -385,16 +390,18 @@ bfabric <- function(input, output, session,
         updateTextInput(session, "project", value = isolate(input$project)$login)
         return()
       }
-
-
-      # fetches login and webservicepassword from shinyStore
-      #stopifnot(require(PKI))
-      shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
-      shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
-      shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      
+      if (isFALSE(is.null(token))){
+        # Fetches login and webservicepassword from shinyStore
+        shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+        shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+        shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      }
     }
   }
   )
+  
+  
   # -------bfabric module return--------
   return(list(login = reactive({input$login}),
               webservicepassword = reactive({input$webservicepassword}),
