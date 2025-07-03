@@ -416,6 +416,7 @@ readPages <- read
                            endpoint = 'sample',
                            posturl = posturl,
                            query = list(containerid = containerid),
+			   maxitems = 500,
                            updateProgress = updateProgress)
   if ('error' %in% names(rv)){
     message(rv$error)
