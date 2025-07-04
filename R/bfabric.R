@@ -377,9 +377,9 @@ bfabric <- function(input, output, session,
     # 
     if (is.null(token)){
       
-      shiny::showNotification(paste0("token is NULL."),
-                              type = 'error',
-                              duration = 2)
+      #shiny::showNotification(paste0("token is NULL."),
+      #                        type = 'error',
+      #                        duration = 2)
       
     }else{ 
       shiny::showNotification(paste0("login as ", token$user, "."),

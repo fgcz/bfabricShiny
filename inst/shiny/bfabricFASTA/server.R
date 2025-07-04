@@ -15,9 +15,9 @@ shinyServer(function(input, output, session) {
   
   ### observes file upload
   get_tryptic_peptides <- eventReactive(input$load, {
-    progress <- shiny::Progress$new(session = session, min = 0, max = 1)
-    progress$set(message = "fetching FASTA ...")
-    on.exit(progress$close())
+    #progress <- shiny::Progress$new(session = session, min = 0, max = 1)
+    #progress$set(message = "Processing FASTA ...")
+    #on.exit(progress$close())
     
     resources <- bf$resources()
  
@@ -32,22 +32,46 @@ shinyServer(function(input, output, session) {
     
     if (!file.exists(FASTA.parameter$FASTAfile)){
       shiny::showNotification(paste0("Can not access ", FASTA.parameter$FASTAfile, "trying ssh ..."),
-                              duration = 10, type = 'error')
+                              duration = 10, type = 'message')
       
       cmd <- paste("ssh fgcz-r-035 '", cmd, "'", sep='')
       
       shiny::showNotification(paste0("cmd = ", cmd))
     }
     
-    S <- scan(pipe(cmd), what='character')
+    withProgress(message = 'Reading and digesting FASTA', value = 0.1, {
+      S <- scan(pipe(cmd), what='character')
+    })
     
-    # sanity check take only valid AA
-    S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
+    withProgress(message = 'Filtering FASTA', value = 0.1, {
+      # sanity check take only valid AA
+      S[nchar(S) > 2 & nchar(S) < 60 & grepl("^[WFLIMVYATPEDCSQGNRHK]+$", S)]
+    })
   })
   
-  parent_ion_mass <- reactive({parentIonMass(get_tryptic_peptides())})
-  hyd <- reactive({sapply(get_tryptic_peptides(), ssrc)})
-  number_amino_acids <- reactive({sapply(get_tryptic_peptides(), nchar)})
+  parent_ion_mass <- reactive({
+    withProgress(message = 'Determine parent ion mass ...', {
+      parentIonMass(get_tryptic_peptides())
+    })
+  })
+  
+  hyd <- reactive({
+    percentage <- 0
+    withProgress(message = 'Performing SSRC ...', {
+      sapply(get_tryptic_peptides(), function(x){
+        length(get_tryptic_peptides()) -> n
+        percentage <<- percentage + 1 / n * 100
+        incProgress(1/n, detail = paste0("Progress: ", round(percentage, 1)))
+        ssrc(x)
+        })
+    })
+  })
+  
+  number_amino_acids <- reactive({
+    withProgress(message = 'Counting amino acids ...', {
+      sapply(get_tryptic_peptides(), nchar)
+    })
+  })
   
   output$distPlot <- renderPlot({
     
