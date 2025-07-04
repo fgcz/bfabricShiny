@@ -139,9 +139,9 @@ bfabric <- function(input, output, session,
 
   output$loginInformation <- renderUI({
     if (is.null(getToken())){
-      HTML("use regular login;")
+      HTML("Use regular login;")
     }else{
-      HTML("we have token. have a lot of fun!")
+      HTML("Authenticated via bfabric token. Have a lot of fun!.")
     }
   })
   
@@ -376,23 +376,14 @@ bfabric <- function(input, output, session,
     # check if token exists and extract login and webservice password from there
     # 
     if (is.null(token)){
-      
-      #shiny::showNotification(paste0("token is NULL."),
-      #                        type = 'error',
-      #                        duration = 2)
-      
     }else{ 
       shiny::showNotification(paste0("login as ", token$user, "."),
                               type = 'message')
       
-      
       updateTextInput(session, "login", value = token$user)
       updateTextInput(session, "webservicepassword", value = token$userWsPassword)
-      
       return()
     }
-    
-    
     if ('login' %in% names(input)){
       if (input$saveBfabricPassword <= 0){
         # On initialization, set the value of the text editor to the current val.
@@ -402,7 +393,6 @@ bfabric <- function(input, output, session,
         updateTextInput(session, "project", value = isolate(input$project)$login)
         return()
       }
-      
       # no valid token 
       if (isFALSE(is.null(token))){
         # Fetches login and webservicepassword from shinyStore
@@ -452,22 +442,53 @@ bfabricLogin <- function(input, output, session) {
   
   pubKey <- PKI::PKI.load.key(file = .publicKeyFile())
   
-  ## shinyStore; for login and password handling
+  output$loginInformation <- renderUI({
+    if (is.null(getToken())){
+      HTML("Use regular login;")
+    }else{
+      HTML("Authenticated via bfabric token. Have a lot of fun!.")
+    }
+  })
+  
+  getToken <- reactive({ 
+    getQueryString() -> qs
+    if ('token' %in% names(qs)){
+      return(.validateToken(qs$token))
+    }
+    return(NULL)
+  })
+  
+   ## login and password handling
   observe({
+    getToken() -> token
+    print(token)
+    # check if token exists and extract login and webservice password from there
+    # 
+    if (is.null(token)){
+    }else{ 
+      shiny::showNotification(paste0("login as ", token$user, "."),
+                              type = 'message')
+      
+      updateTextInput(session, "login", value = token$user)
+      updateTextInput(session, "webservicepassword", value = token$userWsPassword)
+      return()
+    }
     if ('login' %in% names(input)){
       if (input$saveBfabricPassword <= 0){
         # On initialization, set the value of the text editor to the current val.
         message("saving 'login and webservicepassword' ...")
-        updateTextInput(session, "login", value=isolate(input$store)$login)
-        updateTextInput(session, "webservicepassword",
-                        value=isolate(input$store)$webservicepassword)
+        updateTextInput(session, "login", value = isolate(input$store)$login)
+        updateTextInput(session, "webservicepassword", value = isolate(input$store)$webservicepassword)
+        updateTextInput(session, "project", value = isolate(input$project)$login)
         return()
       }
-      #stopifnot(require(PKI))
-      shinyStore::updateStore(session, "login", isolate(input$login),
-                              encrypt=pubKey)
-      shinyStore::updateStore(session, "webservicepassword",
-                              isolate(input$webservicepassword), encrypt=pubKey)
+      # no valid token 
+      if (isFALSE(is.null(token))){
+        # Fetches login and webservicepassword from shinyStore
+        shinyStore::updateStore(session, "login", isolate(input$login), encrypt=pubKey)
+        shinyStore::updateStore(session, "webservicepassword", isolate(input$webservicepassword), encrypt=pubKey)
+        shinyStore::updateStore(session, "project", isolate(input$project), encrypt=pubKey)
+      }
     }
   }
   )
