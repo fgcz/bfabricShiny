@@ -24,6 +24,9 @@ shinyServer(function(input, output, session) {
     FASTA.parameter <- list(
       FASTAfile = paste("/srv/www/htdocs/", input$relativepath, sep='/')
     )
+
+    # TODO(cp,leo): hotfix on 2025-07-04; make correct automounter
+    gsub(x = FASTA.parameter$FASTAfile, replacement = "/FASTA/", pattern = "/fasta/") -> FASTA.parameter$FASTAfile
     
     cmd <- paste("cat", FASTA.parameter$FASTAfile, "| fcat | tryptic-digest", sep=" ")
     
