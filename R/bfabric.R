@@ -39,6 +39,7 @@ bfabricInput <- function(id) {
     a(img(src="https://img.shields.io/badge/JIB-10.1515%2Fjib.2022.0031-brightgreen"),
       href='https://www.degruyter.com/document/doi/10.1515/jib-2022-0031/html'),
     br(),
+    htmlOutput(ns("loginInformation")),
     textInput(ns('login'), 'B-Fabric Login',
               placeholder = "as you login on https://fgcz-bfabric.uzh.ch",
               value = Sys.getenv('login')),
@@ -136,6 +137,14 @@ bfabric <- function(input, output, session,
     }
   })
 
+  output$loginInformation <- renderUI({
+    if (is.null(getToken())){
+      HTML("use regular login;")
+    }else{
+      HTML("we have token. have a lot of fun!")
+    }
+  })
+  
 
   #=======output$containers======
   output$containers <- renderUI({
