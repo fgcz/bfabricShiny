@@ -35,7 +35,7 @@ fluidPage(
         br(),
         tagList(
           rawDiag::rawDiagUI("OrbitrapFun02"),
-          
+          plotOutput("xic")
         )
       )
     )

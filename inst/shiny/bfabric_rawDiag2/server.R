@@ -5,7 +5,7 @@ stopifnot(
   require(rawDiag),
   require(bfabricShiny),
   packageVersion('bfabricShiny') >= "0.13.4",
-  packageVersion('rawDiag') >= "1.3.4"
+  packageVersion('rawDiag') >= "1.4"
 )
 
 shinyServer(function(input, output, session) {
@@ -23,7 +23,8 @@ shinyServer(function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric13",
                    applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214,
-                                     232, 248, 268, 269, 301, 309, 333, 337,338, 376, 379),
+                                     232, 248, 268, 269, 301, 309, 333, 337,
+                                     338, 376, 379),
                    resoucepattern = "raw$|RAW$",
                    resourcemultiple = TRUE)
   
@@ -40,6 +41,7 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$bfabricWorkunitId,
                {vals$bfabricWorkunitId <- NULL})
+  
   observeEvent(input$load,
                {
                  .resetVals()
@@ -63,6 +65,8 @@ shinyServer(function(input, output, session) {
                  message("vals$rawfile: ", paste0( vals$rawfile, collapse = ",\n\t"))
                })
 
+  xic <- renderPlot({plot(0,0)})
+  
   bfabricUpload <- observeEvent(input$generate, {
     #shiny::showNotification("Uploading to B-Fabric ...", duration = 5, type = 'message')
     
