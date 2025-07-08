@@ -141,7 +141,7 @@ bfabric <- function(input, output, session,
     if (is.null(getToken())){
       HTML("Use regular login;")
     }else{
-      HTML("Authenticated via bfabric token. Have a lot of fun!")
+      HTML("Authenticated via bfabric token.")
     }
   })
   
