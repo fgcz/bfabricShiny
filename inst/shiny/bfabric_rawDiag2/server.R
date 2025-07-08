@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   
   bf <- callModule(bfabric, "bfabric13",
                    applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214,
-                                     232, 248, 268, 269, 301, 309, 333, 337,338, 376, 379),
+                                     232, 248, 268, 269, 301, 309, 316, 333, 337,338, 375, 376, 379),
                    resoucepattern = "raw$|RAW$",
                    resourcemultiple = TRUE)
   
