@@ -1,12 +1,8 @@
+#R rawDiag2 shiny app
 
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#R
+
+
+
 
 stopifnot(require(rawDiag))
 stopifnot(require(bfabricShiny))
@@ -30,13 +26,10 @@ fluidPage(
       )
     ),
     mainPanel(
-      tagList(
-        img(src='octopussy.png ', align = "right", width = '50px'),
-        br(),
-        tagList(
-          rawDiag::rawDiagUI("OrbitrapFun02"),
-          plotOutput("xic")
-        )
+      bslib::navset_card_underline(
+        bslib::nav_panel("Biognosys iRT XICs",  htmlOutput("xicUi")),
+        bslib::nav_panel("rawDiag", rawDiag::rawDiagUI("OrbitrapFun02")),
+        #  )
       )
     )
   )

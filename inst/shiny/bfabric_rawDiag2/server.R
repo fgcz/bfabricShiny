@@ -64,12 +64,39 @@ shinyServer(function(input, output, session) {
                  
                  message("vals$rawfile: ", paste0( vals$rawfile, collapse = ",\n\t"))
                })
-
-  xic <- renderPlot({plot(0,0)})
+  
+  biognosysIrtXics <- reactive({
+    shiny::req(vals$rawfile)
+    iRTmz <- c(487.2571, 547.2984, 622.8539, 636.8695, 644.8230, 669.8384, 683.8282,
+               683.8541, 699.3388, 726.8361, 776.9301)
+    
+    names(iRTmz) <- c("LGGNEQVTR", "YILAGVENSK", "GTFIIDPGGVIR", "GTFIIDPAAVIR",
+                      "GAGSSEPVTGLDAK", "TPVISGGPYEYR", "VEATFGVDESNAK",
+                      "TPVITGAPYEYR", "DGLDAASYYAPVR", "ADVTPADFSEWSK",
+                      "LFLQFGAQGSPFLK")
+    
+    withProgress({
+      vals$rawfile |>
+        BiocParallel::bplapply(FUN = rawrr::readChromatogram,  mass = iRTmz, tol = 10, type = "xic", filter = "ms") -> C
+    }, message = "Extracting XICs")
+    
+    return(C)
+  })
+  
+  output$xicPlot <- renderPlot({
+    shiny::req(biognosysIrtXics())
+    withProgress({
+      par(mfrow = c(length(biognosysIrtXics()), 1))
+      biognosysIrtXics() |> lapply(FUN = plot, diagnostic = TRUE)
+    }, message = "Drawing Biognosys IRT XICs")
+  })
+  
+  output$xicUi <- renderUI({
+    plotOutput("xicPlot", height = length(biognosysIrtXics()) * 320)
+  })
   
   bfabricUpload <- observeEvent(input$generate, {
-    #shiny::showNotification("Uploading to B-Fabric ...", duration = 5, type = 'message')
-    
+  
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "uploading to B-Fabric ...")
     on.exit(progress$close())
