@@ -75,72 +75,30 @@ shinyServer(function(input, output, session) {
   })
 
   
-  biognosysIrtXics <- reactive({
+  
+  rawrrServerModules <- reactive({
     shiny::req(vals$rawfile)
-    
-    withProgress({
-      vals$rawfile |>
-        BiocParallel::bplapply(FUN = rawrr::readChromatogram,  mass = iRTmz(), tol = 10, type = "xic", filter = "ms") -> C
-    }, message = "Extracting XICs")
-    
-    return(C)
+    #BiocParallel::bplapply(FUN = function(x){
+    vals$rawfile |> 
+    lapply(FUN = function(x){
+      fgczqcms::rawrrServer(id = x,
+         vals = reactiveValues(fn = x, mZ = iRTmz()))
+    })
   })
-  
-  output$xicPlot <- renderPlot({
-    shiny::req(biognosysIrtXics())
-    withProgress({
-      par(mfrow = c(length(biognosysIrtXics()), 1))
-      biognosysIrtXics() |> lapply(FUN = plot, diagnostic = TRUE)
-    }, message = "Drawing Biognosys IRT XICs")
-  })
-  
-## helper function taken from rawrr vignette
-    .irtAucPlot <- function(C){
-    par(mfrow = c(3, 4), mar=c(4, 4, 4, 1))
-    rtFittedAPEX <- C |>
-      rawrr:::pickPeak.rawrrChromatogram() |>
-      rawrr:::fitPeak.rawrrChromatogram() |>
-      lapply(function(x){
-        plot(x$times, x$intensities, type='p',
-             ylim=range(c(x$intensities,x$yp)),
-             main=x$mass); lines(x$xx, x$yp,
-                                 col='red'); x}) |>
-      sapply(function(x){x$xx[which.max(x$yp)[1]]})
 
-    ## a simple alternative to derive rtFittedAPEX could be
-    rt <- sapply(C, function(x) x$times[which.max(x$intensities)[1]])
+  output$rawrr <- renderUI({
+    shiny::req(rawrrServerModules())
 
-    iRTscore <- c(-24.92, 19.79, 70.52, 87.23, 0, 28.71, 12.39, 33.38, 42.26, 54.62, 100)
-    fit <- lm(rtFittedAPEX ~ iRTscore)
-
-    # iRTscoreFitPlot
-    plot(rtFittedAPEX ~ iRTscore,
-         ylab = 'Retention time [min]',
-         xlab = "iRT score",
-         pch=16, frame.plot = FALSE)
-    abline(fit, col = 'grey')
-    abline(v = 0, col = "grey", lty = 2)
-    legend("topleft", legend = paste("Regression line: ", "rt =",
-                                     format(coef(fit)[1], digits = 4), " + ",
-                                     format(coef(fit)[2], digits = 2), "score",
-                                     "\nR2: ", format(summary(fit)$r.squared, digits = 4)),
-           bty = "n", cex = 0.75)
-    text(iRTscore, rt, iRTmz(), pos=1,cex=0.5)
-
-    }
-
-  output$xicUi <- renderUI({
-    withProgress({
-      lapply(biognosysIrtXics(), function(x){
-        tagList(
-	  h3(attributes(x)$filename |> basename()),
-          shiny::renderPlot({plot(x)}),
-          shiny::renderPlot({.irtAucPlot(x)}),
-	  hr()
-        )
-      })
-    }, message = 'Rendering XIC plots ...')
-  })
+    vals$rawfile |> 
+    lapply(FUN = function(x){
+     tagList(
+       h2(basename(x)),
+       fgczqcms::rawrrUI(x),
+       hr()
+       )
+     }
+     )
+   })
   
   bfabricUpload <- observeEvent(input$generate, {
   

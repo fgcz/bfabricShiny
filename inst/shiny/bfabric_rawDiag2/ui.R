@@ -28,7 +28,7 @@ fluidPage(
     mainPanel(
       bslib::navset_card_underline(
         bslib::nav_panel("rawDiag", rawDiag::rawDiagUI("OrbitrapFun02")),
-        bslib::nav_panel("Biognosys iRT XICs",  htmlOutput("xicUi")),
+        bslib::nav_panel("Biognosys iRT XICs",  htmlOutput("rawrr")),
         #  )
       )
     )
