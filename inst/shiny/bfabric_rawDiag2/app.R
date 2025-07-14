@@ -2,13 +2,11 @@
 # This is the server logic of a rawDiag Shiny web application version 2.
 
 stopifnot(
-  require(rawDiag,
-          bfabricShiny,
-          fgczqcms,
-          shinydashboard)
-)
-
-stopifnot(packageVersion('bfabricShiny') >= "0.13.4",
+  require(rawDiag),
+  require(bfabricShiny),
+  require(fgczqcms),
+  require(shinydashboard),
+  packageVersion('bfabricShiny') >= "0.13.4",
           packageVersion('rawDiag') >= "1.3")
 
 
