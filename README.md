@@ -110,23 +110,19 @@ system.file("shiny", "queue_generator10", package = "bfabricShiny") |>
 - run
 
 ```{bash}
-python3 bfabric_flask.py 
+# Development Server
+uv run --with bfabric-scripts -m bfabric_scripts.bfabric_flask --port 5000
+
+# Production Server
+uv run --with gunicorn,bfabric-scripts gunicorn -w 4 bfabric_scripts.bfabric_flask:app --bind 0.0.0.0:5000 --ssl-keyfile=/etc/ssl/private/fgcz-host_key.pem --ssl-certfile=/etc/ssl/fgcz-host.pem
 ```
-If a certified key is available, Flask will use SSL certificate and run on port 5001. Otherwise it will run using http and port 5000.
-Note that the port configuration can be changed in the bfabric\_flask.py script.
-```{python}
-# code snippet from bfabric_flask.py:
-if exists('/etc/ssl/fgcz-host.pem') and exists('/etc/ssl/private/fgcz-host_key.pem'):    
-    app.run(debug=False, host="0.0.0.0", port=5001, ssl_context=('/etc/ssl/fgcz-host.pem', '/etc/ssl/private/fgcz-host_key.pem'))
-else:
-   app.run(debug=False, host="127.0.0.1", port=5000)
-```
-See [bfabric\_flask.py on GitHub](https://github.com/fgcz/bfabricPy/blob/bfabric12/bfabric/scripts/bfabric_flask.py) for more details.
+
+See [bfabric\_flask.py on GitHub](https://github.com/fgcz/bfabricPy/blob/main/bfabric_scripts/src/bfabric_scripts/bfabric_flask.py) for more details.
 
 - simple tests 
 
 ```{bash}
-curl http://127.0.0.1:5000/sample/1
+curl http://localhost:5000/config/remote_base_url
 ```
 ```{r}
 # R
@@ -263,13 +259,10 @@ shiny::runApp(qgs, display.mode = "normal")
 bfabricauth <- system.file("shiny", "simple_auth", package = "bfabricShiny")
 shiny::runApp(bfabricauth, display.mode = "normal", port=8080)
 ```
-#### On howto generate keys?
+#### How to generate the keys
 
 ```
-cd bfabricShiny/inst/keys &&  ssh-keygen -f $PWD/bfabricShiny.key -t rsa
-
-## generate public pem key file
-ssh-keygen -f $PWD/bfabricShiny.key.pub -e -m PEM > bfabricShiny.key.pub.pem
+cd bfabricShiny/inst/keys && bash generateKeys.bash
 
 ## test
 R -q -e "PKI::PKI.load.key(file = 'bfabricShiny.key.pub.pem')"
