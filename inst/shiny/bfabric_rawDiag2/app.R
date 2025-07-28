@@ -7,7 +7,7 @@ stopifnot(
   require(fgczqcms),
   require(shinydashboard),
   packageVersion('bfabricShiny') >= "0.13.4",
-          packageVersion('rawDiag') >= "1.3")
+  packageVersion('rawDiag') >= "1.3")
 
 
 # Define UI for application that draws a histogram
@@ -29,8 +29,9 @@ ui <- fluidPage(
     ),
     mainPanel(
       bslib::navset_card_underline(
+        
+        #bslib::nav_panel("Biognosys iRT XICs",  htmlOutput("rawrr")),
         bslib::nav_panel("rawDiag", rawDiag::rawDiagUI("OrbitrapFun02")),
-        bslib::nav_panel("Biognosys iRT XICs",  htmlOutput("rawrr")),
         #  )
       )
     )
@@ -49,7 +50,6 @@ server <- shinyServer(function(input, output, session) {
     plot = NULL,
     bfabricWorkunitId = NULL)
   
-  rawDiag:::rawDiagServer("OrbitrapFun02", vals)
   
   bf <- callModule(bfabric, "bfabric13",
                    applicationid = c(7, 160, 161, 162, 163, 176, 177, 197, 214,
@@ -66,9 +66,9 @@ server <- shinyServer(function(input, output, session) {
   
   observeEvent(input$generatePDF, {
     vals$generatePDF <- vals$generatePDF + 1
-    })
+  })
   
-
+  
   observeEvent(input$bfabricWorkunitId,
                {vals$bfabricWorkunitId <- NULL})
   
@@ -85,7 +85,7 @@ server <- shinyServer(function(input, output, session) {
                  
                  stopifnot(length(rootdir) >= 1)
                  file.path(rootdir[1], resourcesSelected) -> resourcesSelected
-              
+                 
                  # mes8sage("resources: ", paste0(resources, collapse = ",\n\t"))
                  message("resourcesSelected: ", paste0(resourcesSelected, collapse = ", "))
                  
@@ -94,42 +94,50 @@ server <- shinyServer(function(input, output, session) {
                  
                  message("vals$rawfile: ", paste0( vals$rawfile, collapse = ",\n\t"))
                })
-
-   msg <- reactiveVal("starting shiny application ...")
-
+  
+  msg <- reactiveVal("starting rawDiag shiny application ...")
+  
   observeEvent(msg(), {
     shiny::showNotification(msg(), type = "message", duration = 3)
     cat(msg())
   })
   
-   observeEvent(vals$rawfile, {
-     if(length(vals$rawfile) > 0 && !is.null(vals$rawfile)){
-       
-       vals$rawfile |> 
-         lapply(FUN = function(x){
-           fgczqcms::rawrrServer(id = x,
-                                 vals = reactiveValues(fn = x, mZ = fgczqcms:::.iRTmz(), msg = msg))
-         })
-     }
-   })
-
-  output$rawrr <- renderUI({
-    shiny::req(vals$rawfile)
+#  observeEvent(vals$rawfile, {
+#    if(length(vals$rawfile) > 0 && !is.null(vals$rawfile)){
+#      
+#      vals$rawfile |> 
+##        lapply(FUN = function(x){
+#          fgczqcms::rawrrServer(id = x,
+#                                vals = reactiveValues(fn = x, mZ = fgczqcms:::.iRTmz()),
+#                                msg = msg)
+#        })
+#    }
+#  })
+  
+  observeEvent(vals$rawfile, {
     if(length(vals$rawfile) > 0 && !is.null(vals$rawfile)){
-      vals$rawfile |> 
-        lapply(FUN = function(x){
-          tagList(
-            fgczqcms::rawrrUI(x),
-          )
-        }
-        )
-    }else{
-      h2("no files provided.")
+      rawDiag:::rawDiagServer("OrbitrapFun02", vals)
     }
   })
   
-  bfabricUpload <- observeEvent(input$generate, {
   
+#  output$rawrr <- renderUI({
+#    shiny::req(vals$rawfile)
+#    if(length(vals$rawfile) > 0 && !is.null(vals$rawfile)){
+#      vals$rawfile |> 
+#        lapply(FUN = function(x){
+#          tagList(
+#            fgczqcms::rawrrUI(x),
+#          )
+##        }
+#        )
+#    }else{
+#      h2("no files provided.")
+#    }
+#  })
+  
+  bfabricUpload <- observeEvent(input$generate, {
+    
     progress <- shiny::Progress$new(session = session, min = 0, max = 1)
     progress$set(message = "uploading to B-Fabric ...")
     on.exit(progress$close())
@@ -176,7 +184,7 @@ server <- shinyServer(function(input, output, session) {
           actionButton(inputId = "B-FabricDownload",
                        label = paste("b-fabric download workunit", vals$bfabricWorkunitId),
                        onclick = wuUrl))
-
+        
       }else if (isFALSE(is.null(vals$pdfFileName))){
         tagList(
           shiny::helpText(paste0("Upload the current plot '", vals$pdfFileName, "' to B-Fabric.")),
