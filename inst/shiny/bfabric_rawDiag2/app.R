@@ -95,13 +95,11 @@ server <- shinyServer(function(input, output, session) {
                  message("vals$rawfile: ", paste0( vals$rawfile, collapse = ",\n\t"))
                })
 
-   iRTmz <- reactive({c(487.2571, 547.2984, 622.8539, 636.8695, 644.8230, 669.8384, 683.8282,
-                       683.8541, 699.3388, 726.8361, 776.9301) -> mZ
-    names(mZ) <- c("LGGNEQVTR", "YILAGVENSK", "GTFIIDPGGVIR", "GTFIIDPAAVIR",
-                   "GAGSSEPVTGLDAK", "TPVISGGPYEYR", "VEATFGVDESNAK",
-                   "TPVITGAPYEYR", "DGLDAASYYAPVR", "ADVTPADFSEWSK",
-                   "LFLQFGAQGSPFLK")
-    return(mZ)
+   msg <- reactiveVal("starting shiny application ...")
+
+  observeEvent(msg(), {
+    shiny::showNotification(msg(), type = "message", duration = 3)
+    cat(msg())
   })
   
    observeEvent(vals$rawfile, {
@@ -110,7 +108,7 @@ server <- shinyServer(function(input, output, session) {
        vals$rawfile |> 
          lapply(FUN = function(x){
            fgczqcms::rawrrServer(id = x,
-                                 vals = reactiveValues(fn = x, mZ = iRTmz()))
+                                 vals = reactiveValues(fn = x, mZ = fgczqcms:::.iRTmz(), msg = msg))
          })
      }
    })
