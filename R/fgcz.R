@@ -819,6 +819,8 @@ uploadResource <- function(login = NULL,
   stopifnot(isFALSE(is.null(login)),
             isFALSE(is.null(webservicepassword)),
             isFALSE(is.null(file)),
+            isFALSE(is.null(containerid)),
+            isFALSE(is.null(applicationid)),
             isFALSE(is.null(posturl)),
             file.exists(file)
             )
