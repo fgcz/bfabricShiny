@@ -3,5 +3,6 @@
 .RData
 .Ruserdata
 *.Rproj
-inst/keys/bfabricShiny.key.pub
-inst/keys/bfabricShiny.key
+*.key.pub
+*.key
+*.pem
