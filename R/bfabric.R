@@ -312,6 +312,9 @@ bfabric <- function(input, output, session,
     })
   
   
+  
+
+  ## TODO(cpanse):rename to isEmployee
   empdegree <- reactive({
     if(isFALSE(bfabricConnectionWorking())){return(FALSE)}
     
@@ -410,6 +413,7 @@ bfabric <- function(input, output, session,
               webservicepassword = reactive({input$webservicepassword}),
               resources = reactive({resources()}),
               workunitid = reactive({input$workunit}),
+              empdegree = reactive({ empdegree() }),
               posturl = reactive({posturl()}),
               containerid = reactive({input$containerid})))
 }
@@ -439,6 +443,8 @@ bfabricInputLogin <- function(id) {
 #' @export bfabricLogin
 bfabricLogin <- function(input, output, session) {
   ns <- session$ns
+  bfabricValues <- reactiveValues()
+  bfabricValues$errorreport <- NULL
   
   pubKey <- PKI::PKI.load.key(file = .publicKeyFile())
   
@@ -492,9 +498,71 @@ bfabricLogin <- function(input, output, session) {
     }
   }
   )
+
+
+  #=======bfabricConnectionWorking======
+  bfabricConnectionWorking <- eventReactive(
+    list(input$login,
+         input$webservicepassword),
+    {
+      shiny::req(input$login, input$webservicepassword)
+      rv = bfabricShiny::readPages(input$login,
+                                   input$webservicepassword ,
+                                   posturl = posturl(),
+                                   endpoint = 'user',
+                                   query = list(login=input$login))
+      
+      if ("errorreport" %in% names(rv)){
+        bfabricValues$errorreport <- rv$errorreport
+      }
+      else if ("status" %in% names(rv)){
+        bfabricValues$errorreport <- rv$status
+      }
+      else{
+        bfabricValues$errorreport <- NULL
+      }
+      
+      message(paste0("bfabricConnectionWorking ", (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))))
+      (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))
+    })
   
-  return(list(login = reactive({input$login}),
-              webservicepassword = reactive({input$webservicepassword})))
+  # ======Rprofile=====
+  Rprofile <- reactive({
+    f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
+    if (file.exists(f)){ return (f) }
+    else{stop(paste0("File not found ", f))}
+  })
+  posturl <- reactive({
+    source(Rprofile(), local=TRUE)
+    
+    (paste0("read bfabricposturl ", bfabricposturl, ".")) -> msg
+    message(msg)
+    shiny::showNotification(msg, duration = 4, type = "message")
+    
+    return (bfabricposturl)
+  })
+  ## TODO(cpanse):rename to isEmployee
+  empdegree <- reactive({
+    if(isFALSE(bfabricConnectionWorking())){return(FALSE)}
+    
+    user <- bfabricShiny::readPages(input$login,
+                                  input$webservicepassword,
+                                  posturl  = posturl(),
+                                  endpoint = 'user',
+                                  query = list(login = input$login))$res
+    
+    if('empdegree' %in% names(user[[1]])){
+      message("'empdegree' found.")
+      return(TRUE)
+    }
+    return (FALSE)
+  })
+  
+  return(list(login = reactive({ input$login }),
+              posturl = reactive({ posturl() }),
+              webservicepassword = reactive({ input$webservicepassword }),
+              empdegree = reactive({ empdegree() })
+              ))
 }
 
 
