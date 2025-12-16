@@ -2,8 +2,37 @@
 ## using fastAPI
 ## Christian Panse and Leonardo Schwarz
 ## 20251215
+## 20251216
 
-
+.callRestProxy  <- function(auth, params, posturl, posturlsuffix){
+  
+  paste0(posturl, posturlsuffix) -> posturl 
+  message(posturl)
+  message(posturlsuffix)
+  if (interactive()) {
+    paste0(".callRestusing '", posturl, "' as posturl ...") |> message()
+    }
+  
+  Sys.time() -> start_time
+  
+  httr::POST(posturl, body = list(auth = auth,
+                                  params = params),
+             encode = 'json') -> query_result
+  Sys.time() -> end_time
+  
+  paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].") -> diff_time_msg
+  httr::content(query_result) -> rv
+  
+  if ('error' %in% names(rv)){
+    stop(paste0("B-Fabric errorreport: ", rv$error))
+  }
+  
+  if (interactive()) {
+    message(paste0("read query time: ", diff_time_msg))
+  }
+  
+  rv
+}
 #=======read======
 #' read function which supports pages
 #' 
@@ -13,7 +42,7 @@
 #' @param endpoint the endpoint, e.g., \code{'sample'}
 #' @param query e,g, \code{list(containerid = 3000)}
 #' @param posturl where the flask server is working
-#' @param maxpages max number of supported pages to 
+#' @param maxitems max number of supported pages to 
 #' @param updateProgress a callback function for writing log output, e.g.,
 #' using a \code{\link[shiny]{Progress}} object,
 #' see also \url{https://shiny.rstudio.com/articles/progress.html}.
@@ -23,6 +52,7 @@
 #' @author MdE/CP 2023-03; CP 2024-12-24; LS 2025-12-15
 #' @export
 #' @examples
+#' 
 #' \dontrun{
 #' bfabricShiny::read(login,
 #'   webservicepassword,
@@ -31,7 +61,8 @@
 #'   posturl = bfabricposturl,
 #'   maxitems = 1000) -> rv
 #'   }
-read <- function(login = NULL, webservicepassword = NULL,
+read <- function(login = NULL,
+                 webservicepassword = NULL,
                  endpoint = 'workunit',
                  offset = 0,
                  maxitems = 100,
@@ -47,38 +78,25 @@ read <- function(login = NULL, webservicepassword = NULL,
             is.numeric(offset),
             is.numeric(maxitems))
   
-  # message(paste("DEBUG XXX", login, webservicepassword, posturl))
-  posturl <- paste0(posturl, posturlsuffix)
   
-  if (interactive()) {message(paste0("using '", posturl, "' as posturl ..."))}
-  start_time <- Sys.time()
-  query_result <- httr::POST(posturl,
-                             body = list(login = login,
-                                         webservicepassword = webservicepassword,
-                                         endpoint = endpoint,
-                                         query = query,
-                                         idonly = idonly,
-                                         page_offset = offset,
-                                         page_max_results = maxitems
-                             ),
-                             encode = 'json')
-  end_time <- Sys.time()
-  
-  diff_time_msg <- paste0(round(difftime(end_time, start_time, units = 'secs'), 2), " [s].")
-  rv <- httr::content(query_result)
-  if (is.null(rv$res)){warning("query failed."); message(rv); return(rv);}
+  .callRestProxy(auth = list(login = login,
+                             webservicepassword = webservicepassword),
+                 params = list(
+                   endpoint = endpoint,
+                   query = query,
+                   idonly = idonly,
+                   page_offset = offset,
+                   page_max_results = maxitems), 
+                 posturl = posturl,
+                 posturlsuffix = posturlsuffix) -> rv
   
   
-  ## TODO(@Leo): is that possible?
-  if ('errorreport' %in% names(rv$res)){
-    stop(paste0("B-Fabric errorreport: ", rv$res$errorreport))
-  }
   
-  if (interactive()) {
-    message(paste0("read query time: ", diff_time_msg))
-  }
-  rv
+  list(res = rv)
 }
+
+
+
 #R
 ## using fastAPI
 ## Christian Panse and Leonardo Schwarz
@@ -87,10 +105,10 @@ read <- function(login = NULL, webservicepassword = NULL,
 
 
 #=====uploadResource=======
-#' Generate a workunit and upload a resource (file)  to a internal bfabric
-#' storage
+#' Generate a workunit and upload a list of resource(s) (file)
+#' to the internal bfabric storage
 #'
-#' @inheritParams readPages
+#' @inheritParams read
 #' @param containerid a containerid (project id or order id)
 #' @param applicationid a application id
 #' @param status in \code{c('AVAILABLE', 'FAILED', 'PENDING')}
@@ -103,93 +121,88 @@ read <- function(login = NULL, webservicepassword = NULL,
 #' @param resourcename the reosurce name
 #' @param file a filename for a file to be uploaded.
 #'
-#' @return returns a nested list containing the workunit and the resource
+#' @return returns a nested list containing the workunit
+#'
 #' object returned by the save method.
 #' @importFrom base64enc base64encode
 #' @importFrom tools file_ext
-#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2023, MdE 2023-03-17
+#'
+#' @author Christian Panse <cp@fgcz.ethz.ch> 2016-2023, MdE 2023-03-17, LS, 2025-12-15
+#'
 #' @export
+#'
 #' @examples
-#' fRp <- file.path(Sys.getenv("HOME"), ".Rprofile")
-#' source(fRp, local=TRUE)
-#' tf <- tempfile()
+#'
+#' ## create a csv file 
+#' tf <- tempfile(fileext = '.csv', pattern = 'R-iris-data-')
 #' write.csv(iris, file=tf)
-#' rv <- bfabricShiny::uploadResource(login, webservicepassword, bfabricposturl,
-#'    containerid = 3000,
-#'    status = 'PENDING',
-#'    description = "generated by a test run",
-#'    applicationid = 212,
-#'    workunitname = "bfabricShiny example",
-#'    resourcename = "R's iris data",
-#'    file = tf)
+#'
+#' 
+#' createWorkunit(login = login,
+#'   webservicepassword = webservicepassword,
+#'   posturl = bfabricposturl,
+#'   containerid = 3000,
+#'   applicationid = 212,
+#'   workunitname = "TEST Xerces",
+#'   files = list(tf),
+#'   description = 'ignore',
+#'   posturlsuffix = "/create/workunit/v1") -> rv
 #'    
 #' print(rv)
-uploadResource <- function(login = NULL,
+createWorkunit <- function(login = NULL,
                            webservicepassword = NULL,
-                           posturl = NULL,
+                           posturl = "http://127.0.0.1:5000",
                            containerid = 3000,
                            applicationid = 212,
-                           status = 'PENDING',
-                           description = '',
-                           inputresourceid = NULL,
                            workunitname = 'bfabricShiny result',
-                           resourcename = 'bfabricShiny report',
-                           file = NULL) {
+                           parameters = list(),
+                           files = list(),
+                           inputresourceid = list(),
+                           links = list(),
+                           description = '',
+                           posturlsuffix = "/create/workunit/v1"
+                           ) {
   
+ ## TODO(Leo): add inputresourceid on fastAPI
   stopifnot(isFALSE(is.null(login)),
-            isFALSE(is.null(webservicepassword)),
-            isFALSE(is.null(file)),
-            isFALSE(is.null(posturl)),
-            file.exists(file)
+            isFALSE(is.null(webservicepassword))
+            #isFALSE(is.null(files)),
+            #isFALSE(is.null(posturl)),
+            #file.exists(file)
   )
   
-  stopifnot(status %in% c('AVAILABLE', 'FAILED', 'PENDING'))
+  #stopifnot(status %in% c('AVAILABLE', 'FAILED', 'PENDING'))
   
-  fileContent <- readBin(file, "raw", file.info(file)[1, "size"]) |>
-    base64enc::base64encode(tools::file_ext(file))
+  lapply(files, FUN = function(fn){
+    readBin(fn, "raw", file.info(fn)[1, "size"]) |>
+      base64enc::base64encode(tools::file_ext(fn))
+  }) -> fileContentList
   
-  description <- 
-    sprintf("%s\n\n
+  
+  ## update description
+  sprintf("%s\n\n
 Generated by Rpkg https://github.com/fgcz/bfabricShiny/ version %s.
 System information: %s\n
 To help us funding further development, please cite:
 (bfabricSiny) PMID: 36073980 DOI: 10.1515/jib-2022-0031",
-            description,
-            packageVersion('bfabricShiny'),
-            paste(Sys.info(), collapse = ', '))
+          description,
+          packageVersion('bfabricShiny'),
+          paste(Sys.info(), collapse = ', ')) -> description
   
-  wu <-
-    .createWorkunit(
-      login = login,
-      webservicepassword = webservicepassword,
-      posturl = posturl,
-      containerid = containerid,
-      inputresourceid = inputresourceid,
-      applicationid = applicationid,
-      name = workunitname,
-      status = status,
-      description = description
-    )
-  
-  #res <- 
-  #  .saveResource(login, webservicepassword,
-  #                   posturl = posturl,
-  #                   workunitid = wu[[1]]$id,
-  #                   content = fileContent,
-  #                   name = resourcename
-  #
-  workunitid <- wu$res[[1]]$id
-  res <- save(login, webservicepassword,
-              posturl = posturl,
-              endpoint = 'resource',
-              query = list(
-                'name' = sprintf("WU%s-%s-%s",workunitid,
-                                 format(Sys.time(), format="%Y%m%d-%H%M"), resourcename),
-                'workunitid' = workunitid,
-                'base64' = fileContent
-              )
-              
-  )
-  
-  list(workunit = wu, resource = res)
+  .callRestProxy(auth = list(login = login,
+                             webservicepassword = webservicepassword),
+                 params = list(
+                   container_id = containerid,
+                   application_id = applicationid,
+                   workunit_name = workunitname,
+                   parameters = parameters,
+                   resources = fileContentList,
+                   links = links,
+                   description = description
+                 ),
+                 posturl = posturl,
+                 posturlsuffix = posturlsuffix
+  ) -> rv
+
+  list(workunit = rv)
 }

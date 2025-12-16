@@ -25,6 +25,8 @@ visible when you check your user details in the bfabric system.}
 
 \item{endpoint}{the endpoint, e.g., \code{'sample'}}
 
+\item{maxitems}{max number of supported pages to}
+
 \item{query}{e,g, \code{list(containerid = 3000)}}
 
 \item{posturl}{where the flask server is working}
@@ -35,8 +37,6 @@ read. also, save should work}
 \item{updateProgress}{a callback function for writing log output, e.g.,
 using a \code{\link[shiny]{Progress}} object,
 see also \url{https://shiny.rstudio.com/articles/progress.html}.}
-
-\item{maxpages}{max number of supported pages to}
 
 \item{page}{define requested page, default is 1}
 }
