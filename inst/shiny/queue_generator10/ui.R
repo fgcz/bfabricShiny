@@ -8,7 +8,7 @@
 shinyUI(
   
   fluidPage(
-    titlePanel(paste("MS Queue Generator", packageVersion('bfabricShiny'), sep = ' - version ')),
+    titlePanel( paste("MS Queue Generator - version ", packageVersion('bfabricShiny'), "(Deprecated)", sep = ' ') ),
     #copied from mockup
     fluidRow(
       column(12,

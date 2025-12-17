@@ -641,7 +641,7 @@ shinyServer(function(input, output, session) {
     
     if (input$instrumentControlSoftware == "XCalibur"){
       #=====write XCalibur MS configuration to bfabric=========
-      fn <- tempfile(tmpdir = tempdir(), fileext = ".csv") 
+      fn <- tempfile(tmpdir = tempdir(), fileext = ".csv", pattern = 'FGCZQueueGenerator10') 
       message(paste0("Composing XCalibur MS configuration file ", fn, " ..."))
       
       cat("Bracket Type=4\r\n", file = fn, append = FALSE)
