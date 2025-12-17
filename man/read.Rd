@@ -44,6 +44,7 @@ see also \url{https://shiny.rstudio.com/articles/progress.html}.}
 read function which supports pages
 }
 \examples{
+
 \dontrun{
 bfabricShiny::read(login,
   webservicepassword,

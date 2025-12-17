@@ -605,10 +605,11 @@ shinyServer(function(input, output, session) {
     }else {
       message(paste0("debug output$download values$wuid=", values$wuid))
       if (isFALSE(is.null(values$wuid))){
-        # https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
+        ## https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=154014
+        ## wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
+        ##                values$wuid, "', '_blank')")
         
-        wuUrl <- paste0("window.open('https://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?id=",
-                        values$wuid, "', '_blank')")
+        wuUrl <- paste0("window.open('",values$wuuri,"', '_blank')")
         
         actionButton("download",
                      paste("go to B-Fabric workunit", values$wuid),
@@ -666,17 +667,18 @@ shinyServer(function(input, output, session) {
       
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
-        bfabricShiny::uploadResource(login = login(),
+        
+        bfabricShiny::createWorkunit(login = login(),
                                      webservicepassword = webservicepassword(),
                                      posturl = posturl(),
                                      containerid = containerid,
                                      applicationid = 212,
-                                     status = 'AVAILABLE',
-                                     description = workunitDescription,
                                      workunitname = 'XCalibur MS configuration',
-                                     resourcename = paste0(getResourcename(), '.csv'),
-                                     file = fn) 
-      
+                                     files = list(fn),
+                                     description = workunitDescription,
+                                     posturlsuffix = "create/workunit/v1"
+                                     )
+        
       })
       
       if ("error" %in% names(rv[[1]]$workunit)) {
@@ -684,7 +686,9 @@ shinyServer(function(input, output, session) {
         return()
       }
       
-      values$wuid <- rv[[1]]$workunit$res[[1]]$id
+      values$wuid <- rv[[1]]$workunit[[1]]$id
+      values$wuuri <- rv[[1]]$workunit[[1]]$uri
+      
       shiny::showNotification(paste0("Saved XCalibur queue as workunit id = ", values$wuid), type = "message", duration = 15)
     } else if (input$instrumentControlSoftware == "HyStar"){
       #=====write HyStar MS configuration to bfabric=========
@@ -715,16 +719,18 @@ shinyServer(function(input, output, session) {
       
       rv <- lapply(containerids, function(containerid){
         message(paste("containerid = ", containerid))
-        bfabricShiny::uploadResource(login = login(),
-                                               webservicepassword = webservicepassword(),
-                                               posturl = posturl(),
-                                               containerid = containerid,
-                                               applicationid = 289,
-                                               status = 'AVAILABLE',
-                                               description = workunitDescription,
-                                               workunitname = 'HyStar MS configuration',
-                                               resourcename = paste0(getResourcename(), '.xml'),
-                                               file = fn)
+        
+        bfabricShiny::createWorkunit(login = login(),
+                                     webservicepassword = webservicepassword(),
+                                     posturl = posturl(),
+                                     containerid = containerid,
+                                     applicationid = 289,
+                                     workunitname = 'HyStar MS configuration',
+                                     files = list(fn),
+                                     description = workunitDescription,
+                                     posturlsuffix = "create/workunit/v1"
+        )
+      
       })
       
       if ("error" %in% names(rv[[1]]$workunit)) {
@@ -734,8 +740,9 @@ shinyServer(function(input, output, session) {
       
       message(paste0("DEBUG: wuid=", values$wuid))
       
-      values$wuid <- rv[[1]]$workunit$res[[1]]$id
-      message(paste0("DEBUG: rv wuid=", rv[[1]]$workunit[[1]]$id))
+      values$wuid <- rv[[1]]$workunit[[1]]$id
+      values$wuuri <- rv[[1]]$workunit[[1]]$uri
+      
       message(paste0("DEBUG: wuid=", values$wuid))
       shiny::showNotification(paste0("Saved workunit id = ", values$wuid), type = "message", duration = 15)
     }else{
