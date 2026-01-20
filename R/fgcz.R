@@ -756,31 +756,45 @@ bfabric_upload_file <- function(login = NULL,
   data.frame(resourceId=inputResourcesIds, sampleId=inputSampleIds)
 }
 
-.Rprofile <- function(){ 
-  f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
+.Rprofile <- function(){
+  f <- file.path(Sys.getenv("HOME"), ".Rprofile")
   if (file.exists(f)){ return (f) }
-  stop("no '.Rprofile'")
+  return (NULL)
+}
+
+.get_config <- function(env_var, r_var_name){
+  value <- Sys.getenv(env_var, unset = NA)
+  if (!is.na(value)){
+    message(paste0("read ", r_var_name, " from ", env_var, " env var."))
+    return (value)
+  }
+
+  rprofile <- .Rprofile()
+  if (!is.null(rprofile)){
+    source(rprofile, local = TRUE)
+    if (r_var_name %in% ls()){
+      message(paste0("read ", r_var_name, " from .Rprofile."))
+      return (get(r_var_name))
+    }
+  }
+
+  stop(paste0("'",
+              r_var_name,
+              "' not configured. Set environment variable ",
+              env_var,
+              " or add to ~/.Rprofile."))
 }
 
 .login <- function(){
-  source(.Rprofile(), local = TRUE)
-  message(paste0("read login ", login, "."))
-  stopifnot('login' %in% ls())
-  return (login)
+  .get_config("BFABRIC_LOGIN", "login")
 }
 
 .posturl <- function(){
-  source(.Rprofile(), local = TRUE)
-  message(paste0("read bfabricposturl ", bfabricposturl, "."))
-  stopifnot('bfabricposturl' %in% ls())
-  return (bfabricposturl)
+  .get_config("BFABRIC_RESTPROXY_URL", "bfabricposturl")
 }
 
 .webservicepassword <- function(){
-  source(.Rprofile(), local = TRUE)
-  message(paste0("read webservicepassword for login ", login, "."))
-  stopifnot('webservicepassword' %in% ls())
-  return(webservicepassword)
+  .get_config("BFABRIC_WEBSERVICEPASSWORD", "webservicepassword")
 }
 
 
