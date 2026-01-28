@@ -6,6 +6,7 @@
 #' @param session Shiny session object
 #' @param input Shiny input object
 #' @param excluded_inputs_extra Character vector of additional input IDs to exclude from logging
+#' @export
 setUpAppLogging <- function(session, input, excluded_inputs_extra = NULL) {
   session_id <- session$token
   log_dir <- Sys.getenv("LOG_DIR", unset = "./logs")
