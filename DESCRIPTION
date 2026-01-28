@@ -47,6 +47,7 @@ License: GPL-3 + file LICENSE
 LazyData: FALSE
 SystemRequirements: installed bfabricPy python3 package, flask or fastAPI
 Collate:
+    app_logging.R
     helper.R
     bfabric.R
     ms_queue.R
