@@ -109,22 +109,7 @@ bfabric <- function(input, output, session,
   bfabricValues <- reactiveValues()
   bfabricValues$errorreport <- NULL
   
-  # ======Rprofile=====
-  Rprofile <- reactive({
-    f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
-    if (file.exists(f)){ return (f) }
-    else{stop(paste0("File not found ", f))}
-  })
-
-  posturl <- reactive({
-    source(Rprofile(), local=TRUE)
-    
-    (paste0("read bfabricposturl ", bfabricposturl, ".")) -> msg
-    message(msg)
-    shiny::showNotification(msg, duration = 4, type = "message")
-    
-    return (bfabricposturl)
-  })
+  posturl <- reactive({ .posturl() })
 
   pubKey <- PKI.load.key(file = .publicKeyFile())
 
@@ -274,7 +259,6 @@ bfabric <- function(input, output, session,
     if (input$login %in% c('cpanse', 'mderrico', 'wolski')){
       HTML(paste("<hr>system information",
                  "<ul>",
-                 "<li>Rprofile:", Rprofile(), "</li>",
                  "<li>posturl:", posturl(), "</li>",
                  "<li>auth:", bfabricConnectionWorking(), "</li>",
                  "<li>errorreport:", bfabricValues$errorreport, "</li>",
@@ -414,7 +398,7 @@ bfabric <- function(input, output, session,
               resources = reactive({resources()}),
               workunitid = reactive({input$workunit}),
               empdegree = reactive({ empdegree() }),
-              posturl = reactive({posturl()}),
+              posturl = posturl,
               containerid = reactive({input$containerid})))
 }
 
@@ -526,21 +510,8 @@ bfabricLogin <- function(input, output, session) {
       (isFALSE("errorreport" %in% names(rv)) && isFALSE("status" %in% names(rv)))
     })
   
-  # ======Rprofile=====
-  Rprofile <- reactive({
-    f <- file.path(Sys.getenv("HOME"), ".Rprofile") 
-    if (file.exists(f)){ return (f) }
-    else{stop(paste0("File not found ", f))}
-  })
-  posturl <- reactive({
-    source(Rprofile(), local=TRUE)
-    
-    (paste0("read bfabricposturl ", bfabricposturl, ".")) -> msg
-    message(msg)
-    shiny::showNotification(msg, duration = 4, type = "message")
-    
-    return (bfabricposturl)
-  })
+  posturl <- reactive({ .posturl() })
+
   ## TODO(cpanse):rename to isEmployee
   empdegree <- reactive({
     if(isFALSE(bfabricConnectionWorking())){return(FALSE)}
@@ -559,7 +530,7 @@ bfabricLogin <- function(input, output, session) {
   })
   
   return(list(login = reactive({ input$login }),
-              posturl = reactive({ posturl() }),
+              posturl = posturl,
               webservicepassword = reactive({ input$webservicepassword }),
               empdegree = reactive({ empdegree() })
               ))
